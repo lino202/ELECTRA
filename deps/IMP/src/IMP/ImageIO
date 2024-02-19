@@ -1,0 +1,40 @@
+/*
+ * IMP. Image and Mesh Processing library.
+ * Copyright (C) 2016  <Konstantinos A. Mountris> <konstantinos.mountris@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+
+/**
+   \file image_io.hpp
+   \brief Header collecting image input/output header files.
+   \author Konstantinos A. Mountris
+   \date 23/05/2017
+*/
+
+#ifndef IMP_IO_IMAGE_IO_HPP_
+#define IMP_IO_IMAGE_IO_HPP_
+
+// Collection of image input/output headers.
+
+#include "IMP/engine/image_io/h33_io.hpp"
+#include "IMP/engine/image_io/inr_io.hpp"
+#include "IMP/engine/image_io/mha_io.hpp"
+#include "IMP/engine/image_io/mhd_io.hpp"
+#include "IMP/engine/image_io/nii_io.hpp"
+
+
+#endif //IMP_IMAGE_IO_HPP_

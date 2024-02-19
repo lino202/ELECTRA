@@ -1,0 +1,21 @@
+#----------------
+
+# Set the test's name.
+SET(TestName  CellTest)
+
+# Create the test executable.
+ADD_EXECUTABLE(${TestName}  cell_test.hpp  cell_test.cpp)
+
+# Link with Google Test.
+TARGET_LINK_LIBRARIES(${TestName}  ${GTEST_BOTH_LIBRARIES}  ${CMAKE_THREAD_LIBS_INIT})
+
+IF(IMP_BUILD_SHARED_LIBS)
+    TARGET_LINK_LIBRARIES(${TestName}  ${PROJECT_NAME}_dynamic)
+ELSE()
+    TARGET_LINK_LIBRARIES(${TestName}  ${PROJECT_NAME}_static)
+ENDIF()
+
+# Add the test in CTest.
+ADD_TEST(${TestName}  ${TestName})
+
+

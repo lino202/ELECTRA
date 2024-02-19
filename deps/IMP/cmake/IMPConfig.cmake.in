@@ -1,0 +1,64 @@
+# - Config file for the IMP package
+# It defines the following variables
+#  IMP_INCLUDE_DIRS - include directories for IMP
+#  IMP_LIBRARY_DIRS - library directories for IMP (normally not used!)
+#  IMP_LIBRARIES    - libraries to link against
+
+@PACKAGE_INIT@
+
+unset(extraArgs)
+if(${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
+    list(APPEND extraArgs QUIET)
+endif()
+
+if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED)
+    list(APPEND extraArgs REQUIRED)
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/impGraphsTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/impUtilitiesTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/impTopologyTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/impVectorsTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/impElementsTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/impMeshingTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/impMeshIOTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/impVoroIOTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/impTesselationsTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/impImageTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/impImageIOTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/IMPTargets.cmake")
+
+
+check_required_components(
+    "impGraphs"
+    "impUtilities"
+    "impTopology"
+    "impImage"
+    "impElements"
+    "impVectors"
+    "impMeshing"
+    "impMeshIO"
+    "impTesselations"
+    "impImageIO"
+    "impVoroIO"
+    "IMP"
+)
+
+
+# Tell the user project where to find our headers and libraries
+set_and_check(IMP_INCLUDE_DIR "@PACKAGE_INSTALL_INCLUDEDIR@")
+set_and_check(IMP_LIBRARY_DIR "@PACKAGE_INSTALL_LIBDIR@")
+
+set(IMP_INCLUDE_DIRS "${IMP_INCLUDE_DIR}" CACHE PATH "The path to the directory that contains IMP.hpp")
+set(IMP_LIBRARY_DIRS "${IMP_LIBRARY_DIR}" CACHE PATH "The path to the directory that contains the IMP library")
+
+include(FindPackageHandleStandardArgs)
+find_library(IMP_LIBRARY NAMES IMP PATHS ${IMP_LIBRARY_DIR})
+find_package_handle_standard_args(IMP DEFAULT_MSG IMP_LIBRARY)
+mark_as_advanced(IMP_LIBRARY)
+if (IMP_FOUND)
+set(IMP_LIBRARIES ${IMP_LIBRARY} CACHE PATH "The IMP library")
+endif()
+
+#add_definitions (${IMP_DEFINITIONS})
+#include_directories (${IMP_INCLUDE_DIRS})

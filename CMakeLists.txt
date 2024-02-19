@@ -16,7 +16,7 @@ list(APPEND CMAKE_MODULE_PATH
 option(BUILD_SHARED_LIBS "Build ${PROJECT_NAME} as shared library" ON)
 option(BUILD_APPS "Build all ${PROJECT_NAME} applications" ON)
 option(BUILD_TESTS "Build all ${PROJECT_NAME} tests" OFF)
-option(BUILD_DOC "Build ${PROJECT_NAME} documentation" ON)
+option(BUILD_DOC "Build ${PROJECT_NAME} documentation" OFF)
 option(${PROJECT_NAME}_WITH_MPI "Build ${PROJECT_NAME} with MPI parallelization backend" OFF)
 option(${PROJECT_NAME}_WITH_CUDA "Build ${PROJECT_NAME} with CUDA GPU parallelization backend" OFF)
 #-----------------------------------#
@@ -64,9 +64,9 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 # Find Armadillo
 find_package(Armadillo REQUIRED NO_MODULE)
 
-# Find TinyXML2
-find_package(TinyXML2 REQUIRED)
-include_directories(${TINYXML2_INCLUDE_DIRS})
+# # Find TinyXML2
+# find_package(TinyXML2 REQUIRED)
+# include_directories(${TINYXML2_INCLUDE_DIRS})
 
 # Find CGAL.
 find_package(CGAL REQUIRED COMPONENTS Core)
@@ -182,15 +182,15 @@ if(BUILD_APPS)
 endif()
 
 # Add ELECTRA documentation in the compilation.
-if(BUILD_DOC)
-  add_subdirectory(${CMAKE_SOURCE_DIR}/docs)
-endif()
+# if(BUILD_DOC)
+#   add_subdirectory(${CMAKE_SOURCE_DIR}/docs)
+# endif()
 
-# Add ELECTRA tests in the compilation.
-if(BUILD_TESTS)
-  enable_testing()
-  add_subdirectory(${CMAKE_SOURCE_DIR}/tests)
-endif()
+# # Add ELECTRA tests in the compilation.
+# if(BUILD_TESTS)
+#   enable_testing()
+#   add_subdirectory(${CMAKE_SOURCE_DIR}/tests)
+# endif()
 
 
 # Report details for ELECTRA compilation and installation.

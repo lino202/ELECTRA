@@ -30,11 +30,12 @@
 #define ELECTRA_PARAVIEW_EXPORTER_PARAVIEW_EXPORTER_HPP_
 
 #include "ELECTRA/engine/utilities/logger.hpp"
+#include "ELECTRA/engine/utilities/tinyxml2.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/range.hpp>
 
-#include <tinyxml2.h>
+// #include <tinyxml2.h>
 
 #include <IMP/Vectors>
 #include <IMP/Tesselations>

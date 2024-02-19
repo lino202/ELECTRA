@@ -8,8 +8,8 @@ option(BUILD_APPS_WITH_EXTERNAL_TERMCOLOR "Use an external build of the TERMCOLO
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tools)
 
 # Third party libraries for building ELECTRA apps
-add_subdirectory(${CMAKE_SOURCE_DIR}/thirdparty/nlohmann ${CMAKE_BINARY_DIR}/thirdparty/nlohmann)
-add_subdirectory(${CMAKE_SOURCE_DIR}/thirdparty/termcolor ${CMAKE_BINARY_DIR}/thirdparty/termcolor)
+add_subdirectory(${CMAKE_SOURCE_DIR}/deps/thirdparty/nlohmann ${CMAKE_BINARY_DIR}/deps/thirdparty/nlohmann)
+add_subdirectory(${CMAKE_SOURCE_DIR}/deps/thirdparty/termcolor ${CMAKE_BINARY_DIR}/deps/thirdparty/termcolor)
 
 
 # Build ElectraSim app
@@ -21,38 +21,38 @@ target_include_directories(ElectraSim PUBLIC
     $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
 )
 
-# Build ElectraPre app
-add_executable(ElectraPre electra_pre.cpp)
-target_compile_definitions(ElectraPre PRIVATE ELECTRA_VERSION="${PROJECT_VERSION}")
-target_link_libraries(ElectraPre PRIVATE ${PROJECT_NAME} Tools nlohmann_json::nlohmann_json termcolor::termcolor pthread)
-target_include_directories(ElectraPre PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/${INSTALL_INCLUDEDIR}>
-    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
-)
+# # Build ElectraPre app
+# add_executable(ElectraPre electra_pre.cpp)
+# target_compile_definitions(ElectraPre PRIVATE ELECTRA_VERSION="${PROJECT_VERSION}")
+# target_link_libraries(ElectraPre PRIVATE ${PROJECT_NAME} Tools nlohmann_json::nlohmann_json termcolor::termcolor pthread)
+# target_include_directories(ElectraPre PUBLIC
+#     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/${INSTALL_INCLUDEDIR}>
+#     $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
+# )
 
-# Build ElectraPost app
-add_executable(ElectraPost electra_post.cpp)
-target_compile_definitions(ElectraPost PRIVATE ELECTRA_VERSION="${PROJECT_VERSION}")
-target_link_libraries(ElectraPost PRIVATE ${PROJECT_NAME} Tools nlohmann_json::nlohmann_json termcolor::termcolor pthread)
-target_include_directories(ElectraPost PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/${INSTALL_INCLUDEDIR}>
-    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
-)
+# # Build ElectraPost app
+# add_executable(ElectraPost electra_post.cpp)
+# target_compile_definitions(ElectraPost PRIVATE ELECTRA_VERSION="${PROJECT_VERSION}")
+# target_link_libraries(ElectraPost PRIVATE ${PROJECT_NAME} Tools nlohmann_json::nlohmann_json termcolor::termcolor pthread)
+# target_include_directories(ElectraPost PUBLIC
+#     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/${INSTALL_INCLUDEDIR}>
+#     $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
+# )
 
-# Build single cell dev app
-add_executable(SingleCelldev  electra_cell_dev.cpp)
-target_link_libraries(SingleCelldev PRIVATE ${PROJECT_NAME})
-target_include_directories(SingleCelldev PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/${INSTALL_INCLUDEDIR}>
-    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
-)
+# # Build single cell dev app
+# add_executable(SingleCelldev  electra_cell_dev.cpp)
+# target_link_libraries(SingleCelldev PRIVATE ${PROJECT_NAME})
+# target_include_directories(SingleCelldev PUBLIC
+#     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/${INSTALL_INCLUDEDIR}>
+#     $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
+# )
 
 # Install apps in targets
 install(TARGETS
     ElectraSim
-    ElectraPre
-    ElectraPost
-    SingleCelldev
+    # ElectraPre
+    # ElectraPost
+    # SingleCelldev
     RUNTIME
         DESTINATION ${INSTALL_BINDIR}
         COMPONENT ${PROJECT_NAME}_Runtime

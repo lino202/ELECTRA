@@ -1,0 +1,45 @@
+/*
+ * IMP. Image and Mesh Processing library.
+ * Copyright (C) 2016  <Konstantinos A. Mountris> <konstantinos.mountris@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+
+/**
+   \file elements.hpp
+   \brief Header file collecting the header files of the various elements classes.
+   \author Konstantinos A. Mountris
+   \date 23/04/2017
+*/
+
+#ifndef IMP_ELEMENTS_HPP_
+#define IMP_ELEMENTS_HPP_
+
+#include "IMP/engine/elements/cell_props.hpp"
+#include "IMP/engine/elements/cell.hpp"
+#include "IMP/engine/elements/edge.hpp"
+#include "IMP/engine/elements/element_properties.hpp"
+#include "IMP/engine/elements/half_facet.hpp"
+#include "IMP/engine/elements/half_facets_array.hpp"
+#include "IMP/engine/elements/poly_cell.hpp"
+#include "IMP/engine/elements/poly_facet.hpp"
+#include "IMP/engine/elements/polygon.hpp"
+#include "IMP/engine/elements/polyhedron.hpp"
+#include "IMP/engine/elements/tetrahedron.hpp"
+#include "IMP/engine/elements/triangle.hpp"
+#include "IMP/engine/elements/vertex.hpp"
+
+#endif //IMP_ELEMENTS_HPP_

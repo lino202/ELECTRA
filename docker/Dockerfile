@@ -1,7 +1,5 @@
 FROM ubuntu:22.04
 
-MAINTAINER Konstantinos A. Mountris <konstantinos.mountris@gmail.com>
-
 # Copy src files from host to image.
 COPY ./src /home/src
 

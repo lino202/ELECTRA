@@ -255,6 +255,7 @@ void ConductionSystem<DIM>::ComputeDiffuseTransition(double kappa)
     auto conn_nid = int{0};
     for (const auto &term_nid : this->terminal_node_ids_) {
 
+        trans_node_ids.emplace_back(term_nid);
         // Get first connected node to terminal.
         conn_nid = this->tree_.Cells(node_to_seg_mapping[term_nid][0]).N(0);
         trans_node_ids.emplace_back(conn_nid);
@@ -284,7 +285,7 @@ void ConductionSystem<DIM>::ComputeDiffuseTransition(double kappa)
             center *= 0.5;
         } else {
             auto tcntr_id = std::ceil(0.5*trans_node_ids.size())-1.;
-            center = this->tree_.Nodes(static_cast<int>(tcntr_id));
+            center = this->tree_.Nodes(static_cast<int>(trans_node_ids[tcntr_id]));
         }
 
         // Apply transition diffusivity coefficient
