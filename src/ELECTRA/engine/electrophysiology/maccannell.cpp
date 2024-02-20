@@ -59,7 +59,9 @@ Maccannell::Maccannell()
     this->var_.resize(11, 0.);
     this->prm_.resize(10, 0.);
     this->cur_.resize(5, 0.);
-    this->block_coeff_.resize(4, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.resize(4, 0.);
+    #endif
 
     // Set mapped data.
     this->SetDataMapping();
@@ -85,7 +87,9 @@ void Maccannell::Initialize(CellType cell_type)
     this->var_.clear();          this->var_.resize(11, 0.);
     this->prm_.clear();          this->prm_.resize(10, 0.);
     this->cur_.clear();          this->cur_.resize(5, 0.);
-    this->block_coeff_.clear();  this->block_coeff_.resize(4, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.clear();  this->block_coeff_.resize(4, 0.);
+    #endif
 
     // Set variables.
     this->var_[v]    = -49.6;
@@ -125,19 +129,25 @@ void Maccannell::Compute(double v_new, double dt, double stim_current)
     double ENa = this->prm_[RTF] * std::log(this->var_[nao] / this->var_[nai]);
     double EK  = -87.325488706291623;
 
-    // Compute Sodium-potassium pump current.
-    this->cur_[INaK] = (1.0-this->block_coeff_[INaK]) * ((this->prm_[INaKmax]*this->var_[ko] / (this->var_[ko] + this->prm_[KmKf])) * (std::pow(this->var_[nai], 1.5) / (std::pow(this->var_[nai], 1.5) + std::pow(this->prm_[KmNaf], 1.5)) ) * ((v_new - this->prm_[Vrev]) / (v_new - this->prm_[Bf])));
+    // Compute Sodium-potassium pump current, time and voltage dependent potassium current and background sodium current.
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaK] = (1.0-this->block_coeff_[INaK]) * ((this->prm_[INaKmax]*this->var_[ko] / (this->var_[ko] + this->prm_[KmKf])) * (std::pow(this->var_[nai], 1.5) / (std::pow(this->var_[nai], 1.5) + std::pow(this->prm_[KmNaf], 1.5)) ) * ((v_new - this->prm_[Vrev]) / (v_new - this->prm_[Bf])));
+        this->cur_[IKv]  = (1.0-this->block_coeff_[IKv]) * (this->var_[gKv]*this->var_[rf]*this->var_[sf] * (v_new - EK));
+        this->cur_[IbNa] = (1.0-this->block_coeff_[IbNa]) * (this->var_[gbna] * (v_new - ENa));
+    #else
+        this->cur_[INaK] = ((this->prm_[INaKmax]*this->var_[ko] / (this->var_[ko] + this->prm_[KmKf])) * (std::pow(this->var_[nai], 1.5) / (std::pow(this->var_[nai], 1.5) + std::pow(this->prm_[KmNaf], 1.5)) ) * ((v_new - this->prm_[Vrev]) / (v_new - this->prm_[Bf])));
+        this->cur_[IKv]  = (this->var_[gKv]*this->var_[rf]*this->var_[sf] * (v_new - EK));
+        this->cur_[IbNa] = (this->var_[gbna] * (v_new - ENa));
+    #endif
                         
-    // Compute time and voltage dependent potassium current.
-    this->cur_[IKv] = (1.0-this->block_coeff_[IKv]) * (this->var_[gKv]*this->var_[rf]*this->var_[sf] * (v_new - EK));
-
-    // Compute background sodium current.
-    this->cur_[IbNa] = (1.0-this->block_coeff_[IbNa]) * (this->var_[gbna] * (v_new - ENa));
-    
     // Compute inward rectifying potassium current.
     double aK1 = 0.1 / (1. + std::exp(0.06 * (v_new - EK - 200.)));
     double bK1 = (3. * std::exp(0.0002*(v_new - EK + 100.)) + std::exp(0.1*(v_new - EK - 10.))) / (1. + std::exp(-0.5*(v_new - EK)));
-    this->cur_[IK1] = (1.0-this->block_coeff_[IK1]) * ((this->var_[gK1]*aK1*(v_new - EK)) / (aK1 + bK1));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IK1] = (1.0-this->block_coeff_[IK1]) * ((this->var_[gK1]*aK1*(v_new - EK)) / (aK1 + bK1));
+    #else
+        this->cur_[IK1] = ((this->var_[gK1]*aK1*(v_new - EK)) / (aK1 + bK1));
+    #endif
 
     // Total ionic current.
     this->cur_[McnCur::Iion] = this->cur_[INaK] + this->cur_[IKv] + this->cur_[IbNa] + this->cur_[IK1];
@@ -216,20 +226,21 @@ std::string Maccannell::PrintCurrents() const
     return oss.str();
 }
 
+#ifdef BLOCK_CELL_CURRS
+    std::string Maccannell::PrintBlockCoeffs() const
+    {
+        using namespace McnCur;
 
-std::string Maccannell::PrintBlockCoeffs() const
-{
-    using namespace McnCur;
-
-    // Create output string stream to pass the parameters and their values.
-    std::ostringstream oss;
-    oss.precision(15);
-    oss << "INaK = " << this->block_coeff_[INaK] << "\n";
-    oss << "IKv = " << this->block_coeff_[IKv] << "\n";
-    oss << "IbNa = " << this->block_coeff_[IbNa] << "\n";
-    oss << "IK1 = " << this->block_coeff_[IK1];
-    return oss.str();
-}
+        // Create output string stream to pass the parameters and their values.
+        std::ostringstream oss;
+        oss.precision(15);
+        oss << "INaK = " << this->block_coeff_[INaK] << "\n";
+        oss << "IKv = " << this->block_coeff_[IKv] << "\n";
+        oss << "IbNa = " << this->block_coeff_[IbNa] << "\n";
+        oss << "IK1 = " << this->block_coeff_[IK1];
+        return oss.str();
+    }
+#endif
 
 
 } // End of namespace ELECTRA

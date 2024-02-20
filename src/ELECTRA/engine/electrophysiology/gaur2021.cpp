@@ -200,7 +200,9 @@ Gaur2021::Gaur2021()
     this->var_.resize(30, 0.);
     this->prm_.resize(119, 0.);
     this->cur_.resize(17, 0.);
-    this->block_coeff_.resize(16, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.resize(16, 0.);
+    #endif
 
     // Set mapped data.
     this->SetDataMapping();
@@ -220,7 +222,9 @@ void Gaur2021::Initialize(CellType cell_type)
     this->var_.clear();           this->var_.resize(30, 0.);
     this->prm_.clear();           this->prm_.resize(119, 0.);
     this->cur_.clear();           this->cur_.resize(17, 0.);
-    this->block_coeff_.clear();   this->block_coeff_.resize(16, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.clear();   this->block_coeff_.resize(16, 0.);
+    #endif
 
     // Set data according to the cell type.
     switch (cell_type)
@@ -483,7 +487,9 @@ void Gaur2021::Compute(double v_new, double dt, double stim_current)
     double ICaL__PhiCaL =  ( ( 2.00000*this->prm_[cell__F])*( this->var_[ionic_concentrations__cass]*std::exp( 2.00000*(( v_new*this->prm_[cell__F])/( this->prm_[cell__R]*this->prm_[cell__T]))) -  0.341000*this->prm_[cell__cao]))*ICaL__PhiCaL_temp;
     double ICaL__f =  this->var_[ICaL__ff]*this->var_[ICaL__fs];
     this->cur_[ICaL] =  ( ( ( this->prm_[ICaL__PCa]*ICaL__PhiCaL)*this->var_[ICaL__d])*ICaL__f)*this->var_[ICaL__fca];
-    this->cur_[ICaL] *= (1.0-this->block_coeff_[ICaL]); 
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[ICaL] *= (1.0-this->block_coeff_[ICaL]); 
+    #endif
     
     double ICaL__fca_inf = (0.300000/(1.00000 - this->cur_[ICaL]/0.0500000) +0.550000/(1.00000+this->var_[ionic_concentrations__cass]/0.00300000))+0.150000;
     if (this->cur_[ICaL] > 0.) {
@@ -496,20 +502,28 @@ void Gaur2021::Compute(double v_new, double dt, double stim_current)
     double CaMK__EK =  (( this->prm_[cell__R]*this->prm_[cell__T])/this->prm_[cell__F])*std::log(this->prm_[cell__ko]/this->var_[ionic_concentrations__ki]);
     double IK1__rk1 = 1.00000/(1.00000+std::exp(((v_new+79.3000) -  2.60000*this->prm_[cell__ko])/19.6000));
     this->cur_[IK1] =  ( ( this->prm_[IK1__GK1]*std::pow((this->prm_[cell__ko]/5.40000), 0.5))*IK1__rk1)*(v_new - CaMK__EK);
-    this->cur_[IK1] *= (1.0-this->block_coeff_[IK1]); 
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IK1] *= (1.0-this->block_coeff_[IK1]); 
+    #endif
 
     double IKb__xkb = 1.00000/(1.00000+std::exp( - (v_new - 14.4800)/18.3400));
     this->cur_[IKb] =  ( this->prm_[IKb__GKb]*IKb__xkb)*(v_new - CaMK__EK);
-    this->cur_[IKb] *= (1.0-this->block_coeff_[IKb]); 
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKb] *= (1.0-this->block_coeff_[IKb]); 
+    #endif
 
     double IKr__rkr = 1.00000/(1.00000+std::exp((v_new+22.0000)/15.0000));
     this->cur_[IKr] = (((this->prm_[IKr__GKr]*std::pow((this->prm_[cell__ko]/5.40000), 0.5))*this->var_[IKr__xr])*IKr__rkr)*(v_new - CaMK__EK);
-    this->cur_[IKr] *= (1.0-this->block_coeff_[IKr]);
-    
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKr] *= (1.0-this->block_coeff_[IKr]);
+    #endif
+
     double CaMK__EKs =  (( this->prm_[cell__R]*this->prm_[cell__T])/this->prm_[cell__F])*std::log((this->prm_[cell__ko]+ this->prm_[CaMK__PKNa]*this->prm_[cell__nao])/(this->var_[ionic_concentrations__ki]+ this->prm_[CaMK__PKNa]*this->var_[ionic_concentrations__nai]));
     double IKs__KsCa = 1.00000+0.600000/(1.00000+std::pow(3.80000e-05/this->var_[ionic_concentrations__cai], 1.40000));
     this->cur_[IKs] =  ( ( (this->prm_[IKs__GKs]*IKs__KsCa)*this->var_[IKs__xs1])*this->var_[IKs__xs2])*(v_new - CaMK__EKs);
-    this->cur_[IKs] *= (1.0-this->block_coeff_[IKs]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKs] *= (1.0-this->block_coeff_[IKs]);
+    #endif
 
     double INaK__Knai =  this->prm_[INaK__Knai0]*std::exp((( this->prm_[INaK__delta]*v_new)*this->prm_[cell__F])/((3*this->prm_[cell__R])*this->prm_[cell__T]));
     double INaK__a1 = ( this->prm_[INaK__k1p]*(( (this->var_[ionic_concentrations__nai]/INaK__Knai)*(this->var_[ionic_concentrations__nai]/INaK__Knai))*(this->var_[ionic_concentrations__nai]/INaK__Knai)))/(( ( (1.00000+this->var_[ionic_concentrations__nai]/INaK__Knai)*(1.00000+this->var_[ionic_concentrations__nai]/INaK__Knai))*(1.00000+this->var_[ionic_concentrations__nai]/INaK__Knai)+ (1.00000+this->var_[ionic_concentrations__ki]/this->prm_[INaK__Kki])*(1.00000+this->var_[ionic_concentrations__ki]/this->prm_[INaK__Kki])) - 1.00000);
@@ -530,7 +544,9 @@ void Gaur2021::Compute(double v_new, double dt, double stim_current)
     double INaK__E22 = INaK__x22/(((INaK__x12+INaK__x22)+INaK__x32)+INaK__x42);
     double INaK__JnakNa =  3.00000*( INaK__E12*INaK__a3 -  INaK__E22*INaK__b3);
     this->cur_[INaK] =  this->prm_[INaK__Pnak]*( this->prm_[INaCa_i__zna]*INaK__JnakNa+ this->prm_[INaK__zk]*INaK__JnakK);
-    this->cur_[INaK] *= (1.0-this->block_coeff_[INaK]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaK] *= (1.0-this->block_coeff_[INaK]);
+    #endif
 
     double diffusion__JdiffK = (this->var_[ionic_concentrations__kss] - this->var_[ionic_concentrations__ki])/2.00000;
     double ionic_concentrations__diff_ki = (  - ((((this->cur_[IKr]+this->cur_[IKs])+this->cur_[IK1])+this->cur_[IKb]) -  2.00000*this->cur_[INaK])*this->prm_[cell__Acap])/( ( 2.00000*this->prm_[cell__F])*this->prm_[cell__vmyo])+( diffusion__JdiffK*this->prm_[cell__vss])/this->prm_[cell__vmyo];
@@ -579,17 +595,23 @@ void Gaur2021::Compute(double v_new, double dt, double stim_current)
     
     double CaMK__ENa =  (( this->prm_[cell__R]*this->prm_[cell__T])/this->prm_[cell__F])*std::log(this->prm_[cell__nao]/this->var_[ionic_concentrations__nai]);
     this->cur_[INaL] =  ( ( ( ( this->prm_[INaL__GNaL]*this->var_[INaL__ml])*this->var_[INaL__ml])*this->var_[INaL__ml])*this->var_[INaL__hl])*(v_new - CaMK__ENa);
-    this->cur_[INaL] *= (1.0-this->block_coeff_[INaL]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaL] *= (1.0-this->block_coeff_[INaL]);
+    #endif
 
     double INab_temp = CaMK__vfrt/(std::exp(CaMK__vfrt) - 1.00000);
     if (v_new == 0.00000) {
         INab_temp = 1.00000;
     } 
     this->cur_[INab] =  ( ( this->prm_[INab__PNab]*this->prm_[cell__F])*( this->var_[ionic_concentrations__nai]*std::exp(CaMK__vfrt) - this->prm_[cell__nao])) * INab_temp;
-    this->cur_[INab] *= (1.0-this->block_coeff_[INab]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INab] *= (1.0-this->block_coeff_[INab]);
+    #endif
 
     this->cur_[INa] =  ( ( ( ( (this->prm_[I_Na__GNa]*this->var_[I_Na__m])*this->var_[I_Na__m])*this->var_[I_Na__m])*this->var_[I_Na__h])*this->var_[I_Na__j])*(v_new - CaMK__ENa);
-    this->cur_[INa] *= (1.0-this->block_coeff_[INa]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INa] *= (1.0-this->block_coeff_[INa]);
+    #endif
 
     double diffusion__JdiffNa = (this->var_[ionic_concentrations__nass] - this->var_[ionic_concentrations__nai])/2.00000;
     double ionic_concentrations__diff_nai = (  - ((((this->cur_[INa]+this->cur_[INaL])+ 3.00000*this->cur_[INaCa_i])+ 3.00000*this->cur_[INaK])+this->cur_[INab])*this->prm_[cell__Acap])/( ( 2.00000*this->prm_[cell__F])*this->prm_[cell__vmyo])+( diffusion__JdiffNa*this->prm_[cell__vss])/this->prm_[cell__vmyo];
@@ -624,7 +646,9 @@ void Gaur2021::Compute(double v_new, double dt, double stim_current)
     double INaCa_ss__JncxNa1 = ( 3.00000*( INaCa_ss__E41*INaCa_ss__k71 -  INaCa_ss__E11*INaCa_ss__k81)+ INaCa_ss__E31*INaCa_ss__k4pp1) -  INaCa_ss__E21*INaCa_ss__k3pp1;
     double INaCa_ss__allo1 = 1.00000/(1.00000+ (this->prm_[INaCa_i__KmCaAct]/this->var_[ionic_concentrations__cass])*(this->prm_[INaCa_i__KmCaAct]/this->var_[ionic_concentrations__cass]));
     this->cur_[INaCa_ss] =  ( ( 0.200000*this->prm_[INaCa_i__Gncx])*INaCa_ss__allo1)*( this->prm_[INaCa_i__zna]*INaCa_ss__JncxNa1+ this->prm_[ICaL__zca]*INaCa_ss__JncxCa1);
-    this->cur_[INaCa_ss] *= (1.0-this->block_coeff_[INaCa_ss]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaCa_ss] *= (1.0-this->block_coeff_[INaCa_ss]);
+    #endif
 
     double ICaL__PhiCaNa_temp = CaMK__vfrt/(std::exp(CaMK__vfrt) - 1.00000);
     if (v_new == 0.00000) {
@@ -632,7 +656,9 @@ void Gaur2021::Compute(double v_new, double dt, double stim_current)
     }
     double ICaL__PhiCaNa =  ( this->prm_[cell__F]*( ( 0.750000*this->var_[ionic_concentrations__nass])*std::exp(CaMK__vfrt) -  0.750000*this->prm_[cell__nao]))*ICaL__PhiCaNa_temp;
     this->cur_[ICaNa] =  ( ( ( this->prm_[ICaL__PCaNa]*ICaL__PhiCaNa)*this->var_[ICaL__d])*ICaL__f)*this->var_[ICaL__fca];
-    this->cur_[ICaNa] *= (1.0-this->block_coeff_[ICaNa]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[ICaNa] *= (1.0-this->block_coeff_[ICaNa]);
+    #endif
 
     double ionic_concentrations__diff_nass = (  - (this->cur_[ICaNa]+ 3.00000*this->cur_[INaCa_ss])*this->prm_[cell__Acap])/( ( 2.00000*this->prm_[cell__F])*this->prm_[cell__vss]) - diffusion__JdiffNa;
     double ICab_temp = (2.00000*CaMK__vfrt) / (std::exp(2.00000*CaMK__vfrt) - 1.00000);
@@ -640,7 +666,9 @@ void Gaur2021::Compute(double v_new, double dt, double stim_current)
         ICab_temp = 1.00000;
     }
     this->cur_[ICab] =  ( ( ( this->prm_[ICab__PCab]*2.00000)*this->prm_[cell__F])*( this->var_[ionic_concentrations__cai]*std::exp( 2.00000*CaMK__vfrt) -  0.341000*this->prm_[cell__cao]))*ICab_temp;
-    this->cur_[ICab] *= (1.0-this->block_coeff_[ICab]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[ICab] *= (1.0-this->block_coeff_[ICab]);
+    #endif
 
     double CICR__greljsrol =  ( this->prm_[CICR__grelbarjsrol]*(1.00000 - std::exp( - this->var_[CICR__tjsrol]/this->prm_[CICR__tauon])))*std::exp( - this->var_[CICR__tjsrol]/this->prm_[CICR__tauoff]);
     double CICR__Jrelol =  CICR__greljsrol*(this->var_[ionic_concentrations__cajsr] - this->var_[ionic_concentrations__cass]);
@@ -648,10 +676,14 @@ void Gaur2021::Compute(double v_new, double dt, double stim_current)
     double ITo__kito2 = 1.00000 - 1.00000/(1.00000+ (CICR__Jrel/0.400000)*(CICR__Jrel/0.400000));
     double ITo__rito2 = 1.00000/(1.00000+std::exp( - (v_new+10.0000)/5.00000));
     this->cur_[ITo] =  ( ( ( this->prm_[ITo__Gto]*this->var_[ITo__aa])*ITo__rito2)*ITo__kito2)*(v_new - this->prm_[CaMK__ECl]);
-    this->cur_[INa] *= (1.0-this->block_coeff_[INa]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INa] *= (1.0-this->block_coeff_[INa]);
+    #endif
 
     this->cur_[IpCa] = ( this->prm_[IpCa__GpCa]*this->var_[ionic_concentrations__cai])/(0.000500000+this->var_[ionic_concentrations__cai]);
-    this->cur_[IpCa] *= (1.0-this->block_coeff_[IpCa]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IpCa] *= (1.0-this->block_coeff_[IpCa]);
+    #endif
 
     // Compute the total Iion current.    
     this->cur_[Gaur21Cur::Iion] = ((((((((((((((this->cur_[INa]+this->cur_[INaL])+this->cur_[ICaL])+this->cur_[ICaNa])+this->cur_[ICaK])+this->cur_[IKr])+this->cur_[IKs])+this->cur_[IK1])+this->cur_[ITo])+this->cur_[INaCa_i])+this->cur_[INaCa_ss])+this->cur_[INaK])+this->cur_[INab])+this->cur_[IKb])+this->cur_[IpCa])+this->cur_[ICab];
@@ -949,32 +981,33 @@ std::string Gaur2021::PrintCurrents() const
 
 }
 
+#ifdef BLOCK_CELL_CURRS
+    std::string Gaur2021::PrintBlockCoeffs() const
+    {
+        using namespace Gaur21Cur;
 
-std::string Gaur2021::PrintBlockCoeffs() const
-{
-    using namespace Gaur21Cur;
+        // Create output string stream to pass the currents and their values.
+        std::ostringstream oss;
+        oss.precision(15);
+        oss << "INa = " << this->block_coeff_[INa] << "\n";
+        oss << "INaL = " << this->block_coeff_[INaL] << "\n";
+        oss << "ICaL = " << this->block_coeff_[ICaL] << "\n";
+        oss << "ICaNa = " << this->block_coeff_[ICaNa] << "\n";
+        oss << "ICaK = " << this->block_coeff_[ICaK] << "\n";
+        oss << "IKr = " << this->block_coeff_[IKr] << "\n";
+        oss << "IKs = " << this->block_coeff_[IKs] << "\n";
+        oss << "IK1 = " << this->block_coeff_[IK1] << "\n";
+        oss << "ITo = " << this->block_coeff_[ITo] << "\n";
+        oss << "INaCa_i = " << this->block_coeff_[INaCa_i] << "\n";
+        oss << "INaCa_ss = " << this->block_coeff_[INaCa_ss] << "\n";
+        oss << "INaK = " << this->block_coeff_[INaK] << "\n";
+        oss << "INab = " << this->block_coeff_[INab] << "\n";
+        oss << "IKb = " << this->block_coeff_[IKb] << "\n";
+        oss << "IpCa = " << this->block_coeff_[IpCa] << "\n";
+        oss << "ICab = " << this->block_coeff_[ICab] << "\n";
+        return oss.str();
 
-    // Create output string stream to pass the currents and their values.
-    std::ostringstream oss;
-    oss.precision(15);
-    oss << "INa = " << this->block_coeff_[INa] << "\n";
-    oss << "INaL = " << this->block_coeff_[INaL] << "\n";
-    oss << "ICaL = " << this->block_coeff_[ICaL] << "\n";
-    oss << "ICaNa = " << this->block_coeff_[ICaNa] << "\n";
-    oss << "ICaK = " << this->block_coeff_[ICaK] << "\n";
-    oss << "IKr = " << this->block_coeff_[IKr] << "\n";
-    oss << "IKs = " << this->block_coeff_[IKs] << "\n";
-    oss << "IK1 = " << this->block_coeff_[IK1] << "\n";
-    oss << "ITo = " << this->block_coeff_[ITo] << "\n";
-    oss << "INaCa_i = " << this->block_coeff_[INaCa_i] << "\n";
-    oss << "INaCa_ss = " << this->block_coeff_[INaCa_ss] << "\n";
-    oss << "INaK = " << this->block_coeff_[INaK] << "\n";
-    oss << "INab = " << this->block_coeff_[INab] << "\n";
-    oss << "IKb = " << this->block_coeff_[IKb] << "\n";
-    oss << "IpCa = " << this->block_coeff_[IpCa] << "\n";
-    oss << "ICab = " << this->block_coeff_[ICab] << "\n";
-    return oss.str();
-
-}
+    }
+#endif
 
 } // End of namespace ELECTRA

@@ -15,10 +15,13 @@ list(APPEND CMAKE_MODULE_PATH
 #------- Compilation Options -------#
 option(BUILD_SHARED_LIBS "Build ${PROJECT_NAME} as shared library" ON)
 option(BUILD_APPS "Build all ${PROJECT_NAME} applications" ON)
+option(BLOCK_CELL_CURRS "Block cell ionic currents which might increase memory load" OFF)
 option(BUILD_TESTS "Build all ${PROJECT_NAME} tests" OFF)
 option(BUILD_DOC "Build ${PROJECT_NAME} documentation" OFF)
 option(${PROJECT_NAME}_WITH_MPI "Build ${PROJECT_NAME} with MPI parallelization backend" OFF)
 option(${PROJECT_NAME}_WITH_CUDA "Build ${PROJECT_NAME} with CUDA GPU parallelization backend" OFF)
+
+message(STATUS "BLOCK_CELL_CURRS set to ${BLOCK_CELL_CURRS}")
 #-----------------------------------#
 
 

@@ -127,7 +127,9 @@ Courtemanche::Courtemanche()
     this->var_.resize(23, 0.);
     this->prm_.resize(50, 0.);
     this->cur_.resize(20, 0.);
-    this->block_coeff_.resize(19, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.resize(19, 0.);
+    #endif        
 
     // Set mapped data.
     this->SetDataMapping();
@@ -147,7 +149,9 @@ void Courtemanche::Initialize(CellType cell_type)
     this->var_.clear();           this->var_.resize(23, 0.);
     this->prm_.clear();           this->prm_.resize(50, 0.);
     this->cur_.clear();           this->cur_.resize(20, 0.);
-    this->block_coeff_.clear();   this->block_coeff_.resize(19, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.clear();   this->block_coeff_.resize(19, 0.);
+    #endif
 
     // Set the model variables.
     this->var_[v] = -86.2149239355137;
@@ -287,8 +291,12 @@ void Courtemanche::Compute(double v_new, double dt, double stim_current)
     double E_K = this->prm_[R]*this->prm_[T]/this->prm_[F]*std::log(this->prm_[K_o]/this->var_[K_i]);
 
     // Fast Na+ Current
-    this->cur_[INa] = (1.0-this->block_coeff_[INa]) * (this->prm_[Cm] * this->prm_[g_Na] * this->var_[m]*this->var_[m]*this->var_[m] * this->var_[h] * this->var_[j] * (v_new-E_Na));
-    
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INa] = (1.0-this->block_coeff_[INa]) * (this->prm_[Cm] * this->prm_[g_Na] * this->var_[m]*this->var_[m]*this->var_[m] * this->var_[h] * this->var_[j] * (v_new-E_Na));
+    #else
+        this->cur_[INa] = (this->prm_[Cm] * this->prm_[g_Na] * this->var_[m]*this->var_[m]*this->var_[m] * this->var_[h] * this->var_[j] * (v_new-E_Na));
+    #endif
+
     // m
     double alpha_m = 0.;
     if (v_new == -47.13) { alpha_m = 3.2; }
@@ -327,10 +335,18 @@ void Courtemanche::Compute(double v_new, double dt, double stim_current)
     this->var_[j] = ALGORITHM::RushLarsen(j_inf, this->var_[j], dt, tau_j);
 
     // Time-Independent K+ Current
-    this->cur_[IK1] =  (1.0-this->block_coeff_[IK1]) * (this->prm_[Cm]*this->prm_[g_K1]*(v_new-E_K)/(1.+std::exp(0.07*(v_new+80.))));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IK1] =  (1.0-this->block_coeff_[IK1]) * (this->prm_[Cm]*this->prm_[g_K1]*(v_new-E_K)/(1.+std::exp(0.07*(v_new+80.))));
+    #else
+        this->cur_[IK1] =  (this->prm_[Cm]*this->prm_[g_K1]*(v_new-E_K)/(1.+std::exp(0.07*(v_new+80.))));
+    #endif
 
     // Transient Outward K+ Current
-    this->cur_[Ito] =  (1.0-this->block_coeff_[Ito]) * (this->prm_[Cm] * g_to * this->var_[oa]*this->var_[oa]*this->var_[oa] * this->var_[oi] * (v_new-E_K));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[Ito] =  (1.0-this->block_coeff_[Ito]) * (this->prm_[Cm] * g_to * this->var_[oa]*this->var_[oa]*this->var_[oa] * this->var_[oi] * (v_new-E_K));
+    #else
+        this->cur_[Ito] =  (this->prm_[Cm] * g_to * this->var_[oa]*this->var_[oa]*this->var_[oa] * this->var_[oi] * (v_new-E_K));
+    #endif
 
     // oa
     double alpha_oa = 0.65*std::pow((std::exp((v_new+10.)/-8.5)+std::exp((v_new-30.)/-59.)), -1.);
@@ -348,7 +364,11 @@ void Courtemanche::Compute(double v_new, double dt, double stim_current)
 
     // Ultra rapid Delayed Rectifier K+ Current
     double g_Kur = (0.005+0.05/(1.+std::exp((v_new-15.)/-13.)))*(1.0 - 0.5*this->prm_[cAF]+0.01*this->prm_[cAF2]);
-    this->cur_[IKur] =  (1.0-this->block_coeff_[IKur]) * (this->prm_[Cm]* g_Kur * this->var_[ua]*this->var_[ua]*this->var_[ua] * this->var_[ui] * (v_new-E_K));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKur] =  (1.0-this->block_coeff_[IKur]) * (this->prm_[Cm]* g_Kur * this->var_[ua]*this->var_[ua]*this->var_[ua] * this->var_[ui] * (v_new-E_K));
+    #else
+        this->cur_[IKur] =  (this->prm_[Cm]* g_Kur * this->var_[ua]*this->var_[ua]*this->var_[ua] * this->var_[ui] * (v_new-E_K));
+    #endif
     
     // ua
     double alpha_ua = 0.65*std::pow((std::exp((v_new+10.)/-8.5)+std::exp((v_new-30.)/-59.)), -1.);
@@ -365,7 +385,11 @@ void Courtemanche::Compute(double v_new, double dt, double stim_current)
     this->var_[ui] = ALGORITHM::RushLarsen(ui_inf, this->var_[ui], dt, tau_ui);
 
     // Rapid Delayed Outward Rectifier K+ Current
-    this->cur_[IKr] =  (1.0-this->block_coeff_[IKr]) * (this->prm_[Cm] * g_Kr * this->var_[xr]*(v_new-E_K) / (1.+std::exp((v_new+15.)/22.4)));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKr] =  (1.0-this->block_coeff_[IKr]) * (this->prm_[Cm] * g_Kr * this->var_[xr]*(v_new-E_K) / (1.+std::exp((v_new+15.)/22.4)));
+    #else
+        this->cur_[IKr] =  (this->prm_[Cm] * g_Kr * this->var_[xr]*(v_new-E_K) / (1.+std::exp((v_new+15.)/22.4)));
+    #endif
     
     // xr
     double alpha_xr = 0.0003*((v_new+14.1)/(1-std::exp((v_new+14.1)/(-5.))));
@@ -375,7 +399,11 @@ void Courtemanche::Compute(double v_new, double dt, double stim_current)
     this->var_[xr] = ALGORITHM::RushLarsen(xr_inf, this->var_[xr], dt, tau_xr);
             
     // Slow Delayed Outward Rectifier K+ Current
-    this->cur_[IKs] =  (1.0-this->block_coeff_[IKs]) * (this->prm_[Cm] * g_Ks * this->var_[xs]*this->var_[xs] * (v_new-E_K));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKs] =  (1.0-this->block_coeff_[IKs]) * (this->prm_[Cm] * g_Ks * this->var_[xs]*this->var_[xs] * (v_new-E_K));
+    #else
+        this->cur_[IKs] =  (this->prm_[Cm] * g_Ks * this->var_[xs]*this->var_[xs] * (v_new-E_K));
+    #endif
 
     double alpha_xs = 4e-5*((v_new-19.9)/(1.-std::exp((v_new-19.9)/(-17))));
     double beta_xs = 3.5e-5*((v_new-19.9)/(std::exp((v_new-19.9)/9)-1));
@@ -384,7 +412,11 @@ void Courtemanche::Compute(double v_new, double dt, double stim_current)
     this->var_[xs] = ALGORITHM::RushLarsen(xs_inf, this->var_[xs], dt, tau_xs);
 
     // L-Type Ca2+ Current
-    this->cur_[ICaL] =  (1.0-this->block_coeff_[ICaL]) * (this->prm_[Cm] * g_Ca_L * this->var_[d] * this->var_[f] * this->var_[f_Ca] * (v_new-65.));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[ICaL] =  (1.0-this->block_coeff_[ICaL]) * (this->prm_[Cm] * g_Ca_L * this->var_[d] * this->var_[f] * this->var_[f_Ca] * (v_new-65.));
+    #else
+        this->cur_[ICaL] =  (this->prm_[Cm] * g_Ca_L * this->var_[d] * this->var_[f] * this->var_[f_Ca] * (v_new-65.));
+    #endif
     
     // d
     double tau_d = (1.-std::exp((v_new+10.)/(-6.24)))/(0.035*(v_new+10.)*(1.+std::exp((v_new+10.)/(-6.24))));
@@ -404,10 +436,18 @@ void Courtemanche::Compute(double v_new, double dt, double stim_current)
     // Na+-K- Pump Current
     double sigma = 1./7.*(std::exp(this->prm_[Na_o]/67.3)-1.);
     double f_NaK = std::pow((1.+0.1245*std::exp(-0.1*this->prm_[F]*v_new/(this->prm_[R]*this->prm_[T]))+0.0365*sigma*std::exp(-this->prm_[F]*v_new/(this->prm_[R]*this->prm_[T]))), -1.);
-    this->cur_[INaK] =  (1.0-this->block_coeff_[INaK]) * (this->prm_[Cm]*this->prm_[i_NaK_max]*f_NaK*(1./(1.+std::pow((this->prm_[Km_Na_i]/this->var_[Na_i]), 1.5)))*(this->prm_[K_o]/(this->prm_[K_o]+this->prm_[Km_K_o])));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaK] =  (1.0-this->block_coeff_[INaK]) * (this->prm_[Cm]*this->prm_[i_NaK_max]*f_NaK*(1./(1.+std::pow((this->prm_[Km_Na_i]/this->var_[Na_i]), 1.5)))*(this->prm_[K_o]/(this->prm_[K_o]+this->prm_[Km_K_o])));
+    #else
+        this->cur_[INaK] =  (this->prm_[Cm]*this->prm_[i_NaK_max]*f_NaK*(1./(1.+std::pow((this->prm_[Km_Na_i]/this->var_[Na_i]), 1.5)))*(this->prm_[K_o]/(this->prm_[K_o]+this->prm_[Km_K_o])));
+    #endif
 
     // IKACh
-    this->cur_[IKach] =  (1.0-this->block_coeff_[IKach]) * (this->prm_[Cm] * 10./(1.+(9.13652/std::pow((this->prm_[Ach]*0.1), (0.477811)))) * (v_new - E_K) * (0.0517 + 5.0 / (1. + std::exp((v_new + 85.)/5.))));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKach] =  (1.0-this->block_coeff_[IKach]) * (this->prm_[Cm] * 10./(1.+(9.13652/std::pow((this->prm_[Ach]*0.1), (0.477811)))) * (v_new - E_K) * (0.0517 + 5.0 / (1. + std::exp((v_new + 85.)/5.))));
+    #else
+        this->cur_[IKach] =  (this->prm_[Cm] * 10./(1.+(9.13652/std::pow((this->prm_[Ach]*0.1), (0.477811)))) * (v_new - E_K) * (0.0517 + 5.0 / (1. + std::exp((v_new + 85.)/5.))));
+    #endif
 
     // IKCa given by two formulations, Engel or Penaranda.
     double tau_y = (3.*this->prm_[Engel]) + (5.*this->prm_[Penaranda]);
@@ -421,24 +461,44 @@ void Courtemanche::Compute(double v_new, double dt, double stim_current)
 
 
     // IKCa, as in Engel:
-    this->cur_[IKca_E] = (1.0-this->block_coeff_[IKca_E]) * ((this->prm_[Cm] * gKCa_E * (this->var_[y]*this->var_[y])*(v_new - E_K))*this->prm_[Engel]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKca_E] = (1.0-this->block_coeff_[IKca_E]) * ((this->prm_[Cm] * gKCa_E * (this->var_[y]*this->var_[y])*(v_new - E_K))*this->prm_[Engel]);
+    #else
+        this->cur_[IKca_E] = ((this->prm_[Cm] * gKCa_E * (this->var_[y]*this->var_[y])*(v_new - E_K))*this->prm_[Engel]);
+    #endif
     // IKCa, as in Penaranda:
-    this->cur_[IKca_P] = (1.0-this->block_coeff_[IKca_P]) * ((this->prm_[Cm] * gKCa_P * this->var_[y]*(v_new - E_K))*this->prm_[Penaranda]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKca_P] = (1.0-this->block_coeff_[IKca_P]) * ((this->prm_[Cm] * gKCa_P * this->var_[y]*(v_new - E_K))*this->prm_[Penaranda]);
+    #else
+        this->cur_[IKca_P] = ((this->prm_[Cm] * gKCa_P * this->var_[y]*(v_new - E_K))*this->prm_[Penaranda]);
+    #endif
 
 
     // Na+/Ca2+ Exchanger Current
-    this->cur_[INaCa] =  (1.0-this->block_coeff_[INaCa]) * (this->prm_[Cm]*this->prm_[I_NaCa_max]*(std::exp(this->prm_[gamma]*this->prm_[F]*v_new/(this->prm_[R]*this->prm_[T]))*std::pow(this->var_[Na_i], 3.)*this->prm_[Ca_o]-std::exp((this->prm_[gamma]-1.)*this->prm_[F]*v_new/(this->prm_[R]*this->prm_[T]))*std::pow(this->prm_[Na_o], 3.)*this->var_[Ca_i])/((std::pow(this->prm_[K_mNa], 3.)+std::pow(this->prm_[Na_o], 3.))*(this->prm_[K_mCa]+this->prm_[Ca_o])*(1.+this->prm_[K_sat]*std::exp((this->prm_[gamma]-1.)*v_new*this->prm_[F]/(this->prm_[R]*this->prm_[T])))));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaCa] =  (1.0-this->block_coeff_[INaCa]) * (this->prm_[Cm]*this->prm_[I_NaCa_max]*(std::exp(this->prm_[gamma]*this->prm_[F]*v_new/(this->prm_[R]*this->prm_[T]))*std::pow(this->var_[Na_i], 3.)*this->prm_[Ca_o]-std::exp((this->prm_[gamma]-1.)*this->prm_[F]*v_new/(this->prm_[R]*this->prm_[T]))*std::pow(this->prm_[Na_o], 3.)*this->var_[Ca_i])/((std::pow(this->prm_[K_mNa], 3.)+std::pow(this->prm_[Na_o], 3.))*(this->prm_[K_mCa]+this->prm_[Ca_o])*(1.+this->prm_[K_sat]*std::exp((this->prm_[gamma]-1.)*v_new*this->prm_[F]/(this->prm_[R]*this->prm_[T])))));
+    #else
+        this->cur_[INaCa] =  (this->prm_[Cm]*this->prm_[I_NaCa_max]*(std::exp(this->prm_[gamma]*this->prm_[F]*v_new/(this->prm_[R]*this->prm_[T]))*std::pow(this->var_[Na_i], 3.)*this->prm_[Ca_o]-std::exp((this->prm_[gamma]-1.)*this->prm_[F]*v_new/(this->prm_[R]*this->prm_[T]))*std::pow(this->prm_[Na_o], 3.)*this->var_[Ca_i])/((std::pow(this->prm_[K_mNa], 3.)+std::pow(this->prm_[Na_o], 3.))*(this->prm_[K_mCa]+this->prm_[Ca_o])*(1.+this->prm_[K_sat]*std::exp((this->prm_[gamma]-1.)*v_new*this->prm_[F]/(this->prm_[R]*this->prm_[T])))));
+    #endif
 
     // Background Currents
-    this->cur_[INab] =  (1.0-this->block_coeff_[INab]) * (this->prm_[Cm]*this->prm_[g_B_Na]*(v_new-E_Na));
-    this->cur_[ICab] =  (1.0-this->block_coeff_[ICab]) * (this->prm_[Cm]*this->prm_[g_B_Ca]*(v_new-E_Ca));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INab] =  (1.0-this->block_coeff_[INab]) * (this->prm_[Cm]*this->prm_[g_B_Na]*(v_new-E_Na));
+        this->cur_[ICab] =  (1.0-this->block_coeff_[ICab]) * (this->prm_[Cm]*this->prm_[g_B_Ca]*(v_new-E_Ca));
+    #else
+        this->cur_[INab] =  (this->prm_[Cm]*this->prm_[g_B_Na]*(v_new-E_Na));
+        this->cur_[ICab] =  (this->prm_[Cm]*this->prm_[g_B_Ca]*(v_new-E_Ca));
+    #endif
     double i_B_K = this->prm_[Cm]*this->prm_[g_B_K]*(v_new-E_K);
 
-    // Ca2+ Pump Current
-    this->cur_[ICap] =  (1.0-this->block_coeff_[ICap]) * (this->prm_[Cm]*this->prm_[i_CaP_max]*this->var_[Ca_i]/(0.0005+this->var_[Ca_i]));
-
-    // Ca2+ Release Current from JSR
-    this->cur_[IRel] =  (1.0-this->block_coeff_[IRel]) * (this->prm_[K_rel]*this->var_[g_u]*this->var_[g_u]*this->var_[g_v]*this->var_[g_w]*(this->var_[Ca_rel]-this->var_[Ca_i]));
+    // Ca2+ Pump Current and Ca2+ Release Current from JSR
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[ICap] =  (1.0-this->block_coeff_[ICap]) * (this->prm_[Cm]*this->prm_[i_CaP_max]*this->var_[Ca_i]/(0.0005+this->var_[Ca_i]));
+        this->cur_[IRel] =  (1.0-this->block_coeff_[IRel]) * (this->prm_[K_rel]*this->var_[g_u]*this->var_[g_u]*this->var_[g_v]*this->var_[g_w]*(this->var_[Ca_rel]-this->var_[Ca_i]));
+    #else
+        this->cur_[ICap] =  (this->prm_[Cm]*this->prm_[i_CaP_max]*this->var_[Ca_i]/(0.0005+this->var_[Ca_i]));
+        this->cur_[IRel] =  (this->prm_[K_rel]*this->var_[g_u]*this->var_[g_u]*this->var_[g_v]*this->var_[g_w]*(this->var_[Ca_rel]-this->var_[Ca_i]));
+    #endif
     double Fn = 1e-12*this->prm_[V_rel]*this->cur_[IRel] - ((5e-13)/this->prm_[F])*(0.5*this->cur_[ICaL]-0.2*this->cur_[INaCa]);
 
     // u
@@ -456,14 +516,16 @@ void Courtemanche::Compute(double v_new, double dt, double stim_current)
     double w_inf = 1.0-std::pow((1.+std::exp(-(v_new-40.)/17.)), -1.);
     this->var_[g_w] = ALGORITHM::RushLarsen(w_inf, this->var_[g_w], dt, tau_w);
 
-    // Transfer Current from NSR to JSR
-    this->cur_[Itr] =  (1.0-this->block_coeff_[Itr]) * ((this->var_[Ca_up]-this->var_[Ca_rel])/this->prm_[tau_tr]);
-
-    // Ca2+ Leak Current by the NSR
-    this->cur_[IupLeak] =  (1.0-this->block_coeff_[IupLeak]) * (this->prm_[I_up_max]*this->var_[Ca_up]/this->prm_[Ca_up_max]);
-
-    // Ca2+ Uptake Current by the NSR
-    this->cur_[Iup] =  (1.0-this->block_coeff_[Iup]) * (this->prm_[I_up_max]/(1.+this->prm_[K_up]/this->var_[Ca_i]));
+    // Transfer Current from NSR to JSR, Ca2+ Leak Current by the NSR and Ca2+ Uptake Current by the NSR
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[Itr]     =  (1.0-this->block_coeff_[Itr]) * ((this->var_[Ca_up]-this->var_[Ca_rel])/this->prm_[tau_tr]);
+        this->cur_[IupLeak] =  (1.0-this->block_coeff_[IupLeak]) * (this->prm_[I_up_max]*this->var_[Ca_up]/this->prm_[Ca_up_max]);
+        this->cur_[Iup]     =  (1.0-this->block_coeff_[Iup]) * (this->prm_[I_up_max]/(1.+this->prm_[K_up]/this->var_[Ca_i]));   
+    #else
+        this->cur_[Itr]     =  ((this->var_[Ca_up]-this->var_[Ca_rel])/this->prm_[tau_tr]);
+        this->cur_[IupLeak] =  (this->prm_[I_up_max]*this->var_[Ca_up]/this->prm_[Ca_up_max]);
+        this->cur_[Iup]     =  (this->prm_[I_up_max]/(1.+this->prm_[K_up]/this->var_[Ca_i]));   
+    #endif
 
     // Total ion current
     this->cur_[CourteCur::Iion] = (this->cur_[INa]+this->cur_[IK1]+this->cur_[Ito]+this->cur_[IKur]+this->cur_[IKr]+this->cur_[IKs]+this->cur_[IKach]+this->cur_[IKca_E]+this->cur_[IKca_P]+this->cur_[INab]+this->cur_[ICab]+this->cur_[INaK]+this->cur_[ICap]+this->cur_[INaCa]+this->cur_[ICaL])/this->prm_[Cm];
@@ -619,36 +681,37 @@ std::string Courtemanche::PrintCurrents() const
 
 }
 
+#ifdef BLOCK_CELL_CURRS
+    std::string Courtemanche::PrintBlockCoeffs() const
+    {
+        using namespace CourteCur;
 
-std::string Courtemanche::PrintBlockCoeffs() const
-{
-    using namespace CourteCur;
+        // Create output string stream to pass the currents and their values.
+        std::ostringstream oss;
+        oss.precision(15);
+        oss << "INa = " << this->block_coeff_[INa] << "\n";
+        oss << "IK1 = " << this->block_coeff_[IK1] << "\n";
+        oss << "Ito = " << this->block_coeff_[Ito] << "\n";
+        oss << "IKur = " << this->block_coeff_[IKur] << "\n";
+        oss << "IKr = " << this->block_coeff_[IKr] << "\n";
+        oss << "IKs = " << this->block_coeff_[IKs] << "\n";
+        oss << "ICaL = " << this->block_coeff_[ICaL] << "\n";
+        oss << "INaK = " << this->block_coeff_[INaK] << "\n";
+        oss << "IKach = " << this->block_coeff_[IKach] << "\n";
+        oss << "IKca_E = " << this->block_coeff_[IKca_E] << "\n";
+        oss << "IKca_P = " << this->block_coeff_[IKca_P] << "\n";
+        oss << "INaCa = " << this->block_coeff_[INaCa] << "\n";
+        oss << "INab = " << this->block_coeff_[INab] << "\n";
+        oss << "ICab = " << this->block_coeff_[ICab] << "\n";
+        oss << "ICap = " << this->block_coeff_[ICap] << "\n";
+        oss << "IRel = " << this->block_coeff_[IRel] << "\n";
+        oss << "Itr = " << this->block_coeff_[Itr] << "\n";
+        oss << "IupLeak = " << this->block_coeff_[IupLeak] << "\n";
+        oss << "Iup = " << this->block_coeff_[Iup];
+        return oss.str();
 
-    // Create output string stream to pass the currents and their values.
-    std::ostringstream oss;
-    oss.precision(15);
-    oss << "INa = " << this->block_coeff_[INa] << "\n";
-    oss << "IK1 = " << this->block_coeff_[IK1] << "\n";
-    oss << "Ito = " << this->block_coeff_[Ito] << "\n";
-    oss << "IKur = " << this->block_coeff_[IKur] << "\n";
-    oss << "IKr = " << this->block_coeff_[IKr] << "\n";
-    oss << "IKs = " << this->block_coeff_[IKs] << "\n";
-    oss << "ICaL = " << this->block_coeff_[ICaL] << "\n";
-    oss << "INaK = " << this->block_coeff_[INaK] << "\n";
-    oss << "IKach = " << this->block_coeff_[IKach] << "\n";
-    oss << "IKca_E = " << this->block_coeff_[IKca_E] << "\n";
-    oss << "IKca_P = " << this->block_coeff_[IKca_P] << "\n";
-    oss << "INaCa = " << this->block_coeff_[INaCa] << "\n";
-    oss << "INab = " << this->block_coeff_[INab] << "\n";
-    oss << "ICab = " << this->block_coeff_[ICab] << "\n";
-    oss << "ICap = " << this->block_coeff_[ICap] << "\n";
-    oss << "IRel = " << this->block_coeff_[IRel] << "\n";
-    oss << "Itr = " << this->block_coeff_[Itr] << "\n";
-    oss << "IupLeak = " << this->block_coeff_[IupLeak] << "\n";
-    oss << "Iup = " << this->block_coeff_[Iup];
-    return oss.str();
-
-}
+    }
+#endif
 
 
 

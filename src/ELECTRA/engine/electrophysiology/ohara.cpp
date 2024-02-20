@@ -137,7 +137,10 @@ Ohara::Ohara()
     this->var_.resize(42, 0.);
     this->prm_.resize(45, 0.);
     this->cur_.resize(18, 0.);
-    this->block_coeff_.resize(17, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.resize(17, 0.);
+    #endif
+    
 
     // Set mapped data.
     this->SetDataMapping();
@@ -157,7 +160,9 @@ void Ohara::Initialize(CellType cell_type)
     this->var_.clear();           this->var_.resize(42, 0.);
     this->prm_.clear();           this->prm_.resize(45, 0.);
     this->cur_.clear();           this->cur_.resize(18, 0.);
-    this->block_coeff_.clear();   this->block_coeff_.resize(17, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.clear();   this->block_coeff_.resize(17, 0.);
+    #endif
 
     // Set data according to the cell type.
     switch (cell_type)
@@ -445,7 +450,11 @@ void Ohara::Compute(double v_new, double dt, double stim_current)
     this->var_[j] = ALGORITHM::RushLarsen(jTT2_inf, this->var_[j], dt, tau_jTT2);
 
     // Compute the INa current.
-    this->cur_[INa] = (1.0-this->block_coeff_[INa]) * (this->prm_[gNa] * (v_new - ENa) * this->var_[m]*this->var_[m]*this->var_[m] * this->var_[hs] * this->var_[j]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INa] = (1.0-this->block_coeff_[INa]) * (this->prm_[gNa] * (v_new - ENa) * this->var_[m]*this->var_[m]*this->var_[m] * this->var_[hs] * this->var_[j]);
+    #else
+        this->cur_[INa] = (this->prm_[gNa] * (v_new - ENa) * this->var_[m]*this->var_[m]*this->var_[m] * this->var_[hs] * this->var_[j]);
+    #endif
 
     // Update the mL-gate using the Rush-Larsen method.
     double mLss = 1. / (1. + std::exp((-(v_new + 42.85)) / 5.264));
@@ -464,7 +473,11 @@ void Ohara::Compute(double v_new, double dt, double stim_current)
     
     // Compute the INaL current.
     double fINaLp = 1. / (1. + this->prm_[KmCaMK]/CaMKa);
-    this->cur_[INaL] = (1.-this->block_coeff_[INaL]) * (this->prm_[gNaL] * (v_new - ENa) * this->var_[mL] * ((1. - fINaLp)*this->var_[hL] + fINaLp*this->var_[hLp]));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaL] = (1.-this->block_coeff_[INaL]) * (this->prm_[gNaL] * (v_new - ENa) * this->var_[mL] * ((1. - fINaLp)*this->var_[hL] + fINaLp*this->var_[hLp]));
+    #else
+        this->cur_[INaL] = (this->prm_[gNaL] * (v_new - ENa) * this->var_[mL] * ((1. - fINaLp)*this->var_[hL] + fINaLp*this->var_[hLp]));
+    #endif
 
     // Update the a-gate with the Rush-Larsen method.
     double ass = 1. / (1. + std::exp((-(v_new - 14.34)) / 14.82));
@@ -506,7 +519,11 @@ void Ohara::Compute(double v_new, double dt, double stim_current)
     
     // Compute the Ito current.
     double fItop = 1. / (1. + this->prm_[KmCaMK]/CaMKa);
-    this->cur_[Ito] = (1. -this->block_coeff_[Ito]) * (this->prm_[gto] * (v_new - EK) * ((1.-fItop)*this->var_[a]*i + fItop*this->var_[ap]*ip));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[Ito] = (1. -this->block_coeff_[Ito]) * (this->prm_[gto] * (v_new - EK) * ((1.-fItop)*this->var_[a]*i + fItop*this->var_[ap]*ip));
+    #else
+        this->cur_[Ito] = (this->prm_[gto] * (v_new - EK) * ((1.-fItop)*this->var_[a]*i + fItop*this->var_[ap]*ip));
+    #endif
 
     // Update the d-gate with the Rush-Larsen method.
     double dss = 1. / (1. + std::exp((-(v_new + 3.94)) / 4.23));
@@ -573,14 +590,16 @@ void Ohara::Compute(double v_new, double dt, double stim_current)
     double PCaKp = 3.574e-4*PCap;
     double fICaLp = 1. / (1. + this->prm_[KmCaMK] / CaMKa);
     
-    // Calculate the ICaL current.
-    this->cur_[ICaL] =  (1. -this->block_coeff_[ICaL]) * ((1. - fICaLp)*this->prm_[pCa]*PhiCaL*this->var_[d] * (f*(1. - this->var_[nca]) + this->var_[jca]*fca*this->var_[nca]) + fICaLp*PCap*PhiCaL*this->var_[d] * (fp*(1. - this->var_[nca]) + this->var_[jca]*fcap*this->var_[nca]));
-
-    // Calculate the ICaNa current.
-    this->cur_[ICaNa] = (1. -this->block_coeff_[ICaNa]) * ((1. - fICaLp)*PCaNa*PhiCaNa*this->var_[d] * (f*(1. - this->var_[nca]) + this->var_[jca]*fca*this->var_[nca]) + fICaLp*PCaNap*PhiCaNa*this->var_[d]*(fp*(1. - this->var_[nca]) + this->var_[jca]*fcap*this->var_[nca]));
-
-    // Calculate the ICaK current.
-    this->cur_[ICaK] =  (1. -this->block_coeff_[ICaK]) * ((1. - fICaLp)*PCaK*PhiCaK*this->var_[d] * (f*(1. - this->var_[nca]) + this->var_[jca]*fca*this->var_[nca]) + fICaLp*PCaKp*PhiCaK*this->var_[d]*(fp*(1. - this->var_[nca]) + this->var_[jca]*fcap*this->var_[nca]));
+    // Calculate the ICaL current, ICaNa current and ICaK current
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[ICaL] =  (1. -this->block_coeff_[ICaL]) * ((1. - fICaLp)*this->prm_[pCa]*PhiCaL*this->var_[d] * (f*(1. - this->var_[nca]) + this->var_[jca]*fca*this->var_[nca]) + fICaLp*PCap*PhiCaL*this->var_[d] * (fp*(1. - this->var_[nca]) + this->var_[jca]*fcap*this->var_[nca]));
+        this->cur_[ICaNa]= (1. -this->block_coeff_[ICaNa]) * ((1. - fICaLp)*PCaNa*PhiCaNa*this->var_[d] * (f*(1. - this->var_[nca]) + this->var_[jca]*fca*this->var_[nca]) + fICaLp*PCaNap*PhiCaNa*this->var_[d]*(fp*(1. - this->var_[nca]) + this->var_[jca]*fcap*this->var_[nca]));
+        this->cur_[ICaK] =  (1. -this->block_coeff_[ICaK]) * ((1. - fICaLp)*PCaK*PhiCaK*this->var_[d] * (f*(1. - this->var_[nca]) + this->var_[jca]*fca*this->var_[nca]) + fICaLp*PCaKp*PhiCaK*this->var_[d]*(fp*(1. - this->var_[nca]) + this->var_[jca]*fcap*this->var_[nca]));
+    #else
+        this->cur_[ICaL] = ((1. - fICaLp)*this->prm_[pCa]*PhiCaL*this->var_[d] * (f*(1. - this->var_[nca]) + this->var_[jca]*fca*this->var_[nca]) + fICaLp*PCap*PhiCaL*this->var_[d] * (fp*(1. - this->var_[nca]) + this->var_[jca]*fcap*this->var_[nca]));
+        this->cur_[ICaNa]= ((1. - fICaLp)*PCaNa*PhiCaNa*this->var_[d] * (f*(1. - this->var_[nca]) + this->var_[jca]*fca*this->var_[nca]) + fICaLp*PCaNap*PhiCaNa*this->var_[d]*(fp*(1. - this->var_[nca]) + this->var_[jca]*fcap*this->var_[nca]));
+        this->cur_[ICaK] = ((1. - fICaLp)*PCaK*PhiCaK*this->var_[d] * (f*(1. - this->var_[nca]) + this->var_[jca]*fca*this->var_[nca]) + fICaLp*PCaKp*PhiCaK*this->var_[d]*(fp*(1. - this->var_[nca]) + this->var_[jca]*fcap*this->var_[nca]));
+    #endif
 
     // Update the xrf-gate with the Rush-Larsen method.
     double xrss = 1. / (1. + std::exp((-(v_new+8.337))/6.789));
@@ -597,7 +616,11 @@ void Ohara::Compute(double v_new, double dt, double stim_current)
 
     // Calculate the IKr current.
     double rkr = 1. / (1. + std::exp((v_new + 55.) / 75.)) * 1. / (1. + std::exp((v_new - 10.) / 30.));
-    this->cur_[IKr] = (1.-this->block_coeff_[IKr]) * (this->prm_[gKr] * std::sqrt(this->prm_[ko]/5.4) * xr * rkr * (v_new - EK));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKr] = (1.-this->block_coeff_[IKr]) * (this->prm_[gKr] * std::sqrt(this->prm_[ko]/5.4) * xr * rkr * (v_new - EK));
+    #else
+        this->cur_[IKr] = (this->prm_[gKr] * std::sqrt(this->prm_[ko]/5.4) * xr * rkr * (v_new - EK));
+    #endif
 
     // Update the xs1-gate with the Rush-Larsen method.
     double xs1ss = 1. / (1. + std::exp((-(v_new + 11.6)) / 8.932));
@@ -611,7 +634,11 @@ void Ohara::Compute(double v_new, double dt, double stim_current)
 
     // Compute the IKs current.
     double KsCa = 1. + 0.6 / (1. + std::pow((3.8e-5 / this->var_[cai]), 1.4));
-    this->cur_[IKs] = (1.-this->block_coeff_[IKs]) * (this->prm_[gKs] * KsCa * this->var_[xs1]* this->var_[xs2] * (v_new - EKs));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKs] = (1.-this->block_coeff_[IKs]) * (this->prm_[gKs] * KsCa * this->var_[xs1]* this->var_[xs2] * (v_new - EKs));
+    #else
+        this->cur_[IKs] = (this->prm_[gKs] * KsCa * this->var_[xs1]* this->var_[xs2] * (v_new - EKs));
+    #endif
 
     // Update the xk1-gate with the Rush-Larsen method.
     double xk1ss = 1. / (1. + std::exp(-(v_new + 2.5538*this->prm_[ko] + 144.59) / (1.5692*this->prm_[ko] + 3.8115)));
@@ -620,7 +647,11 @@ void Ohara::Compute(double v_new, double dt, double stim_current)
 
     // Compute the IK1 current.
     double rk1 = 1. / (1. + std::exp((v_new + 105.8 - 2.6*this->prm_[ko]) / 9.493));
-    this->cur_[IK1] = (1. -this->block_coeff_[IK1]) * (this->prm_[gK1] * std::sqrt(this->prm_[ko]) * rk1 * this->var_[xk1] * (v_new - EK));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IK1] = (1. -this->block_coeff_[IK1]) * (this->prm_[gK1] * std::sqrt(this->prm_[ko]) * rk1 * this->var_[xk1] * (v_new - EK));
+    #else
+        this->cur_[IK1] = (this->prm_[gK1] * std::sqrt(this->prm_[ko]) * rk1 * this->var_[xk1] * (v_new - EK));
+    #endif
 
     double kna1 = 15.;     double kna2 = 5.;      double kna3 = 88.12;
     double kasymm = 12.5;  double wna = 6.e4;     double wca = 6.e4;
@@ -667,7 +698,11 @@ void Ohara::Compute(double v_new, double dt, double stim_current)
     double JncxCa = E2*k2 - E1*k1;
 
     // Compute the INaCa_i current.
-    this->cur_[INaCa_i] = (1.-this->block_coeff_[INaCa_i]) * (0.8 * this->prm_[gncx] * allo * (zna*JncxNa + zca*JncxCa));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaCa_i] = (1.-this->block_coeff_[INaCa_i]) * (0.8 * this->prm_[gncx] * allo * (zna*JncxNa + zca*JncxCa));
+    #else
+        this->cur_[INaCa_i] = (0.8 * this->prm_[gncx] * allo * (zna*JncxNa + zca*JncxCa));
+    #endif
 
     // Compute the INaCa_ss current.
     h1 = 1. + this->var_[nass]/kna3*(1. + hna);
@@ -707,11 +742,14 @@ void Ohara::Compute(double v_new, double dt, double stim_current)
     JncxNa = 3.*(E4*k7-E1*k8) + E3*k4pp - E2*k3pp;
     JncxCa = E2*k2 - E1*k1;
 
-    // Compute the INaCa_ss current.
-    this->cur_[INaCa_ss] = (1. -this->block_coeff_[INaCa_ss]) * (0.2 * this->prm_[gncx] * allo * (zna*JncxNa + zca*JncxCa));
-
-    // Compute the total INaCa current.
-    this->cur_[INaCa] = (1. -this->block_coeff_[INaCa]) * (this->cur_[INaCa_i] + this->cur_[INaCa_ss]);
+    // Compute the INaCa_ss current and total INaCa current.
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaCa_ss] = (1. -this->block_coeff_[INaCa_ss]) * (0.2 * this->prm_[gncx] * allo * (zna*JncxNa + zca*JncxCa));
+        this->cur_[INaCa]    = (1. -this->block_coeff_[INaCa]) * (this->cur_[INaCa_i] + this->cur_[INaCa_ss]);
+    #else
+        this->cur_[INaCa_ss] = (0.2 * this->prm_[gncx] * allo * (zna*JncxNa + zca*JncxCa));
+        this->cur_[INaCa]    = (this->cur_[INaCa_i] + this->cur_[INaCa_ss]);
+    #endif
 
     double k1p = 949.5;   double k1m = 182.4;  double k2p = 687.2;
     double k2m = 39.4;    
@@ -759,24 +797,44 @@ void Ohara::Compute(double v_new, double dt, double stim_current)
     double JnakK = 2.*(E4*b1 - E3*a1);
 
     // Compute the INaK current.
-    this->cur_[INaK] = (1. -this->block_coeff_[INaK]) * (this->prm_[pNaK] * (zna*JnakNa + zk*JnakK));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaK] = (1. -this->block_coeff_[INaK]) * (this->prm_[pNaK] * (zna*JnakNa + zk*JnakK));
+    #else
+        this->cur_[INaK] = (this->prm_[pNaK] * (zna*JnakNa + zk*JnakK));
+    #endif
 
     // Compute the IKb current.
     double xkb = 1. / (1. + std::exp(-(v_new-14.48)/18.34));
     double GKb = 0.003;
-    this->cur_[IKb] = (1. -this->block_coeff_[IKb]) * (GKb * xkb * (v_new - EK));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKb] = (1. -this->block_coeff_[IKb]) * (GKb * xkb * (v_new - EK));
+    #else
+        this->cur_[IKb] = (GKb * xkb * (v_new - EK));
+    #endif
 
     // Compute the INab current.
     double PNab = 3.75e-10;
-    this->cur_[INab] = (1. -this->block_coeff_[INab]) * (PNab * vffrt * (this->var_[nai]*std::exp(vfrt) - this->prm_[nao]) / (std::exp(vfrt) - 1.));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INab] = (1. -this->block_coeff_[INab]) * (PNab * vffrt * (this->var_[nai]*std::exp(vfrt) - this->prm_[nao]) / (std::exp(vfrt) - 1.));
+    #else
+        this->cur_[INab] = (PNab * vffrt * (this->var_[nai]*std::exp(vfrt) - this->prm_[nao]) / (std::exp(vfrt) - 1.));
+    #endif
 
     // Compute the ICab current.
     double PCab = 2.5e-8;
-    this->cur_[ICab] = (1. -this->block_coeff_[ICab]) * (PCab * 4.*vffrt * (this->var_[cai]*std::exp(2.*vfrt) - 0.341*this->prm_[cao]) / (std::exp(2.*vfrt) - 1.));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[ICab] = (1. -this->block_coeff_[ICab]) * (PCab * 4.*vffrt * (this->var_[cai]*std::exp(2.*vfrt) - 0.341*this->prm_[cao]) / (std::exp(2.*vfrt) - 1.));
+    #else
+        this->cur_[ICab] = (PCab * 4.*vffrt * (this->var_[cai]*std::exp(2.*vfrt) - 0.341*this->prm_[cao]) / (std::exp(2.*vfrt) - 1.));
+    #endif
 
     // Compute the IpCa current.
     double GpCa = 0.0005;
-    this->cur_[IpCa] = (1. -this->block_coeff_[IpCa]) * (GpCa * this->var_[cai] / (0.0005 + this->var_[cai]));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IpCa] = (1. -this->block_coeff_[IpCa]) * (GpCa * this->var_[cai] / (0.0005 + this->var_[cai]));
+    #else
+        this->cur_[IpCa] = (GpCa * this->var_[cai] / (0.0005 + this->var_[cai]));
+    #endif
 
     // Compute the total Iion current.
     this->cur_[OhrCur::Iion] = this->cur_[INa]  + this->cur_[INaL] +  this->cur_[Ito] + this->cur_[ICaL] + this->cur_[ICaNa] + 
@@ -1021,33 +1079,35 @@ std::string Ohara::PrintCurrents() const
 
 }
 
+#ifdef BLOCK_CELL_CURRS
+    std::string Ohara::PrintBlockCoeffs() const
+    {
+        using namespace OhrCur;
 
-std::string Ohara::PrintBlockCoeffs() const
-{
-    using namespace OhrCur;
+        // Create output string stream to pass the currents and their values.
+        std::ostringstream oss;
+        oss.precision(15);
+        oss << "INa = " << this->block_coeff_[INa] << "\n";
+        oss << "INaL = " << this->block_coeff_[INaL] << "\n";
+        oss << "Ito = " << this->block_coeff_[Ito] << "\n";
+        oss << "ICaL = " << this->block_coeff_[ICaL] << "\n";
+        oss << "ICaNa = " << this->block_coeff_[ICaNa] << "\n";
+        oss << "ICaK = " << this->block_coeff_[ICaK] << "\n";
+        oss << "IKr = " << this->block_coeff_[IKr] << "\n";
+        oss << "IKs = " << this->block_coeff_[IKs] << "\n";
+        oss << "IK1 = " << this->block_coeff_[IK1] << "\n";
+        oss << "INaCa_i = " << this->block_coeff_[INaCa_i] << "\n";
+        oss << "INaCa_ss = " << this->block_coeff_[INaCa_ss] << "\n";
+        oss << "INaCa = " << this->block_coeff_[INaCa] << "\n";
+        oss << "INaK = " << this->block_coeff_[INaK] << "\n";
+        oss << "IKb = " << this->block_coeff_[IKb] << "\n";
+        oss << "INab = " << this->block_coeff_[INab] << "\n";
+        oss << "ICab = " << this->block_coeff_[ICab] << "\n";
+        oss << "IpCa = " << this->block_coeff_[IpCa];
+        return oss.str();
 
-    // Create output string stream to pass the currents and their values.
-    std::ostringstream oss;
-    oss.precision(15);
-    oss << "INa = " << this->block_coeff_[INa] << "\n";
-    oss << "INaL = " << this->block_coeff_[INaL] << "\n";
-    oss << "Ito = " << this->block_coeff_[Ito] << "\n";
-    oss << "ICaL = " << this->block_coeff_[ICaL] << "\n";
-    oss << "ICaNa = " << this->block_coeff_[ICaNa] << "\n";
-    oss << "ICaK = " << this->block_coeff_[ICaK] << "\n";
-    oss << "IKr = " << this->block_coeff_[IKr] << "\n";
-    oss << "IKs = " << this->block_coeff_[IKs] << "\n";
-    oss << "IK1 = " << this->block_coeff_[IK1] << "\n";
-    oss << "INaCa_i = " << this->block_coeff_[INaCa_i] << "\n";
-    oss << "INaCa_ss = " << this->block_coeff_[INaCa_ss] << "\n";
-    oss << "INaCa = " << this->block_coeff_[INaCa] << "\n";
-    oss << "INaK = " << this->block_coeff_[INaK] << "\n";
-    oss << "IKb = " << this->block_coeff_[IKb] << "\n";
-    oss << "INab = " << this->block_coeff_[INab] << "\n";
-    oss << "ICab = " << this->block_coeff_[ICab] << "\n";
-    oss << "IpCa = " << this->block_coeff_[IpCa];
-    return oss.str();
+    }
+#endif
 
-}
 
 } // End of namespace ELECTRA

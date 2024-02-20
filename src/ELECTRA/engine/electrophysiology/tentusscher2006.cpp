@@ -126,7 +126,9 @@ TenTusscher2006::TenTusscher2006()
     this->var_.resize(20, 0.);
     this->prm_.resize(50, 0.);
     this->cur_.resize(13, 0.);
-    this->block_coeff_.resize(12, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.resize(12, 0.);
+    #endif
 
     // Set mapped data.
     this->SetDataMapping();
@@ -146,7 +148,9 @@ void TenTusscher2006::Initialize(CellType cell_type)
     this->var_.clear();           this->var_.resize(20, 0.);
     this->prm_.clear();           this->prm_.resize(50, 0.);
     this->cur_.clear();           this->cur_.resize(13, 0.);
-    this->block_coeff_.clear();   this->block_coeff_.resize(12, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.clear();   this->block_coeff_.resize(12, 0.);
+    #endif
 
     // Set data according to the cell type.
     switch (cell_type)
@@ -552,27 +556,29 @@ std::string TenTusscher2006::PrintCurrents() const
 
 }
 
-
+#ifdef BLOCK_CELL_CURRS
 std::string TenTusscher2006::PrintBlockCoeffs() const
-{
-    using namespace Tnt06Cur;
+    {
+        using namespace Tnt06Cur;
 
-    // Create output string stream to pass the currents and their values.
-    std::ostringstream oss;
-    oss.precision(15);
-    oss << "INaK = " << this->block_coeff_[INaK] << "\n";
-    oss << "INa = " << this->block_coeff_[INa] << "\n";
-    oss << "INab = " << this->block_coeff_[INab] << "\n";
-    oss << "INaCa = " << this->block_coeff_[INaCa] << "\n";
-    oss << "IK1 = " << this->block_coeff_[IK1] << "\n";
-    oss << "Ito = " << this->block_coeff_[Ito] << "\n";
-    oss << "IKr = " << this->block_coeff_[IKr] << "\n";
-    oss << "IKs = " << this->block_coeff_[IKs] << "\n";
-    oss << "ICaL = " << this->block_coeff_[ICaL] << "\n";
-    oss << "ICab = " << this->block_coeff_[ICab] << "\n";
-    oss << "IKp = " << this->block_coeff_[IKp] << "\n";
-    oss << "ICap = " << this->block_coeff_[ICap];
-    return oss.str();
-}
+        // Create output string stream to pass the currents and their values.
+        std::ostringstream oss;
+        oss.precision(15);
+        oss << "INaK = " << this->block_coeff_[INaK] << "\n";
+        oss << "INa = " << this->block_coeff_[INa] << "\n";
+        oss << "INab = " << this->block_coeff_[INab] << "\n";
+        oss << "INaCa = " << this->block_coeff_[INaCa] << "\n";
+        oss << "IK1 = " << this->block_coeff_[IK1] << "\n";
+        oss << "Ito = " << this->block_coeff_[Ito] << "\n";
+        oss << "IKr = " << this->block_coeff_[IKr] << "\n";
+        oss << "IKs = " << this->block_coeff_[IKs] << "\n";
+        oss << "ICaL = " << this->block_coeff_[ICaL] << "\n";
+        oss << "ICab = " << this->block_coeff_[ICab] << "\n";
+        oss << "IKp = " << this->block_coeff_[IKp] << "\n";
+        oss << "ICap = " << this->block_coeff_[ICap];
+        return oss.str();
+    }
+#endif
+
 
 } // End of namespace ELECTRA

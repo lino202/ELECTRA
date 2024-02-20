@@ -86,7 +86,10 @@ Bueno::Bueno()
     this->var_.resize(18, 0.);
     this->prm_.resize(29, 0.);
     this->cur_.resize(4, 0.);
-    this->block_coeff_.resize(3, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.resize(3, 0.);
+    #endif
+    
 
     // Set mapped data.
     this->SetDataMapping();
@@ -106,7 +109,9 @@ void Bueno::Initialize(CellType cell_type)
     this->var_.clear();    this->var_.resize(18, 0.);
     this->prm_.clear();  this->prm_.resize(29, 0.);
     this->cur_.clear();    this->cur_.resize(4, 0.);
-    this->block_coeff_.clear();  this->block_coeff_.resize(3, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.clear();  this->block_coeff_.resize(3, 0.);
+    #endif
 
 
     // Set the cell model parameters.
@@ -261,15 +266,29 @@ void Bueno::Compute(double v_new, double dt, double stim_current)
     this->var_[g_w] = ALGORITHM::ForwardEuler(this->var_[g_w], dt, dw);
 
     // Compute fast inward current.
-    this->cur_[Ifi] = (1.0-this->block_coeff_[Ifi]) * ((- this->var_[m] * this->var_[g_v] * (this->var_[g_u] - this->prm_[u_m]) * (this->prm_[u_u] - this->var_[g_u])) / this->prm_[tau_fi]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[Ifi] = (1.0-this->block_coeff_[Ifi]) * ((- this->var_[m] * this->var_[g_v] * (this->var_[g_u] - this->prm_[u_m]) * (this->prm_[u_u] - this->var_[g_u])) / this->prm_[tau_fi]);
+    #else
+        this->cur_[Ifi] = ((- this->var_[m] * this->var_[g_v] * (this->var_[g_u] - this->prm_[u_m]) * (this->prm_[u_u] - this->var_[g_u])) / this->prm_[tau_fi]);
+    #endif
 
     // Compute slow outward current.
     this->var_[tau_o]  = (1. - this->var_[r])*this->prm_[tau_o1] + this->var_[r]*this->prm_[tau_o2];
     this->var_[tau_so] = this->prm_[tau_so1] + 0.5*((this->prm_[tau_so2] - this->prm_[tau_so1]) * (1. + std::tanh(this->prm_[k_so]*(this->var_[g_u] - this->prm_[u_so]))));
-    this->cur_[Iso] = (1. - this->block_coeff_[Iso]) * ((this->var_[g_u]*(1. - this->var_[p]))/this->var_[tau_o] + this->var_[p]/this->var_[tau_so]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[Iso] = (1. - this->block_coeff_[Iso]) * ((this->var_[g_u]*(1. - this->var_[p]))/this->var_[tau_o] + this->var_[p]/this->var_[tau_so]);
+    #else
+        this->cur_[Iso] = ((this->var_[g_u]*(1. - this->var_[p]))/this->var_[tau_o] + this->var_[p]/this->var_[tau_so]);
+    #endif
+    
 
     // Compute slow inward current.
-    this->cur_[Isi] = (1. - this->block_coeff_[Isi]) * ((-this->var_[p]*this->var_[g_w]*this->var_[g_s]) / this->prm_[tau_si]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[Isi] = (1. - this->block_coeff_[Isi]) * ((-this->var_[p]*this->var_[g_w]*this->var_[g_s]) / this->prm_[tau_si]);
+    #else
+        this->cur_[Isi] = ((-this->var_[p]*this->var_[g_w]*this->var_[g_s]) / this->prm_[tau_si]);
+    #endif
+    
 
     // Compute total ionic current.
     this->cur_[BueCur::Iion] = -(this->cur_[Ifi] + this->cur_[Iso] + this->cur_[Isi]);
@@ -369,19 +388,21 @@ std::string Bueno::PrintCurrents() const
 
 }
 
+#ifdef BLOCK_CELL_CURRS
+    std::string Bueno::PrintBlockCoeffs() const
+    {
+        using namespace BueCur;
 
-std::string Bueno::PrintBlockCoeffs() const
-{
-    using namespace BueCur;
+        // Create output string stream to pass the parameters and their values.
+        std::ostringstream oss;
+        oss.precision(15);
+        oss << "Ifi = " << this->block_coeff_[Ifi] << "\n";
+        oss << "Iso = " << this->block_coeff_[Iso] << "\n";
+        oss << "Isi = " << this->block_coeff_[Isi];
+        return oss.str();
+    }
+#endif
 
-    // Create output string stream to pass the parameters and their values.
-    std::ostringstream oss;
-    oss.precision(15);
-    oss << "Ifi = " << this->block_coeff_[Ifi] << "\n";
-    oss << "Iso = " << this->block_coeff_[Iso] << "\n";
-    oss << "Isi = " << this->block_coeff_[Isi];
-    return oss.str();
-}
 
 
 } // End of namespace ELECTRA

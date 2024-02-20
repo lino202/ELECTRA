@@ -87,10 +87,12 @@ void BinaryExporter::WriteCellsState(const std::vector<std::unique_ptr<EpBasic>>
         }
 
         // Write block current coefficients.
-        for (int i = 0; i != cell->CurrentNum()-1; ++i) {
-            val = cell->BlockCoeff(i);
-            output.write(reinterpret_cast<char *>(&val), sizeof(double));
-        }
+        #ifdef BLOCK_CELL_CURRS
+            for (int i = 0; i != cell->CurrentNum()-1; ++i) {
+                val = cell->BlockCoeff(i);
+                output.write(reinterpret_cast<char *>(&val), sizeof(double));
+            }
+        #endif
     }
     
     // Close the output file.

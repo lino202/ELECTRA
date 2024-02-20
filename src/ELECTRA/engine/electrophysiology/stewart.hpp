@@ -291,7 +291,9 @@ public:
      * \brief Print to std::string the cell's currents' block coefficients and their values.
      * \return [std::string] The cell's currents' block coefficients and their values.
     */
-    virtual std::string PrintBlockCoeffs() const;
+      #ifdef BLOCK_CELL_CURRS
+            virtual std::string PrintBlockCoeffs() const;
+      #endif
 
 
     /**

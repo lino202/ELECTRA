@@ -173,7 +173,9 @@ PaciVentri::PaciVentri()
     this->var_.resize(19, 0.);
     this->prm_.resize(105, 0.);
     this->cur_.resize(16, 0.);
-    this->block_coeff_.resize(15, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.resize(15, 0.);
+    #endif
 
     // Set mapped data.
     this->SetDataMapping();
@@ -198,7 +200,9 @@ void PaciVentri::Initialize(CellType cell_type)
     this->var_.clear();           this->var_.resize(19, 0.);
     this->prm_.clear();           this->prm_.resize(105, 0.);
     this->cur_.clear();           this->cur_.resize(16, 0.);
-    this->block_coeff_.clear();   this->block_coeff_.resize(15, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.clear();   this->block_coeff_.resize(15, 0.);
+    #endif
 
     // Set the model variables.
     this->var_[v] = -74.3340057623841;
@@ -448,27 +452,52 @@ void PaciVentri::Compute(double v_new, double dt, double stim_current)
     
     this->prm_[E_Na] = ((this->prm_[R]*this->prm_[T])/this->prm_[F]) * std::log(this->prm_[Nao]/this->var_[Nai]);
     
-    this->cur_[INa] = (1-this->block_coeff_[INa]) * (this->prm_[g_Na]*(std::pow(this->var_[m], 3) * (this->var_[h]*(this->var_[j]*(v_new-this->prm_[E_Na])))));
-    this->cur_[INaK] = (1-this->block_coeff_[INaK]) * (((((this->prm_[PNaK]*this->prm_[Ko])/(this->prm_[Ko]+this->prm_[Km_K])) * this->var_[Nai]) / (this->var_[Nai] + this->prm_[Km_Na])) / (1.+(0.1245*std::exp((-0.1*(v_new*this->prm_[F]))/(this->prm_[R]*this->prm_[T])) + 0.0353*std::exp((-v_new*this->prm_[F])/(this->prm_[R]*this->prm_[T])))));
-    this->cur_[INaCa] = (1-this->block_coeff_[INaCa]) * ((this->prm_[kNaCa]*(std::exp((this->prm_[gamma]*(v_new*this->prm_[F])) / (this->prm_[R]*this->prm_[T]))*(std::pow(this->var_[Nai], 3.)*this->prm_[Cao]) - std::exp(((this->prm_[gamma] - 1.)*(v_new*this->prm_[F]))/(this->prm_[R]*this->prm_[T]))*(std::pow(this->prm_[Nao], 3.) * (this->var_[Cai]*this->prm_[alpha])))) / ((std::pow(this->prm_[KmNai], 3.) + std::pow(this->prm_[Nao], 3.))*((this->prm_[KmCa]+this->prm_[Cao])*(1. + this->prm_[Ksat]*std::exp(((this->prm_[gamma] - 1.)*(v_new*this->prm_[F])) / (this->prm_[R]*this->prm_[T]))))));
-    this->cur_[INab] = (1-this->block_coeff_[INab]) * (this->prm_[g_b_Na]*(v_new - this->prm_[E_Na]));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INa]   = (1-this->block_coeff_[INa]) * (this->prm_[g_Na]*(std::pow(this->var_[m], 3) * (this->var_[h]*(this->var_[j]*(v_new-this->prm_[E_Na])))));
+        this->cur_[INaK]  = (1-this->block_coeff_[INaK]) * (((((this->prm_[PNaK]*this->prm_[Ko])/(this->prm_[Ko]+this->prm_[Km_K])) * this->var_[Nai]) / (this->var_[Nai] + this->prm_[Km_Na])) / (1.+(0.1245*std::exp((-0.1*(v_new*this->prm_[F]))/(this->prm_[R]*this->prm_[T])) + 0.0353*std::exp((-v_new*this->prm_[F])/(this->prm_[R]*this->prm_[T])))));
+        this->cur_[INaCa] = (1-this->block_coeff_[INaCa]) * ((this->prm_[kNaCa]*(std::exp((this->prm_[gamma]*(v_new*this->prm_[F])) / (this->prm_[R]*this->prm_[T]))*(std::pow(this->var_[Nai], 3.)*this->prm_[Cao]) - std::exp(((this->prm_[gamma] - 1.)*(v_new*this->prm_[F]))/(this->prm_[R]*this->prm_[T]))*(std::pow(this->prm_[Nao], 3.) * (this->var_[Cai]*this->prm_[alpha])))) / ((std::pow(this->prm_[KmNai], 3.) + std::pow(this->prm_[Nao], 3.))*((this->prm_[KmCa]+this->prm_[Cao])*(1. + this->prm_[Ksat]*std::exp(((this->prm_[gamma] - 1.)*(v_new*this->prm_[F])) / (this->prm_[R]*this->prm_[T]))))));
+        this->cur_[INab]  = (1-this->block_coeff_[INab]) * (this->prm_[g_b_Na]*(v_new - this->prm_[E_Na]));
+    #else
+        this->cur_[INa]   = (this->prm_[g_Na]*(std::pow(this->var_[m], 3) * (this->var_[h]*(this->var_[j]*(v_new-this->prm_[E_Na])))));
+        this->cur_[INaK]  = (((((this->prm_[PNaK]*this->prm_[Ko])/(this->prm_[Ko]+this->prm_[Km_K])) * this->var_[Nai]) / (this->var_[Nai] + this->prm_[Km_Na])) / (1.+(0.1245*std::exp((-0.1*(v_new*this->prm_[F]))/(this->prm_[R]*this->prm_[T])) + 0.0353*std::exp((-v_new*this->prm_[F])/(this->prm_[R]*this->prm_[T])))));
+        this->cur_[INaCa] = ((this->prm_[kNaCa]*(std::exp((this->prm_[gamma]*(v_new*this->prm_[F])) / (this->prm_[R]*this->prm_[T]))*(std::pow(this->var_[Nai], 3.)*this->prm_[Cao]) - std::exp(((this->prm_[gamma] - 1.)*(v_new*this->prm_[F]))/(this->prm_[R]*this->prm_[T]))*(std::pow(this->prm_[Nao], 3.) * (this->var_[Cai]*this->prm_[alpha])))) / ((std::pow(this->prm_[KmNai], 3.) + std::pow(this->prm_[Nao], 3.))*((this->prm_[KmCa]+this->prm_[Cao])*(1. + this->prm_[Ksat]*std::exp(((this->prm_[gamma] - 1.)*(v_new*this->prm_[F])) / (this->prm_[R]*this->prm_[T]))))));
+        this->cur_[INab]  = (this->prm_[g_b_Na]*(v_new - this->prm_[E_Na]));
+    #endif
     this->var_[Nai] = this->var_[Nai] + dt*(-this->prm_[Cm]*(this->cur_[INa]+ this->cur_[INab] + 3.*this->cur_[INaK] + 3.*this->cur_[INaCa])) / (this->prm_[F]*(this->prm_[Vc]*1.e-18));
     
-    this->cur_[ICaL] = (1.-this->block_coeff_[ICaL]) * (((((this->prm_[g_CaL] * (4.*(v_new*std::pow(this->prm_[F], 2.)))) / (this->prm_[R]*this->prm_[T])) * (this->var_[Cai]*std::exp((2.*(v_new*this->prm_[F])) / (this->prm_[R]*this->prm_[T])) - 0.341*this->prm_[Cao])) / (std::exp((2.*(v_new*this->prm_[F]))/(this->prm_[R]*this->prm_[T])) - 1.)) * (this->var_[d]*this->var_[f1]*this->var_[f2]*this->var_[fCa]));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[ICaL] = (1.-this->block_coeff_[ICaL]) * (((((this->prm_[g_CaL] * (4.*(v_new*std::pow(this->prm_[F], 2.)))) / (this->prm_[R]*this->prm_[T])) * (this->var_[Cai]*std::exp((2.*(v_new*this->prm_[F])) / (this->prm_[R]*this->prm_[T])) - 0.341*this->prm_[Cao])) / (std::exp((2.*(v_new*this->prm_[F]))/(this->prm_[R]*this->prm_[T])) - 1.)) * (this->var_[d]*this->var_[f1]*this->var_[f2]*this->var_[fCa]));
+    #else
+        this->cur_[ICaL] = (((((this->prm_[g_CaL] * (4.*(v_new*std::pow(this->prm_[F], 2.)))) / (this->prm_[R]*this->prm_[T])) * (this->var_[Cai]*std::exp((2.*(v_new*this->prm_[F])) / (this->prm_[R]*this->prm_[T])) - 0.341*this->prm_[Cao])) / (std::exp((2.*(v_new*this->prm_[F]))/(this->prm_[R]*this->prm_[T])) - 1.)) * (this->var_[d]*this->var_[f1]*this->var_[f2]*this->var_[fCa]));
+    #endif
     
     this->prm_[alpha_K1] = 3.91 / (1. + std::exp(0.5942*((1000.*v_new - 1000.*this->prm_[E_K]) - 200.)));
     this->prm_[beta_K1] = (-1.509*std::exp(0.0002*((1000.*v_new - 1000.*this->prm_[E_K])+100.)) + std::exp(0.5886*((1000.*v_new - 1000.*this->prm_[E_K]) - 10.))) / (1.+std::exp(0.4547*(1000.*v_new - 1000.*this->prm_[E_K])));
     this->prm_[XK1_inf] = this->prm_[alpha_K1] / (this->prm_[alpha_K1]+this->prm_[beta_K1]);
-    this->cur_[IK1] =  (1. - this->block_coeff_[IK1]) * (this->prm_[g_K1]*(this->prm_[XK1_inf] * ((v_new - this->prm_[E_K])*std::pow((this->prm_[Ko]/5.4), 0.5))));
-    this->cur_[If] =  (1. - this->block_coeff_[If]) * (this->prm_[g_f]*(this->var_[Xf] * (v_new - this->prm_[E_f])));
-    this->cur_[IKr] = (1. - this->block_coeff_[IKr]) * (this->prm_[g_Kr]*((v_new - this->prm_[E_K]) * (this->var_[Xr1]*(this->var_[Xr2]*std::pow((this->prm_[Ko]/5.4), 0.5)))));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IK1] =  (1. - this->block_coeff_[IK1]) * (this->prm_[g_K1]*(this->prm_[XK1_inf] * ((v_new - this->prm_[E_K])*std::pow((this->prm_[Ko]/5.4), 0.5))));
+        this->cur_[If]  =  (1. - this->block_coeff_[If]) * (this->prm_[g_f]*(this->var_[Xf] * (v_new - this->prm_[E_f])));
+        this->cur_[IKr] =  (1. - this->block_coeff_[IKr]) * (this->prm_[g_Kr]*((v_new - this->prm_[E_K]) * (this->var_[Xr1]*(this->var_[Xr2]*std::pow((this->prm_[Ko]/5.4), 0.5)))));
+    #else
+        this->cur_[IK1] =  (this->prm_[g_K1]*(this->prm_[XK1_inf] * ((v_new - this->prm_[E_K])*std::pow((this->prm_[Ko]/5.4), 0.5))));
+        this->cur_[If]  =  (this->prm_[g_f]*(this->var_[Xf] * (v_new - this->prm_[E_f])));
+        this->cur_[IKr] =  (this->prm_[g_Kr]*((v_new - this->prm_[E_K]) * (this->var_[Xr1]*(this->var_[Xr2]*std::pow((this->prm_[Ko]/5.4), 0.5)))));
+    #endif
     this->prm_[E_Ks] = ((this->prm_[R]*this->prm_[T])/this->prm_[F]) * std::log((this->prm_[Ko] + this->prm_[PkNa]*this->prm_[Nao]) / (this->prm_[Ki] + this->prm_[PkNa]*this->var_[Nai]));
     
     this->prm_[E_Ca] =  ((0.5*(this->prm_[R]*this->prm_[T]))/this->prm_[F]) * std::log(this->prm_[Cao]/this->var_[Cai]);
-    this->cur_[IKs] = (1. - this->block_coeff_[IKs]) * (this->prm_[g_Ks]*((v_new - this->prm_[E_Ks])*( std::pow(this->var_[Xs], 2.) * (1. + 0.6/(1+std::pow((3.8*1.e-05)/this->var_[Cai], 1.4))))));
-    this->cur_[Ito] = (1. - this->block_coeff_[Ito]) * (this->prm_[g_to]*((v_new - this->prm_[E_K])*(this->var_[q]*this->var_[r])));
-    this->cur_[IPCa] = (1. - this->block_coeff_[IPCa]) * ((this->prm_[g_PCa]*this->var_[Cai]) / (this->var_[Cai]+this->prm_[KPCa]));
-    this->cur_[ICab] = (1. - this->block_coeff_[ICab]) * (this->prm_[g_b_Ca] * (v_new - this->prm_[E_Ca]));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKs]  = (1. - this->block_coeff_[IKs]) * (this->prm_[g_Ks]*((v_new - this->prm_[E_Ks])*( std::pow(this->var_[Xs], 2.) * (1. + 0.6/(1+std::pow((3.8*1.e-05)/this->var_[Cai], 1.4))))));
+        this->cur_[Ito]  = (1. - this->block_coeff_[Ito]) * (this->prm_[g_to]*((v_new - this->prm_[E_K])*(this->var_[q]*this->var_[r])));
+        this->cur_[IPCa] = (1. - this->block_coeff_[IPCa]) * ((this->prm_[g_PCa]*this->var_[Cai]) / (this->var_[Cai]+this->prm_[KPCa]));
+        this->cur_[ICab] = (1. - this->block_coeff_[ICab]) * (this->prm_[g_b_Ca] * (v_new - this->prm_[E_Ca]));
+    #else
+        this->cur_[IKs]  = (this->prm_[g_Ks]*((v_new - this->prm_[E_Ks])*( std::pow(this->var_[Xs], 2.) * (1. + 0.6/(1+std::pow((3.8*1.e-05)/this->var_[Cai], 1.4))))));
+        this->cur_[Ito]  = (this->prm_[g_to]*((v_new - this->prm_[E_K])*(this->var_[q]*this->var_[r])));
+        this->cur_[IPCa] = ((this->prm_[g_PCa]*this->var_[Cai]) / (this->var_[Cai]+this->prm_[KPCa]));
+        this->cur_[ICab] = (this->prm_[g_b_Ca] * (v_new - this->prm_[E_Ca]));
+    #endif
+
         
     this->cur_[PciVtrCur::Iion] = this->cur_[IK1] + this->cur_[Ito] + this->cur_[IKr] + this->cur_[IKs] + this->cur_[ICaL] + 
                                   this->cur_[INaK] + this->cur_[INa] + this->cur_[INaCa] + this->cur_[IPCa] + this->cur_[If] + 
@@ -477,10 +506,16 @@ void PaciVentri::Compute(double v_new, double dt, double stim_current)
     this->var_[dvdt] =  - (this->cur_[PciVtrCur::Iion] - stim_current/this->prm_[Cm]);
 
     this->prm_[Cai_bufc] = 1. / (1. + (this->prm_[Buf_C]*this->prm_[Kbuf_C]) / std::pow(this->var_[Cai]+this->prm_[Kbuf_C], 2.));
-    this->cur_[Irel] = (1. - this->block_coeff_[Irel]) * ((this->prm_[c_rel] + (this->prm_[a_rel]*std::pow(this->var_[Ca_SR], 2.)) / (std::pow(this->prm_[b_rel], 2.) + std::pow(this->var_[Ca_SR], 2.))) * (this->var_[d]*(this->var_[g]*0.0411)));
-    this->cur_[Iup] = (1. - this->block_coeff_[Iup]) * (this->prm_[VmaxUp] / (1. + std::pow(this->prm_[Kup], 2.) / std::pow(this->var_[Cai], 2.)));
-    this->cur_[Ileak] = (1. - this->block_coeff_[Ileak]) * ((this->var_[Ca_SR] - this->var_[Cai])*this->prm_[V_leak]);
-    
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[Irel]  = (1. - this->block_coeff_[Irel]) * ((this->prm_[c_rel] + (this->prm_[a_rel]*std::pow(this->var_[Ca_SR], 2.)) / (std::pow(this->prm_[b_rel], 2.) + std::pow(this->var_[Ca_SR], 2.))) * (this->var_[d]*(this->var_[g]*0.0411)));
+        this->cur_[Iup]   = (1. - this->block_coeff_[Iup]) * (this->prm_[VmaxUp] / (1. + std::pow(this->prm_[Kup], 2.) / std::pow(this->var_[Cai], 2.)));
+        this->cur_[Ileak] = (1. - this->block_coeff_[Ileak]) * ((this->var_[Ca_SR] - this->var_[Cai])*this->prm_[V_leak]);
+    #else
+        this->cur_[Irel]  = ((this->prm_[c_rel] + (this->prm_[a_rel]*std::pow(this->var_[Ca_SR], 2.)) / (std::pow(this->prm_[b_rel], 2.) + std::pow(this->var_[Ca_SR], 2.))) * (this->var_[d]*(this->var_[g]*0.0411)));
+        this->cur_[Iup]   = (this->prm_[VmaxUp] / (1. + std::pow(this->prm_[Kup], 2.) / std::pow(this->var_[Cai], 2.)));
+        this->cur_[Ileak] = ((this->var_[Ca_SR] - this->var_[Cai])*this->prm_[V_leak]);
+    #endif
+
     this->var_[Cai] =  this->var_[Cai] + dt*this->prm_[Cai_bufc]*((this->cur_[Ileak] - this->cur_[Iup] + this->cur_[Irel]) - (((this->cur_[ICaL] + this->cur_[ICab] + this->cur_[IPCa]) -  2.*this->cur_[INaCa])*this->prm_[Cm])/(2.*(this->prm_[Vc]*(this->prm_[F]*1.e-18))));
     this->prm_[Ca_SR_bufSR] = 1. / (1. + (this->prm_[Buf_SR]*this->prm_[Kbuf_SR]) / std::pow(this->var_[Ca_SR]+this->prm_[Kbuf_SR], 2.));
     this->var_[Ca_SR] = this->var_[Ca_SR] + dt*((this->prm_[Ca_SR_bufSR]*this->prm_[Vc]) / this->prm_[V_SR]) * (this->cur_[Iup] - (this->cur_[Irel]+this->cur_[Ileak]));
@@ -663,31 +698,33 @@ std::string PaciVentri::PrintCurrents() const
 
 }
 
+#ifdef BLOCK_CELL_CURRS
+    std::string PaciVentri::PrintBlockCoeffs() const
+    {
+        using namespace PciVtrCur;
 
-std::string PaciVentri::PrintBlockCoeffs() const
-{
-    using namespace PciVtrCur;
+        // Create output string stream to pass the currents and their values.
+        std::ostringstream oss;
+        oss.precision(15);
+        oss << "INa: " << this->block_coeff_[INa] << "\n";
+        oss << "INaK: " << this->block_coeff_[INaK] << "\n";
+        oss << "INaCa: " << this->block_coeff_[INaCa] << "\n";
+        oss << "INab: " << this->block_coeff_[INab] << "\n";
+        oss << "ICaL: " << this->block_coeff_[ICaL] << "\n";
+        oss << "IK1: " << this->block_coeff_[IK1] << "\n";
+        oss << "If: " << this->block_coeff_[If] << "\n";
+        oss << "IKr: " << this->block_coeff_[IKr] << "\n";
+        oss << "IKs: " << this->block_coeff_[IKs] << "\n";
+        oss << "Ito: " << this->block_coeff_[Ito] << "\n";
+        oss << "IPCa: " << this->block_coeff_[IPCa] << "\n";
+        oss << "ICab: " << this->block_coeff_[ICab] << "\n";
+        oss << "Irel: " << this->block_coeff_[Irel] << "\n";
+        oss << "Iup: " << this->block_coeff_[Iup] << "\n";
+        oss << "Ileak: " << this->block_coeff_[Ileak];
+        return oss.str();
 
-    // Create output string stream to pass the currents and their values.
-    std::ostringstream oss;
-    oss.precision(15);
-    oss << "INa: " << this->block_coeff_[INa] << "\n";
-    oss << "INaK: " << this->block_coeff_[INaK] << "\n";
-    oss << "INaCa: " << this->block_coeff_[INaCa] << "\n";
-    oss << "INab: " << this->block_coeff_[INab] << "\n";
-    oss << "ICaL: " << this->block_coeff_[ICaL] << "\n";
-    oss << "IK1: " << this->block_coeff_[IK1] << "\n";
-    oss << "If: " << this->block_coeff_[If] << "\n";
-    oss << "IKr: " << this->block_coeff_[IKr] << "\n";
-    oss << "IKs: " << this->block_coeff_[IKs] << "\n";
-    oss << "Ito: " << this->block_coeff_[Ito] << "\n";
-    oss << "IPCa: " << this->block_coeff_[IPCa] << "\n";
-    oss << "ICab: " << this->block_coeff_[ICab] << "\n";
-    oss << "Irel: " << this->block_coeff_[Irel] << "\n";
-    oss << "Iup: " << this->block_coeff_[Iup] << "\n";
-    oss << "Ileak: " << this->block_coeff_[Ileak];
-    return oss.str();
+    }
+#endif
 
-}
 
 } // End of namespace ELECTRA

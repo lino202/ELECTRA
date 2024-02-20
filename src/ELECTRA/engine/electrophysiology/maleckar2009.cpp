@@ -127,7 +127,9 @@ Maleckar2009::Maleckar2009()
     this->var_.resize(31, 0.);
     this->prm_.resize(47, 0.);
     this->cur_.resize(14, 0.);
-    this->block_coeff_.resize(13, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.resize(13, 0.);
+    #endif
 
     // Set mapped data.
     this->SetDataMapping();
@@ -147,7 +149,9 @@ void Maleckar2009::Initialize(CellType cell_type)
     this->var_.clear();           this->var_.resize(31, 0.);
     this->prm_.clear();           this->prm_.resize(47, 0.);
     this->cur_.clear();           this->cur_.resize(14, 0.);
-    this->block_coeff_.clear();   this->block_coeff_.resize(13, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.clear();   this->block_coeff_.resize(13, 0.);
+    #endif
 
     // Check cell type.
     if (cell_type != CellType::atrial) {
@@ -317,15 +321,31 @@ void Maleckar2009::Compute(double v_new, double dt, double stim_current)
     this->var_[F2] = this->var_[F2] + dt*dF2;
     
     double E_K = (( this->prm_[R]*this->prm_[T])/this->prm_[F])*std::log(this->var_[K_c]/this->var_[K_i]);
-    this->cur_[Ito] = (1.0-this->block_coeff_[Ito]) * (this->prm_[g_t]*this->var_[r]*this->var_[s]*(v_new - E_K));
-    this->cur_[IKur] = (1.0-this->block_coeff_[IKur]) * (this->prm_[g_kur]*this->var_[a_ur]*this->var_[i_ur]*(v_new - E_K));
-    this->cur_[IK1] = (1.0-this->block_coeff_[IK1]) * ( (this->prm_[g_K1]*std::pow(this->var_[K_c], 0.445700)*(v_new - E_K))/(1.00000+std::exp(( 1.50000*((v_new - E_K)+3.60000)*this->prm_[F])/( this->prm_[R]*this->prm_[T]))) );
-    
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[Ito]  = (1.0-this->block_coeff_[Ito]) * (this->prm_[g_t]*this->var_[r]*this->var_[s]*(v_new - E_K));
+        this->cur_[IKur] = (1.0-this->block_coeff_[IKur]) * (this->prm_[g_kur]*this->var_[a_ur]*this->var_[i_ur]*(v_new - E_K));
+        this->cur_[IK1]  = (1.0-this->block_coeff_[IK1]) * ( (this->prm_[g_K1]*std::pow(this->var_[K_c], 0.445700)*(v_new - E_K))/(1.00000+std::exp(( 1.50000*((v_new - E_K)+3.60000)*this->prm_[F])/( this->prm_[R]*this->prm_[T]))) );
+    #else
+        this->cur_[Ito]  = (this->prm_[g_t]*this->var_[r]*this->var_[s]*(v_new - E_K));
+        this->cur_[IKur] = (this->prm_[g_kur]*this->var_[a_ur]*this->var_[i_ur]*(v_new - E_K));
+        this->cur_[IK1]  = ( (this->prm_[g_K1]*std::pow(this->var_[K_c], 0.445700)*(v_new - E_K))/(1.00000+std::exp(( 1.50000*((v_new - E_K)+3.60000)*this->prm_[F])/( this->prm_[R]*this->prm_[T]))) );
+    #endif
+
     double pip = 1.00000/(1.00000+std::exp((v_new+55.0000)/24.0000));
-    this->cur_[IKr] = (1.0-this->block_coeff_[IKr]) * (this->prm_[g_Kr]*this->var_[pa]*pip*(v_new - E_K));
-    this->cur_[IKs] = (1.0-this->block_coeff_[IKs]) * (this->prm_[g_Ks]*this->var_[n]*(v_new - E_K));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKr] = (1.0-this->block_coeff_[IKr]) * (this->prm_[g_Kr]*this->var_[pa]*pip*(v_new - E_K));
+        this->cur_[IKs] = (1.0-this->block_coeff_[IKs]) * (this->prm_[g_Ks]*this->var_[n]*(v_new - E_K));
+    #else
+        this->cur_[IKr] = (this->prm_[g_Kr]*this->var_[pa]*pip*(v_new - E_K));
+        this->cur_[IKs] = (this->prm_[g_Ks]*this->var_[n]*(v_new - E_K));
+    #endif
+
     double pow_Na_i_15 = std::pow(this->var_[Na_i], 1.50000);
-    this->cur_[INaK] = (1.0-this->block_coeff_[INaK]) * ( ((((( this->prm_[i_NaK_max]*this->var_[K_c])/(this->var_[K_c]+this->prm_[K_NaK_K]))*pow_Na_i_15)/(pow_Na_i_15+this->prm_[pow_K_NaK_Na_15]))*(v_new+150.000))/(v_new+200.000) );
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaK] = (1.0-this->block_coeff_[INaK]) * ( ((((( this->prm_[i_NaK_max]*this->var_[K_c])/(this->var_[K_c]+this->prm_[K_NaK_K]))*pow_Na_i_15)/(pow_Na_i_15+this->prm_[pow_K_NaK_Na_15]))*(v_new+150.000))/(v_new+200.000) );
+    #else
+        this->cur_[INaK] = ( ((((( this->prm_[i_NaK_max]*this->var_[K_c])/(this->var_[K_c]+this->prm_[K_NaK_K]))*pow_Na_i_15)/(pow_Na_i_15+this->prm_[pow_K_NaK_Na_15]))*(v_new+150.000))/(v_new+200.000) );
+    #endif
     
     double dK_i =  - (((this->cur_[Ito]+this->cur_[IKur]+this->cur_[IK1]+this->cur_[IKs]+this->cur_[IKr]) -  2.00000*this->cur_[INaK])+ stim_current*this->prm_[Cm])/( this->prm_[Vol_i]*this->prm_[F]);
     this->var_[K_i] = this->var_[K_i] + dt*dK_i;
@@ -334,17 +354,33 @@ void Maleckar2009::Compute(double v_new, double dt, double stim_current)
     this->var_[K_c] = this->var_[K_c] + dt*dK_c;
     
     double E_Na =  (( this->prm_[R]*this->prm_[T])/this->prm_[F])*std::log(this->var_[Na_c]/this->var_[Na_i]);
-    this->cur_[INa] = (1.0-this->block_coeff_[INa]) * ( ((( this->prm_[P_Na]*this->var_[m]*this->var_[m]*this->var_[m]*( 0.900000*this->var_[h1]+ 0.100000*this->var_[h2])*this->var_[Na_c]*v_new*this->prm_[F]*this->prm_[F])/( this->prm_[R]*this->prm_[T]))*(std::exp(( (v_new - E_Na)*this->prm_[F])/( this->prm_[R]*this->prm_[T])) - 1.00000))/(std::exp(( v_new*this->prm_[F])/( this->prm_[R]*this->prm_[T])) - 1.00000) );
-    this->cur_[INab] = (1.0-this->block_coeff_[INab]) * (this->prm_[g_B_Na]*(v_new - E_Na));
-    this->cur_[INaCa] = (1.0-this->block_coeff_[INaCa]) * ( (this->prm_[K_NaCa]*( this->var_[Na_i]*this->var_[Na_i]*this->var_[Na_i]*this->var_[Ca_c]*std::exp(( this->prm_[F]*v_new*this->prm_[gamma_Na])/( this->prm_[R]*this->prm_[T])) -  this->var_[Na_c]*this->var_[Na_c]*this->var_[Na_c]*this->var_[Ca_i]*std::exp(( (this->prm_[gamma_Na] - 1.00000)*v_new*this->prm_[F])/( this->prm_[R]*this->prm_[T]))))/(1.00000+ this->prm_[d_NaCa]*( this->var_[Na_c]*this->var_[Na_c]*this->var_[Na_c]*this->var_[Ca_i]+ this->var_[Na_i]*this->var_[Na_i]*this->var_[Na_i]*this->var_[Ca_c])));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INa]   = (1.0-this->block_coeff_[INa]) * ( ((( this->prm_[P_Na]*this->var_[m]*this->var_[m]*this->var_[m]*( 0.900000*this->var_[h1]+ 0.100000*this->var_[h2])*this->var_[Na_c]*v_new*this->prm_[F]*this->prm_[F])/( this->prm_[R]*this->prm_[T]))*(std::exp(( (v_new - E_Na)*this->prm_[F])/( this->prm_[R]*this->prm_[T])) - 1.00000))/(std::exp(( v_new*this->prm_[F])/( this->prm_[R]*this->prm_[T])) - 1.00000) );
+        this->cur_[INab]  = (1.0-this->block_coeff_[INab]) * (this->prm_[g_B_Na]*(v_new - E_Na));
+        this->cur_[INaCa] = (1.0-this->block_coeff_[INaCa]) * ( (this->prm_[K_NaCa]*( this->var_[Na_i]*this->var_[Na_i]*this->var_[Na_i]*this->var_[Ca_c]*std::exp(( this->prm_[F]*v_new*this->prm_[gamma_Na])/( this->prm_[R]*this->prm_[T])) -  this->var_[Na_c]*this->var_[Na_c]*this->var_[Na_c]*this->var_[Ca_i]*std::exp(( (this->prm_[gamma_Na] - 1.00000)*v_new*this->prm_[F])/( this->prm_[R]*this->prm_[T]))))/(1.00000+ this->prm_[d_NaCa]*( this->var_[Na_c]*this->var_[Na_c]*this->var_[Na_c]*this->var_[Ca_i]+ this->var_[Na_i]*this->var_[Na_i]*this->var_[Na_i]*this->var_[Ca_c])));
+    #else
+        this->cur_[INa]   = ( ((( this->prm_[P_Na]*this->var_[m]*this->var_[m]*this->var_[m]*( 0.900000*this->var_[h1]+ 0.100000*this->var_[h2])*this->var_[Na_c]*v_new*this->prm_[F]*this->prm_[F])/( this->prm_[R]*this->prm_[T]))*(std::exp(( (v_new - E_Na)*this->prm_[F])/( this->prm_[R]*this->prm_[T])) - 1.00000))/(std::exp(( v_new*this->prm_[F])/( this->prm_[R]*this->prm_[T])) - 1.00000) );
+        this->cur_[INab]  = (this->prm_[g_B_Na]*(v_new - E_Na));
+        this->cur_[INaCa] = ( (this->prm_[K_NaCa]*( this->var_[Na_i]*this->var_[Na_i]*this->var_[Na_i]*this->var_[Ca_c]*std::exp(( this->prm_[F]*v_new*this->prm_[gamma_Na])/( this->prm_[R]*this->prm_[T])) -  this->var_[Na_c]*this->var_[Na_c]*this->var_[Na_c]*this->var_[Ca_i]*std::exp(( (this->prm_[gamma_Na] - 1.00000)*v_new*this->prm_[F])/( this->prm_[R]*this->prm_[T]))))/(1.00000+ this->prm_[d_NaCa]*( this->var_[Na_c]*this->var_[Na_c]*this->var_[Na_c]*this->var_[Ca_i]+ this->var_[Na_i]*this->var_[Na_i]*this->var_[Na_i]*this->var_[Ca_c])));
+    #endif
     double dNa_i =  - (this->cur_[INa]+this->cur_[INab]+ 3.00000*this->cur_[INaCa]+ 3.00000*this->cur_[INaK]+this->prm_[phi_Na_en])/( this->prm_[Vol_i]*this->prm_[F]);
     this->var_[Na_i] = this->var_[Na_i] + dt*dNa_i;
     
     double f_Ca = this->var_[Ca_d]/(this->var_[Ca_d]+this->prm_[k_Ca]);
-    this->cur_[ICaL] = (1.0-this->block_coeff_[ICaL]) * (this->prm_[g_Ca_L]*this->var_[d_L]*( f_Ca*this->var_[f_L1] + (1.00000 - f_Ca)*this->var_[f_L2])*(v_new - this->prm_[E_Ca_app]) );
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[ICaL] = (1.0-this->block_coeff_[ICaL]) * (this->prm_[g_Ca_L]*this->var_[d_L]*( f_Ca*this->var_[f_L1] + (1.00000 - f_Ca)*this->var_[f_L2])*(v_new - this->prm_[E_Ca_app]) );
+    #else
+        this->cur_[ICaL] = (this->prm_[g_Ca_L]*this->var_[d_L]*( f_Ca*this->var_[f_L1] + (1.00000 - f_Ca)*this->var_[f_L2])*(v_new - this->prm_[E_Ca_app]) );
+    #endif
     double E_Ca =  (( this->prm_[R]*this->prm_[T])/( 2.00000*this->prm_[F]))*std::log(this->var_[Ca_c]/this->var_[Ca_i]);
-    this->cur_[ICab] = (1.0-this->block_coeff_[ICab]) * (this->prm_[g_B_Ca]*(v_new - E_Ca));
-    this->cur_[ICaP] = (1.0-this->block_coeff_[ICaP]) * ( ( this->prm_[i_CaP_max]*this->var_[Ca_i])/(this->var_[Ca_i]+this->prm_[k_CaP]) );
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[ICab] = (1.0-this->block_coeff_[ICab]) * (this->prm_[g_B_Ca]*(v_new - E_Ca));
+        this->cur_[ICaP] = (1.0-this->block_coeff_[ICaP]) * ( ( this->prm_[i_CaP_max]*this->var_[Ca_i])/(this->var_[Ca_i]+this->prm_[k_CaP]) );
+    #else
+        this->cur_[ICab] = (this->prm_[g_B_Ca]*(v_new - E_Ca));
+        this->cur_[ICaP] = ( ( this->prm_[i_CaP_max]*this->var_[Ca_i])/(this->var_[Ca_i]+this->prm_[k_CaP]) );
+    #endif
+
     double dCa_c = (this->prm_[Ca_b] - this->var_[Ca_c])/this->prm_[tau_Ca]+((this->cur_[ICaL]+this->cur_[ICab]+this->cur_[ICaP]) -  2.00000*this->cur_[INaCa])/( 2.00000*this->prm_[Vol_c]*this->prm_[F]);
     this->var_[Ca_c] = this->var_[Ca_c] + dt*dCa_c;
     
@@ -355,7 +391,11 @@ void Maleckar2009::Compute(double v_new, double dt, double stim_current)
     double dCa_d =  - (this->cur_[ICaL]+i_di)/( 2.00000*this->prm_[Vol_d]*this->prm_[F]);
     this->var_[Ca_d] = this->var_[Ca_d] + dt*dCa_d;
     
-    this->cur_[IKACh] = (1.0-this->block_coeff_[IKACh]) * ((10.0000/(1.00000+( 9.13652*std::pow(1.00000, 0.477811))/std::pow(this->prm_[ACh], 0.477811)))*(0.0517000+0.451600/(1.00000+std::exp((v_new+59.5300)/17.1800)))*(v_new - E_K)*this->prm_[Cm] );
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKACh] = (1.0-this->block_coeff_[IKACh]) * ((10.0000/(1.00000+( 9.13652*std::pow(1.00000, 0.477811))/std::pow(this->prm_[ACh], 0.477811)))*(0.0517000+0.451600/(1.00000+std::exp((v_new+59.5300)/17.1800)))*(v_new - E_K)*this->prm_[Cm] );
+    #else
+        this->cur_[IKACh] = ((10.0000/(1.00000+( 9.13652*std::pow(1.00000, 0.477811))/std::pow(this->prm_[ACh], 0.477811)))*(0.0517000+0.451600/(1.00000+std::exp((v_new+59.5300)/17.1800)))*(v_new - E_K)*this->prm_[Cm] );
+    #endif
     this->cur_[MlcrCur::Iion] = (this->cur_[INa]+this->cur_[ICaL]+this->cur_[Ito]+this->cur_[IKur]+this->cur_[IK1]+this->cur_[IKr]+this->cur_[IKs]+this->cur_[INab]+this->cur_[ICab]+this->cur_[INaK]+this->cur_[ICaP]+this->cur_[INaCa]+this->cur_[IKACh])/this->prm_[Cm];
     this->var_[dvdt] = - (this->cur_[MlcrCur::Iion] - stim_current);
     
@@ -524,31 +564,31 @@ std::string Maleckar2009::PrintCurrents() const
 
 }
 
+#ifdef BLOCK_CELL_CURRS
+    std::string Maleckar2009::PrintBlockCoeffs() const
+    {
+        using namespace MlcrCur;
 
-std::string Maleckar2009::PrintBlockCoeffs() const
-{
-    using namespace MlcrCur;
+        // Create output string stream to pass the currents and their values.
+        std::ostringstream oss;
+        oss.precision(15);
+        oss << "INa = " << this->block_coeff_[INa] << "\n";
+        oss << "ICaL = " << this->block_coeff_[ICaL] << "\n";
+        oss << "Ito = " << this->block_coeff_[Ito] << "\n";
+        oss << "IKur = " << this->block_coeff_[IKur] << "\n";
+        oss << "IK1 = " << this->block_coeff_[IK1] << "\n";
+        oss << "IKr = " << this->block_coeff_[IKr] << "\n";
+        oss << "IKs = " << this->block_coeff_[IKs] << "\n";
+        oss << "INab = " << this->block_coeff_[INab] << "\n";
+        oss << "ICab = " << this->block_coeff_[ICab] << "\n";
+        oss << "INaK = " << this->block_coeff_[INaK] << "\n";
+        oss << "ICaP = " << this->block_coeff_[ICaP] << "\n";
+        oss << "INaCa = " << this->block_coeff_[INaCa] << "\n";
+        oss << "IKACh = " << this->block_coeff_[IKACh];
+        return oss.str();
 
-    // Create output string stream to pass the currents and their values.
-    std::ostringstream oss;
-    oss.precision(15);
-    oss << "INa = " << this->block_coeff_[INa] << "\n";
-    oss << "ICaL = " << this->block_coeff_[ICaL] << "\n";
-    oss << "Ito = " << this->block_coeff_[Ito] << "\n";
-    oss << "IKur = " << this->block_coeff_[IKur] << "\n";
-    oss << "IK1 = " << this->block_coeff_[IK1] << "\n";
-    oss << "IKr = " << this->block_coeff_[IKr] << "\n";
-    oss << "IKs = " << this->block_coeff_[IKs] << "\n";
-    oss << "INab = " << this->block_coeff_[INab] << "\n";
-    oss << "ICab = " << this->block_coeff_[ICab] << "\n";
-    oss << "INaK = " << this->block_coeff_[INaK] << "\n";
-    oss << "ICaP = " << this->block_coeff_[ICaP] << "\n";
-    oss << "INaCa = " << this->block_coeff_[INaCa] << "\n";
-    oss << "IKACh = " << this->block_coeff_[IKACh];
-    return oss.str();
-
-}
-
+    }
+#endif
 
 
 } // End of namespace ELECTRA

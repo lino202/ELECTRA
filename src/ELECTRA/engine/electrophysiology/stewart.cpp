@@ -195,7 +195,9 @@ Stewart::Stewart()
     this->var_.resize(69, 0.);
     this->prm_.resize(60, 0.);
     this->cur_.resize(21, 0.);
-    this->block_coeff_.resize(20, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.resize(20, 0.);
+    #endif
 
     // Set mapped data.
     this->SetDataMapping();
@@ -220,7 +222,9 @@ void Stewart::Initialize(CellType cell_type)
     this->var_.clear();           this->var_.resize(69, 0.);
     this->prm_.clear();           this->prm_.resize(60, 0.);
     this->cur_.clear();           this->cur_.resize(21, 0.);
-    this->block_coeff_.clear();   this->block_coeff_.resize(20, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.clear();   this->block_coeff_.resize(20, 0.);
+    #endif
 
     // Set the model variables.
     this->var_[v] = -75.6120082079284;
@@ -696,36 +700,38 @@ std::string Stewart::PrintCurrents() const
 
 }
 
+#ifdef BLOCK_CELL_CURRS
+    std::string Stewart::PrintBlockCoeffs() const
+    {
+        using namespace StrtCur;
 
-std::string Stewart::PrintBlockCoeffs() const
-{
-    using namespace StrtCur;
+        // Create output string stream to pass the currents and their values.
+        std::ostringstream oss;
+        oss.precision(15);
+        oss << "IfNa = " << this->block_coeff_[IfNa] << "\n";
+        oss << "IfK = " << this->block_coeff_[IfK] << "\n";
+        oss << "If = " << this->block_coeff_[If] << "\n";
+        oss << "Irel = " << this->block_coeff_[Irel] << "\n";
+        oss << "Isus = " << this->block_coeff_[Isus] << "\n";
+        oss << "INaK = " << this->block_coeff_[INaK] << "\n";
+        oss << "INaCa = " << this->block_coeff_[INaCa] << "\n";
+        oss << "IpCa = " << this->block_coeff_[IpCa] << "\n";
+        oss << "IpK = " << this->block_coeff_[IpK] << "\n";
+        oss << "Iup = " << this->block_coeff_[Iup] << "\n";
+        oss << "Ileak = " << this->block_coeff_[Ileak] << "\n";
+        oss << "Ixfer = " << this->block_coeff_[Ixfer] << "\n";
+        oss << "IK1 = " << this->block_coeff_[IK1] << "\n";
+        oss << "IKr = " << this->block_coeff_[IKr] << "\n";
+        oss << "IKs = " << this->block_coeff_[IKs] << "\n";
+        oss << "INa = " << this->block_coeff_[INa] << "\n";
+        oss << "IbNa = " << this->block_coeff_[IbNa] << "\n";
+        oss << "ICaL = " << this->block_coeff_[ICaL] << "\n";
+        oss << "IbCa = " << this->block_coeff_[IbCa] << "\n";
+        oss << "Ito = " << this->block_coeff_[Ito];
+        return oss.str();
 
-    // Create output string stream to pass the currents and their values.
-    std::ostringstream oss;
-    oss.precision(15);
-    oss << "IfNa = " << this->block_coeff_[IfNa] << "\n";
-    oss << "IfK = " << this->block_coeff_[IfK] << "\n";
-    oss << "If = " << this->block_coeff_[If] << "\n";
-    oss << "Irel = " << this->block_coeff_[Irel] << "\n";
-    oss << "Isus = " << this->block_coeff_[Isus] << "\n";
-    oss << "INaK = " << this->block_coeff_[INaK] << "\n";
-    oss << "INaCa = " << this->block_coeff_[INaCa] << "\n";
-    oss << "IpCa = " << this->block_coeff_[IpCa] << "\n";
-    oss << "IpK = " << this->block_coeff_[IpK] << "\n";
-    oss << "Iup = " << this->block_coeff_[Iup] << "\n";
-    oss << "Ileak = " << this->block_coeff_[Ileak] << "\n";
-    oss << "Ixfer = " << this->block_coeff_[Ixfer] << "\n";
-    oss << "IK1 = " << this->block_coeff_[IK1] << "\n";
-    oss << "IKr = " << this->block_coeff_[IKr] << "\n";
-    oss << "IKs = " << this->block_coeff_[IKs] << "\n";
-    oss << "INa = " << this->block_coeff_[INa] << "\n";
-    oss << "IbNa = " << this->block_coeff_[IbNa] << "\n";
-    oss << "ICaL = " << this->block_coeff_[ICaL] << "\n";
-    oss << "IbCa = " << this->block_coeff_[IbCa] << "\n";
-    oss << "Ito = " << this->block_coeff_[Ito];
-    return oss.str();
+    }
+#endif
 
-}
 
 } // End of namespace ELECTRA

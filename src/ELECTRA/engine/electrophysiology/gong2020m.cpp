@@ -519,7 +519,9 @@ Gong2020m::Gong2020m()
     // this->var_.resize(116, 0.);
     this->prm_.resize(353, 0.);
     this->cur_.resize(17, 0.);
-    this->block_coeff_.resize(16, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.resize(16, 0.);
+    #endif
 
     // Set mapped data.
     this->SetDataMapping();
@@ -539,7 +541,9 @@ void Gong2020m::Initialize(CellType cell_type)
     this->var_.clear();           this->var_.resize(115, 0.); //this->var_.resize(116, 0.);
     this->prm_.clear();           this->prm_.resize(353, 0.);
     this->cur_.clear();           this->cur_.resize(17, 0.);
-    this->block_coeff_.clear();   this->block_coeff_.resize(16, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.clear();   this->block_coeff_.resize(16, 0.);
+    #endif
 
     // Set initial values for the variables.
     this->var_[v] = -87.;
@@ -1788,9 +1792,13 @@ void Gong2020m::ComputeElectrophysiology(double v_new, double dt, double stim_cu
     // double INa_PKA = GNaP*(v_new-ENa)*std::pow(this->var_[m],3.0)*hP*this->var_[jP];
     // double INa_BP = GNaP*(v_new-ENa)*std::pow(this->var_[m],3.0)*hBP*this->var_[jBP];
 
-    // // Calculate INa.
-    // this->cur_[INa] = (1.0-this->block_coeff_[INa]) * ((1.0-fINa_CaMKonly-fINa_PKAonly-fINa_BP)*INa_NP + fINa_CaMKonly*INa_CaMK + fINa_PKAonly*INa_PKA + fINa_BP*INa_BP);
-    
+    // Calculate INa.
+    // #ifdef BLOCK_CELL_CURRS
+    //     this->cur_[INa] = (1.0-this->block_coeff_[INa]) * ((1.0-fINa_CaMKonly-fINa_PKAonly-fINa_BP)*INa_NP + fINa_CaMKonly*INa_CaMK + fINa_PKAonly*INa_PKA + fINa_BP*INa_BP);
+    // #else
+    //     this->cur_[INa] = ((1.0-fINa_CaMKonly-fINa_PKAonly-fINa_BP)*INa_NP + fINa_CaMKonly*INa_CaMK + fINa_PKAonly*INa_PKA + fINa_BP*INa_BP);
+    // #endif
+
     ////////////////////////// Tentusscher INa
     double m_inf = 1. / std::pow(1.+std::exp((-56.86-v_new)/9.03), 2.);
     double alpha_m = 1. / (1.+std::exp((-60.0-v_new)/5.));
@@ -1817,7 +1825,11 @@ void Gong2020m::ComputeElectrophysiology(double v_new, double dt, double stim_cu
     } 
     double tau_j = 1. / (alpha_j+beta_j);
     this->var_[j] = ALGORITHM::RushLarsen(j_inf, this->var_[j], dt, tau_j);
-    this->cur_[INa] = (1.0-this->block_coeff_[INa]) * (this->prm_[GNa]*this->var_[m]*this->var_[m]*this->var_[m]*this->var_[h]*this->var_[j]*(v_new - ENa));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INa] = (1.0-this->block_coeff_[INa]) * (this->prm_[GNa]*this->var_[m]*this->var_[m]*this->var_[m]*this->var_[h]*this->var_[j]*(v_new - ENa));
+    #else
+        this->cur_[INa] = (this->prm_[GNa]*this->var_[m]*this->var_[m]*this->var_[m]*this->var_[h]*this->var_[j]*(v_new - ENa));
+    #endif
     /////////////////////////
 
     // calculate INaL
@@ -1834,7 +1846,11 @@ void Gong2020m::ComputeElectrophysiology(double v_new, double dt, double stim_cu
     this->var_[hLp] = ALGORITHM::RushLarsen(hLssp, this->var_[hLp], dt, thLp);
 
     double fINaLp = (1.0/(1.0+this->prm_[KmCaMK]/CaMKa));
-    this->cur_[INaL] = (1.0-this->block_coeff_[INaL]) * (this->prm_[GNaL]*(v_new-ENa)*this->var_[mL]*((1.0-fINaLp)*this->var_[hL]+fINaLp*this->var_[hLp]));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaL] = (1.0-this->block_coeff_[INaL]) * (this->prm_[GNaL]*(v_new-ENa)*this->var_[mL]*((1.0-fINaLp)*this->var_[hL]+fINaLp*this->var_[hLp]));
+    #else
+        this->cur_[INaL] = (this->prm_[GNaL]*(v_new-ENa)*this->var_[mL]*((1.0-fINaLp)*this->var_[hL]+fINaLp*this->var_[hLp]));
+    #endif
 
     //// calculate Ito
     double ass = 1.0/(1.0+std::exp((-(v_new-14.34))/14.82));
@@ -1866,7 +1882,11 @@ void Gong2020m::ComputeElectrophysiology(double v_new, double dt, double stim_cu
 
     double ip = AiF*this->var_[iFp]+AiS*this->var_[iSp];
     double fItop = (1.0/(1.0+this->prm_[KmCaMK]/CaMKa));
-    this->cur_[Ito] = (1.0-this->block_coeff_[Ito]) * (this->prm_[Gto]*(v_new-EK)*((1.0-fItop)*this->var_[a]*i+fItop*this->var_[ap]*ip));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[Ito] = (1.0-this->block_coeff_[Ito]) * (this->prm_[Gto]*(v_new-EK)*((1.0-fItop)*this->var_[a]*i+fItop*this->var_[ap]*ip));
+    #else
+        this->cur_[Ito] = (this->prm_[Gto]*(v_new-EK)*((1.0-fItop)*this->var_[a]*i+fItop*this->var_[ap]*ip));
+    #endif
 
     //// calculate ICaL, ICaNa, ICaK
     // gating NP 
@@ -1979,10 +1999,16 @@ void Gong2020m::ComputeElectrophysiology(double v_new, double dt, double stim_cu
     double ICaK_BP = PCaKP*PhiCaK*this->var_[dP]*(fBP*(1.0-this->var_[nca])+this->var_[jca]*fcaBP*this->var_[nca]);
 
     // 4 population
-    this->cur_[ICaL]  = (1.0-this->block_coeff_[ICaL]) * ((1-fICaL_CaMKonly-fICaL_PKAonly-fICaL_BP)*ICaL_NP + fICaL_CaMKonly*ICaL_CaMK + fICaL_PKAonly*ICaL_PKA + fICaL_BP*ICaL_BP);
-    this->cur_[ICaNa] = (1.0-this->block_coeff_[ICaNa]) * ((1-fICaL_CaMKonly-fICaL_PKAonly-fICaL_BP)*ICaNa_NP + fICaL_CaMKonly*ICaNa_CaMK + fICaL_PKAonly*ICaNa_PKA + fICaL_BP*ICaNa_BP);
-    this->cur_[ICaK]  = (1.0-this->block_coeff_[ICaK]) * ((1-fICaL_CaMKonly-fICaL_PKAonly-fICaL_BP)*ICaK_NP + fICaL_CaMKonly*ICaK_CaMK + fICaL_PKAonly*ICaK_PKA + fICaL_BP*ICaK_BP);
-
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[ICaL]  = (1.0-this->block_coeff_[ICaL]) * ((1-fICaL_CaMKonly-fICaL_PKAonly-fICaL_BP)*ICaL_NP + fICaL_CaMKonly*ICaL_CaMK + fICaL_PKAonly*ICaL_PKA + fICaL_BP*ICaL_BP);
+        this->cur_[ICaNa] = (1.0-this->block_coeff_[ICaNa]) * ((1-fICaL_CaMKonly-fICaL_PKAonly-fICaL_BP)*ICaNa_NP + fICaL_CaMKonly*ICaNa_CaMK + fICaL_PKAonly*ICaNa_PKA + fICaL_BP*ICaNa_BP);
+        this->cur_[ICaK]  = (1.0-this->block_coeff_[ICaK]) * ((1-fICaL_CaMKonly-fICaL_PKAonly-fICaL_BP)*ICaK_NP + fICaL_CaMKonly*ICaK_CaMK + fICaL_PKAonly*ICaK_PKA + fICaL_BP*ICaK_BP);
+    #else
+        this->cur_[ICaL]  = ((1-fICaL_CaMKonly-fICaL_PKAonly-fICaL_BP)*ICaL_NP + fICaL_CaMKonly*ICaL_CaMK + fICaL_PKAonly*ICaL_PKA + fICaL_BP*ICaL_BP);
+        this->cur_[ICaNa] = ((1-fICaL_CaMKonly-fICaL_PKAonly-fICaL_BP)*ICaNa_NP + fICaL_CaMKonly*ICaNa_CaMK + fICaL_PKAonly*ICaNa_PKA + fICaL_BP*ICaNa_BP);
+        this->cur_[ICaK]  = ((1-fICaL_CaMKonly-fICaL_PKAonly-fICaL_BP)*ICaK_NP + fICaL_CaMKonly*ICaK_CaMK + fICaL_PKAonly*ICaK_PKA + fICaL_BP*ICaK_BP);
+    #endif
+    
     //// calculate IKr
     double xrss = 1.0/(1.0+std::exp((-(v_new+8.337))/6.789));
     double txrf = 12.98+1.0/(0.3652*std::exp((v_new-31.66)/3.869)+4.123e-5*std::exp((-(v_new-47.78))/20.38));
@@ -1996,7 +2022,11 @@ void Gong2020m::ComputeElectrophysiology(double v_new, double dt, double stim_cu
 
     double xr = Axrf*this->var_[xrf] + Axrs*this->var_[xrs];
     double rkr = 1.0/(1.0+std::exp((v_new+55.0)/75.0))*1.0/(1.0+std::exp((v_new-10.0)/30.0));
-    this->cur_[IKr] = (1.0-this->block_coeff_[IKr]) * (this->prm_[GKr]*std::sqrt(this->prm_[ko]/5.4)*xr*rkr*(v_new-EK));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKr] = (1.0-this->block_coeff_[IKr]) * (this->prm_[GKr]*std::sqrt(this->prm_[ko]/5.4)*xr*rkr*(v_new-EK));
+    #else
+        this->cur_[IKr] = (this->prm_[GKr]*std::sqrt(this->prm_[ko]/5.4)*xr*rkr*(v_new-EK));
+    #endif
 
     //// calculate IKs
     double xs1ss = 1.0/(1.0+std::exp((-(v_new+11.60))/8.932));
@@ -2028,7 +2058,11 @@ void Gong2020m::ComputeElectrophysiology(double v_new, double dt, double stim_cu
     double IKs_NP = this->prm_[GKs]*KsCa*this->var_[xs1]*this->var_[xs2]*(v_new-EKs);
     double IKs_PKA = GKsP*KsCa*this->var_[xs1P]*this->var_[xs2P]*(v_new-EKs);
     double fIKs_PKA = IKs_P;
-    this->cur_[IKs] = (1.0-this->block_coeff_[IKs]) * ((1.0-fIKs_PKA)*IKs_NP + fIKs_PKA*IKs_PKA);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKs] = (1.0-this->block_coeff_[IKs]) * ((1.0-fIKs_PKA)*IKs_NP + fIKs_PKA*IKs_PKA);
+    #else
+        this->cur_[IKs] = ((1.0-fIKs_PKA)*IKs_NP + fIKs_PKA*IKs_PKA);
+    #endif
 
     //// calculate IK1
     double xk1ss = 1.0/(1.0+std::exp(-(v_new+2.5538*this->prm_[ko]+144.59)/(1.5692*this->prm_[ko]+3.8115)));
@@ -2036,7 +2070,11 @@ void Gong2020m::ComputeElectrophysiology(double v_new, double dt, double stim_cu
     this->var_[xk1] = ALGORITHM::RushLarsen(xk1ss, this->var_[xk1], dt, txk1);
 
     double rk1 = 1.0/(1.0+std::exp((v_new+105.8-2.6*this->prm_[ko])/9.493));
-    this->cur_[IK1] = (1.0-this->block_coeff_[IK1]) * (this->prm_[GK1]*std::sqrt(this->prm_[ko])*rk1*this->var_[xk1]*(v_new-EK));    
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IK1] = (1.0-this->block_coeff_[IK1]) * (this->prm_[GK1]*std::sqrt(this->prm_[ko])*rk1*this->var_[xk1]*(v_new-EK));    
+    #else
+        this->cur_[IK1] = (this->prm_[GK1]*std::sqrt(this->prm_[ko])*rk1*this->var_[xk1]*(v_new-EK));    
+    #endif
 
     //// calculate INaCa_i
     double kna1 = 15.0;
@@ -2089,7 +2127,11 @@ void Gong2020m::ComputeElectrophysiology(double v_new, double dt, double stim_cu
     double zna = 1.0;
     double JncxNa = 3.0*(E4*k7-E1*k8)+E3*k4pp-E2*k3pp;
     double JncxCa = E2*k2-E1*k1;
-    this->cur_[INaCa_i] = (1.0-this->block_coeff_[INaCa_i]) * (0.8*this->prm_[Gncx]*allo*(zna*JncxNa+zca*JncxCa));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaCa_i] = (1.0-this->block_coeff_[INaCa_i]) * (0.8*this->prm_[Gncx]*allo*(zna*JncxNa+zca*JncxCa));
+    #else
+        this->cur_[INaCa_i] = (0.8*this->prm_[Gncx]*allo*(zna*JncxNa+zca*JncxCa));
+    #endif
 
     //// calculate INaCa_ss
     h1 = 1.+this->var_[nass]/kna3*(1+hna);
@@ -2128,7 +2170,12 @@ void Gong2020m::ComputeElectrophysiology(double v_new, double dt, double stim_cu
     allo = 1.0/(1.0+std::pow((KmCaAct/this->var_[cass]),2.0));
     JncxNa = 3.0*(E4*k7-E1*k8)+E3*k4pp-E2*k3pp;
     JncxCa = E2*k2-E1*k1;
-    this->cur_[INaCa_ss] = (1.0-this->block_coeff_[INaCa_ss]) * (0.2*this->prm_[Gncx]*allo*(zna*JncxNa+zca*JncxCa));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaCa_ss] = (1.0-this->block_coeff_[INaCa_ss]) * (0.2*this->prm_[Gncx]*allo*(zna*JncxNa+zca*JncxCa));
+    #else
+        this->cur_[INaCa_ss] = (0.2*this->prm_[Gncx]*allo*(zna*JncxNa+zca*JncxCa));
+    #endif
+    
 
     
     //// calculate INaK
@@ -2185,7 +2232,11 @@ void Gong2020m::ComputeElectrophysiology(double v_new, double dt, double stim_cu
     double JnakK = 2.0*(E4*b1-E3*a1);
 
     // short cut here cause INaK_P will only be given 0 or 1
-    this->cur_[INaK] = (1.0-this->block_coeff_[INaK]) * (this->prm_[Pnak]*(zna*JnakNa+zk*JnakK));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaK] = (1.0-this->block_coeff_[INaK]) * (this->prm_[Pnak]*(zna*JnakNa+zk*JnakK));
+    #else
+        this->cur_[INaK] = (this->prm_[Pnak]*(zna*JnakNa+zk*JnakK));
+    #endif
 
     //// background current and membrane pumps
     //calculate IKb
@@ -2196,16 +2247,22 @@ void Gong2020m::ComputeElectrophysiology(double v_new, double dt, double stim_cu
     double GKbP = this->prm_[GKb]*2.5 ;
     double IKb_PKA = GKbP*xkb*(v_new-EK);
     double fIKb_P = IKb_P;
-    this->cur_[IKb] = (1.0-this->block_coeff_[IKb]) * ((1.0-fIKb_P)*IKb_NP + fIKb_P*IKb_PKA);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKb] = (1.0-this->block_coeff_[IKb]) * ((1.0-fIKb_P)*IKb_NP + fIKb_P*IKb_PKA);
+    #else
+        this->cur_[IKb] = ((1.0-fIKb_P)*IKb_NP + fIKb_P*IKb_PKA);
+    #endif
     
-    //calculate INab
-    this->cur_[INab] = (1.0-this->block_coeff_[INab]) * (this->prm_[PNab]*vffrt*(this->var_[nai]*std::exp(vfrt)-this->prm_[nao])/(std::exp(vfrt)-1.0));
-
-    //calculate ICab
-    this->cur_[ICab] = (1.0-this->block_coeff_[ICab]) * (this->prm_[PCab]*4.0*vffrt*(this->var_[cai]*std::exp(2.0*vfrt)-0.341*this->prm_[cao])/(std::exp(2.0*vfrt)-1.0));
-
-    //calculate IpCa
-    this->cur_[IpCa] = (1.0-this->block_coeff_[IpCa]) * (this->prm_[GpCa]*this->var_[cai]/(0.0005+this->var_[cai]));
+    //calculate INab, ICab and IpCa
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INab] = (1.0-this->block_coeff_[INab]) * (this->prm_[PNab]*vffrt*(this->var_[nai]*std::exp(vfrt)-this->prm_[nao])/(std::exp(vfrt)-1.0));
+        this->cur_[ICab] = (1.0-this->block_coeff_[ICab]) * (this->prm_[PCab]*4.0*vffrt*(this->var_[cai]*std::exp(2.0*vfrt)-0.341*this->prm_[cao])/(std::exp(2.0*vfrt)-1.0));
+        this->cur_[IpCa] = (1.0-this->block_coeff_[IpCa]) * (this->prm_[GpCa]*this->var_[cai]/(0.0005+this->var_[cai]));
+    #else
+        this->cur_[INab] = (this->prm_[PNab]*vffrt*(this->var_[nai]*std::exp(vfrt)-this->prm_[nao])/(std::exp(vfrt)-1.0));
+        this->cur_[ICab] = (this->prm_[PCab]*4.0*vffrt*(this->var_[cai]*std::exp(2.0*vfrt)-0.341*this->prm_[cao])/(std::exp(2.0*vfrt)-1.0));
+        this->cur_[IpCa] = (this->prm_[GpCa]*this->var_[cai]/(0.0005+this->var_[cai]));
+    #endif
 
     // Compute the total Iion current.
     this->cur_[Gng20mCur::Iion] = this->cur_[INa]  + this->cur_[INaL] +  this->cur_[Ito] + this->cur_[ICaL] + this->cur_[ICaNa] + 
@@ -3537,31 +3594,33 @@ std::string Gong2020m::PrintCurrents() const
 
 }
 
+#ifdef BLOCK_CELL_CURRS
+    std::string Gong2020m::PrintBlockCoeffs() const
+    {
+        using namespace Gng20mCur;
 
-std::string Gong2020m::PrintBlockCoeffs() const
-{
-    using namespace Gng20mCur;
+        // Create output string stream to pass the currents and their values.
+        std::ostringstream oss;
+        oss.precision(15);
+        oss << "INa = " << this->block_coeff_[INa] << "\n";
+        oss << "INaL = " << this->block_coeff_[INaL] << "\n";
+        oss << "Ito = " << this->block_coeff_[Ito] << "\n";
+        oss << "ICaL = " << this->block_coeff_[ICaL] << "\n";
+        oss << "ICaNa = " << this->block_coeff_[ICaNa] << "\n";
+        oss << "ICaK = " << this->block_coeff_[ICaK] << "\n";
+        oss << "IKr = " << this->block_coeff_[IKr] << "\n";
+        oss << "IKs = " << this->block_coeff_[IKs] << "\n";
+        oss << "IK1 = " << this->block_coeff_[IK1] << "\n";
+        oss << "INaCa_ss = " << this->block_coeff_[INaCa_i] << "\n";
+        oss << "INaCa_ss = " << this->block_coeff_[INaCa_ss] << "\n";
+        oss << "INaK = " << this->block_coeff_[INaK] << "\n";
+        oss << "IKb = " << this->block_coeff_[IKb] << "\n";
+        oss << "INab = " << this->block_coeff_[INab] << "\n";
+        oss << "ICab = " << this->block_coeff_[ICab] << "\n";
+        oss << "IpCa = " << this->block_coeff_[IpCa];
+        return oss.str();
+    }
+#endif
 
-    // Create output string stream to pass the currents and their values.
-    std::ostringstream oss;
-    oss.precision(15);
-    oss << "INa = " << this->block_coeff_[INa] << "\n";
-    oss << "INaL = " << this->block_coeff_[INaL] << "\n";
-    oss << "Ito = " << this->block_coeff_[Ito] << "\n";
-    oss << "ICaL = " << this->block_coeff_[ICaL] << "\n";
-    oss << "ICaNa = " << this->block_coeff_[ICaNa] << "\n";
-    oss << "ICaK = " << this->block_coeff_[ICaK] << "\n";
-    oss << "IKr = " << this->block_coeff_[IKr] << "\n";
-    oss << "IKs = " << this->block_coeff_[IKs] << "\n";
-    oss << "IK1 = " << this->block_coeff_[IK1] << "\n";
-    oss << "INaCa_ss = " << this->block_coeff_[INaCa_i] << "\n";
-    oss << "INaCa_ss = " << this->block_coeff_[INaCa_ss] << "\n";
-    oss << "INaK = " << this->block_coeff_[INaK] << "\n";
-    oss << "IKb = " << this->block_coeff_[IKb] << "\n";
-    oss << "INab = " << this->block_coeff_[INab] << "\n";
-    oss << "ICab = " << this->block_coeff_[ICab] << "\n";
-    oss << "IpCa = " << this->block_coeff_[IpCa];
-    return oss.str();
-}
 
 } // End of namespace ELECTRA

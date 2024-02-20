@@ -347,7 +347,15 @@ void ConfigElectrophys::ManualCellInitialization(const Parser &parser, const std
                 //Set the data to the corresponding entry of the ap model of the cell.
                 if (is_var) { cell->SetVar(cell->MappedDataEntry(key), val); }
                 else if (is_prm) { cell->SetPrm(cell->MappedDataEntry(key), val); }
-                else if (is_block) { cell->SetBlockCoeff(cell->MappedDataEntry(key), val); }
+                else if (is_block) { 
+                    #ifdef BLOCK_CELL_CURRS
+                        cell->SetBlockCoeff(cell->MappedDataEntry(key), val); 
+                    #else
+                        std::string error_msg = "Current block found on manual init file but BLOCK_CELL_CURRS is OFF. Build with BLOCK_CELL_CURRS=ON or erase block currents init values";
+                        throw std::out_of_range(ELECTRA::Logger::Error(error_msg));
+                    #endif
+                    
+                }
             }
         } // End of Try to set data if a category was found.
 

@@ -98,7 +98,9 @@ protected:
 
     std::vector<double> cur_;          /**< The ionic currents of the electrophysiology model */
 
-    std::vector<double> block_coeff_;  /**< The ionic current block coefficients of the electrophysiology model */
+    #ifdef BLOCK_CELL_CURRS
+        std::vector<double> block_coeff_;  /**< The ionic current block coefficients of the electrophysiology model */
+    #endif
 
     std::unordered_map<std::string, std::size_t> mapped_data_;  /**< Mapping for accessing ap data efficiently */
 
@@ -182,7 +184,9 @@ public:
      * \param [in] value The inhibition coefficient percentage value expressed in decimal form.
      * \return [void]
      */
-    inline virtual void SetBlockCoeff(std::size_t id, double value) { this->block_coeff_.at(id) = value; }
+    #ifdef BLOCK_CELL_CURRS
+        inline virtual void SetBlockCoeff(std::size_t id, double value) { this->block_coeff_.at(id) = value; }
+    #endif
 
 
     /*!
@@ -210,7 +214,9 @@ public:
      * \brief To be used by the inheriting electrophysiology model to print to std::string its currents' inhibition coefficients and their values.
      * \return [std::string] The electrophysiology model's currents' inhibition coefficients and their values.
     */
-    virtual std::string PrintBlockCoeffs() const = 0;
+    #ifdef BLOCK_CELL_CURRS
+        virtual std::string PrintBlockCoeffs() const = 0;
+    #endif
 
 
     /**
@@ -336,7 +342,9 @@ public:
      * \param [in] id The index of the desired current. Use ap model enumeration for safe access. 
      * \return [double] The block coefficient percentage value expressed in decimal form for the required current with index cur.
      */
-    inline double BlockCoeff(std::size_t id) { return this->block_coeff_[id]; }
+    #ifdef BLOCK_CELL_CURRS
+        inline double BlockCoeff(std::size_t id) { return this->block_coeff_[id]; }
+    #endif
 
 
     /**
@@ -347,7 +355,9 @@ public:
      * \param [in] id The index of the desired current. Use ap model enumeration for safe access. 
      * \return [double] The block coefficient percentage value expressed in decimal form for the required current with index cur.
      */
-    inline double BlockCoeffAt(std::size_t id) const { return this->block_coeff_.at(id); }
+    #ifdef BLOCK_CELL_CURRS
+        inline double BlockCoeffAt(std::size_t id) const { return this->block_coeff_.at(id); }
+    #endif
 
 
     /**

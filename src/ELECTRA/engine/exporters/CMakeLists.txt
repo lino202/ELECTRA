@@ -23,6 +23,9 @@ SET(HEADERS
 add_library(${LIB_NAME} "")
 target_sources(${LIB_NAME} PRIVATE ${SOURCES})
 target_compile_definitions(${LIB_NAME} PUBLIC ELECTRA_VERSION="${PROJECT_VERSION}")
+if(BLOCK_CELL_CURRS)
+    target_compile_options(${LIB_NAME} PRIVATE -DBLOCK_CELL_CURRS)
+endif()
 target_link_libraries(${LIB_NAME} PUBLIC Eigen3::Eigen)
 
 include(GenerateExportHeader)

@@ -131,7 +131,9 @@ GrandiAtri::GrandiAtri()
     this->var_.resize(32, 0.);
     this->prm_.resize(45, 0.);
     this->cur_.resize(21, 0.);
-    this->block_coeff_.resize(20, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.resize(20, 0.);
+    #endif
 
     // Set mapped data.
     this->SetDataMapping();
@@ -156,7 +158,9 @@ void GrandiAtri::Initialize(CellType cell_type)
     this->var_.clear();           this->var_.resize(32, 0.);
     this->prm_.clear();           this->prm_.resize(45, 0.);
     this->cur_.clear();           this->cur_.resize(21, 0.);
-    this->block_coeff_.clear();   this->block_coeff_.resize(20, 0.);
+    #ifdef BLOCK_CELL_CURRS
+        this->block_coeff_.clear();   this->block_coeff_.resize(20, 0.);
+    #endif
 
     // Set the model variables.
     this->var_[v]       = -73.749725;
@@ -410,7 +414,11 @@ void GrandiAtri::Compute(double v_new, double dt, double stim_current)
     // Compute sodium current.
     double INa_junc = Fjunc * GNa * this->var_[mo]*this->var_[mo]*this->var_[mo] * this->var_[ho] * this->var_[jo] * (v_new-ena_junc);
     double INa_sl = Fsl * GNa * this->var_[mo]*this->var_[mo]*this->var_[mo] * this->var_[ho] * this->var_[jo] * (v_new-ena_sl);
-    this->cur_[INa] = (1.0-this->block_coeff_[INa]) * (INa_junc + INa_sl);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INa] = (1.0-this->block_coeff_[INa]) * (INa_junc + INa_sl);
+    #else
+        this->cur_[INa] = (INa_junc + INa_sl);
+    #endif
 
     // Solving gating variable n61 with Rush Larsen.
     double GNaL = 0.0025*this->prm_[AF];
@@ -426,21 +434,33 @@ void GrandiAtri::Compute(double v_new, double dt, double stim_current)
     // Compute late sodium current.
     double INaL_junc = Fjunc * GNaL * this->prm_[n60]*this->prm_[n60]*this->prm_[n60] * this->prm_[n61] * (v_new-ena_junc);
     double INaL_sl = Fsl * GNaL * this->prm_[n60]*this->prm_[n60]*this->prm_[n60] * this->prm_[n61] * (v_new-ena_sl);
-    this->cur_[INaL] = (1.0-this->block_coeff_[INaL]) * (INaL_junc + INaL_sl);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaL] = (1.0-this->block_coeff_[INaL]) * (INaL_junc + INaL_sl);
+    #else
+        this->cur_[INaL] = (INaL_junc + INaL_sl);
+    #endif
 
     this->prm_[n62] = this->cur_[INaL];
 
     // Compute sodium background current
     double INab_junc = Fjunc * GNaB * (v_new-ena_junc);
     double INab_sl = Fsl * GNaB * (v_new-ena_sl);
-    this->cur_[INab] = (1.0-this->block_coeff_[INab]) * (INab_junc + INab_sl);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INab] = (1.0-this->block_coeff_[INab]) * (INab_junc + INab_sl);
+    #else
+        this->cur_[INab] = (INab_junc + INab_sl);
+    #endif
 
     // Compute sodium/potassium pump current.
     double sigma = (std::exp(Nao/67.3)-1.) / 7.;
     double fnak = 1. / (1. + 0.1245*std::exp(-0.1*v_new*FoRT) + 0.0365*sigma*std::exp(-v_new*FoRT));
     double INaK_junc = Fjunc * IbarNaK * fnak * Ko / (1.+std::pow(KmNaip/this->prm_[Najo], 4.)) / (Ko+KmKo);
     double INaK_sl = Fsl * IbarNaK * fnak * Ko / (1.+std::pow(KmNaip/this->prm_[Naslo], 4.)) / (Ko+KmKo);
-    this->cur_[INaK] = (1.0-this->block_coeff_[INaK]) * (INaK_junc + INaK_sl);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[INaK] = (1.0-this->block_coeff_[INaK]) * (INaK_junc + INaK_sl);
+    #else
+        this->cur_[INaK] = (INaK_junc + INaK_sl);
+    #endif
 
     // Solving xkro gating variable with Rush Larsen.
     double gkr = 0.035*std::sqrt(Ko/5.4);
@@ -450,7 +470,11 @@ void GrandiAtri::Compute(double v_new, double dt, double stim_current)
 
     // Compute rapidly activating potassium current.
     double rkr = 1. / (1.+std::exp((v_new+74.) / 24.));
-    this->cur_[IKr] = (1.0-this->block_coeff_[IKr]) * (gkr * this->var_[xkro] * rkr * (v_new-ek));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKr] = (1.0-this->block_coeff_[IKr]) * (gkr * this->var_[xkro] * rkr * (v_new-ek));
+    #else
+        this->cur_[IKr] = (gkr * this->var_[xkro] * rkr * (v_new-ek));
+    #endif
 
     // Solving xkso gating variable with Rush Larsen.
     double gks_junc = (1. + this->prm_[AF] + 2.*this->prm_[ISO]) * (1. + 0.58*this->prm_[ISOdlf1muM]) * (1. + 0.3*this->prm_[ISOdlf1nM]) * 0.0035;
@@ -462,17 +486,32 @@ void GrandiAtri::Compute(double v_new, double dt, double stim_current)
     // Compute slowly activating potassium current.
     double eks = (1./FoRT) * std::log((Ko + pNaK*Nao) / (this->prm_[Kio] + pNaK*this->prm_[Naio]));
     double IKs_junc = Fjunc * gks_junc * this->var_[xkso]*this->var_[xkso] * (v_new-eks);
-    double IKs_sl = Fsl * gks_sl * this->var_[xkso]*this->var_[xkso] * (v_new-eks);                                                                                                                                   
-    this->cur_[IKs] = (1.0-this->block_coeff_[IKs]) * (IKs_junc + IKs_sl);
+    double IKs_sl = Fsl * gks_sl * this->var_[xkso]*this->var_[xkso] * (v_new-eks);  
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKs] = (1.0-this->block_coeff_[IKs]) * (IKs_junc + IKs_sl);
+    #else
+        this->cur_[IKs] = (IKs_junc + IKs_sl);
+    #endif
+                                                                                                                                 
 
     // Compute plateau potassium current.
     double kp_kp = 1. / (1.+std::exp(7.488 - v_new/5.98));
     double IKp_junc = Fjunc * gkp * kp_kp * (v_new-ek);
     double IKp_sl = Fsl * gkp * kp_kp * (v_new-ek);
-    this->cur_[IKp] = (1.0-this->block_coeff_[IKp]) * (IKp_junc + IKp_sl);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKp] = (1.0-this->block_coeff_[IKp]) * (IKp_junc + IKp_sl);
+    #else
+        this->cur_[IKp] = (IKp_junc + IKp_sl);
+    #endif
+
 
     // Compute acetylcholine potassium current.
-    this->cur_[IKach] = (1.0-this->block_coeff_[IKach]) * (1. / (1. + std::pow(0.03/this->prm_[Ach], 2.1)) * (v_new-ek) * (0.08 + 0.04 / (1. + std::exp((v_new + 91.) / 12.))));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKach] = (1.0-this->block_coeff_[IKach]) * (1. / (1. + std::pow(0.03/this->prm_[Ach], 2.1)) * (v_new-ek) * (0.08 + 0.04 / (1. + std::exp((v_new + 91.) / 12.))));
+    #else
+        this->cur_[IKach] = (1. / (1. + std::pow(0.03/this->prm_[Ach], 2.1)) * (v_new-ek) * (0.08 + 0.04 / (1. + std::exp((v_new + 91.) / 12.))));
+    #endif
+
     
     //Compute potassium-calcium current as in Krizanek, Echebarria & Penaranda.
     double tau = 3.;
@@ -481,7 +520,12 @@ void GrandiAtri::Compute(double v_new, double dt, double stim_current)
     double denomzss = 1. + numzss;
     double yss = numzss / denomzss;
     this->prm_[ikcaoo] = ALGORITHM::RushLarsen(yss, this->prm_[ikcaoo], dt, tau);
-    this->cur_[IKCa] = (1.0-this->block_coeff_[IKCa]) * (gKCa * this->prm_[ikcaoo]*this->prm_[ikcaoo] * (v_new-ek));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKCa] = (1.0-this->block_coeff_[IKCa]) * (gKCa * this->prm_[ikcaoo]*this->prm_[ikcaoo] * (v_new-ek));
+    #else
+        this->cur_[IKCa] = (gKCa * this->prm_[ikcaoo]*this->prm_[ikcaoo] * (v_new-ek));
+    #endif
+
     
     // Compute transient outward potassium current (fast component) with modification for human myocytes.    
     double GtoFast = (1. - 0.7*this->prm_[AF]) * (1. - 0.38*this->prm_[ISOdlf1muM]) * (1. - 0.106*this->prm_[ISOdlf1nM]) * 0.165; // [nS/pF]
@@ -495,8 +539,11 @@ void GrandiAtri::Compute(double v_new, double dt, double stim_current)
     double ytoss = 1. / (1. + std::exp((v_new+40.5) / 11.5));
     double tauytof = 25.635 * std::exp(-std::pow((v_new+52.45)/15.8827, 2.)) + 24.14;    
     this->var_[ytofo] = ALGORITHM::RushLarsen(ytoss, this->var_[ytofo], dt, tauytof);
-
-    this->cur_[Ito] = (1.0-this->block_coeff_[Ito]) * (GtoFast * this->var_[xtofo] * this->var_[ytofo] * (v_new-ek));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[Ito] = (1.0-this->block_coeff_[Ito]) * (GtoFast * this->var_[xtofo] * this->var_[ytofo] * (v_new-ek));
+    #else
+        this->cur_[Ito] = (GtoFast * this->var_[xtofo] * this->var_[ytofo] * (v_new-ek));
+    #endif
 
     // Compute ultra rapid delayed rectifier outward potassium current. Based on Maleckar et al. 2009 - EG
     // Equations for activation.
@@ -509,8 +556,11 @@ void GrandiAtri::Compute(double v_new, double dt, double stim_current)
     double ykurss = 1. / (1. + std::exp((v_new+7.5) / 10.));
     double tauykur = 590. / (1. + std::exp((v_new+60.) / 10.)) + 3050.;
     this->prm_[skuro] = ALGORITHM::RushLarsen(ykurss, this->prm_[skuro], dt, tauykur);
-
-    this->cur_[IKur] = (1.0-this->block_coeff_[IKur]) * (Gkur * this->prm_[rkuro] * this->prm_[skuro] * (v_new-ek));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKur] = (1.0-this->block_coeff_[IKur]) * (Gkur * this->prm_[rkuro] * this->prm_[skuro] * (v_new-ek));
+    #else
+        this->cur_[IKur] = (Gkur * this->prm_[rkuro] * this->prm_[skuro] * (v_new-ek));
+    #endif
 
     // Compute time-independent potassium current.
     double aki = 1.02 / (1. + std::exp(0.2385*(v_new-ek-59.215)));
@@ -518,13 +568,21 @@ void GrandiAtri::Compute(double v_new, double dt, double stim_current)
     double kiss = aki / (aki+bki);
     
     // Multiplying IK1 by 0.15 to scale it to single cell isolated atrial cell resting potential
-    this->cur_[IKi] = (1.0-this->block_coeff_[IKi]) * (1.+this->prm_[AF]) * 0.0525 * std::sqrt(Ko/5.4) * kiss * (v_new-ek);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IKi] = (1.0-this->block_coeff_[IKi]) * (1.+this->prm_[AF]) * 0.0525 * std::sqrt(Ko/5.4) * kiss * (v_new-ek);
+    #else
+        this->cur_[IKi] = (1.+this->prm_[AF]) * 0.0525 * std::sqrt(Ko/5.4) * kiss * (v_new-ek);
+    #endif
 
     // Compute calcium-activated Cl Current and Cl background current.
     double IClCa_junc = Fjunc * GClCa / (1. + KdClCa/this->prm_[Cajo]) * (v_new-ecl);
     double IClCa_sl = Fsl * GClCa / (1. + KdClCa/this->prm_[Caslo]) * (v_new-ecl);
     double IClCa = IClCa_junc + IClCa_sl;
-    this->cur_[IClb] = (1.0-this->block_coeff_[IClb]) * (GClB * (v_new-ecl));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[IClb] = (1.0-this->block_coeff_[IClb]) * (GClB * (v_new-ecl));
+    #else
+        this->cur_[IClb] = (GClB * (v_new-ecl));
+    #endif
 
     // Compute L-type calcium current.
     double dss = 1. / (1. + std::exp(-(v_new+3.*this->prm_[ISO] + 9.) / 6.)); // %in Maleckar v1/2=-9 S=6 (mV); Courtemanche v1/2=-9 S=5.8 (mV)
@@ -552,14 +610,26 @@ void GrandiAtri::Compute(double v_new, double dt, double stim_current)
     // Compute calcium and calcium-potassiun currents.
     double ICa_junc = 0.45*(Fjunc_CaL * ibarca_j * this->var_[d_o] * this->var_[fo] * ((1.-this->var_[fcaBjo])+fcaCaj) * std::pow(Q10CaL, Qpow));
     double ICa_sl = 0.45*(Fsl_CaL * ibarca_sl * this->var_[d_o]*this->var_[fo] * ((1.-this->var_[fcaBslo]) + fcaCaMSL) * std::pow(Q10CaL, Qpow));
-    this->cur_[ICa] = (1.0-this->block_coeff_[ICa]) * (ICa_junc + ICa_sl);
-    this->cur_[ICaK] = (1.0-this->block_coeff_[ICaK]) * (0.45*(ibark * this->var_[d_o] * this->var_[fo] * (Fjunc_CaL * (fcaCaj + (1.-this->var_[fcaBjo])) + Fsl_CaL*(fcaCaMSL + (1.-this->var_[fcaBslo]))) * std::pow(Q10CaL, Qpow)));
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[ICa]  = (1.0-this->block_coeff_[ICa]) * (ICa_junc + ICa_sl);
+        this->cur_[ICaK] = (1.0-this->block_coeff_[ICaK]) * (0.45*(ibark * this->var_[d_o] * this->var_[fo] * (Fjunc_CaL * (fcaCaj + (1.-this->var_[fcaBjo])) + Fsl_CaL*(fcaCaMSL + (1.-this->var_[fcaBslo]))) * std::pow(Q10CaL, Qpow)));
+    #else
+        this->cur_[ICa]  = (ICa_junc + ICa_sl);
+        this->cur_[ICaK] = (0.45*(ibark * this->var_[d_o] * this->var_[fo] * (Fjunc_CaL * (fcaCaj + (1.-this->var_[fcaBjo])) + Fsl_CaL*(fcaCaMSL + (1.-this->var_[fcaBslo]))) * std::pow(Q10CaL, Qpow)));
+    #endif
+    
     
     // Compute calcium sodium current.
     double ICaNa_junc = 0.45*(Fjunc_CaL * ibarna_j * this->var_[d_o] * this->var_[fo] * ((1.-this->var_[fcaBjo]) + fcaCaj) * std::pow(Q10CaL, Qpow));
     double ICaNa_sl = 0.45*(Fsl_CaL * ibarna_sl * this->var_[d_o] * this->var_[fo] * ((1.-this->var_[fcaBslo]) + fcaCaMSL) * std::pow(Q10CaL, Qpow));
-    this->cur_[ICaNa]= (1.0-this->block_coeff_[ICaNa]) * (ICaNa_junc + ICaNa_sl);
-    this->cur_[ICatot] = (1.0-this->block_coeff_[ICatot]) * (this->cur_[ICa] + this->cur_[ICaK] + this->cur_[ICaNa]);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[ICaNa]  = (1.0-this->block_coeff_[ICaNa]) * (ICaNa_junc + ICaNa_sl);
+        this->cur_[ICatot] = (1.0-this->block_coeff_[ICatot]) * (this->cur_[ICa] + this->cur_[ICaK] + this->cur_[ICaNa]);
+    #else
+        this->cur_[ICaNa]  = (ICaNa_junc + ICaNa_sl);
+        this->cur_[ICatot] = (this->cur_[ICa] + this->cur_[ICaK] + this->cur_[ICaNa]);
+    #endif
+    
 
     // Compute sodium/calcium exchanger flux current.
     double Ka_junc = 1. / (1. + (Kdact/this->prm_[Cajo])*(Kdact/this->prm_[Cajo]));
@@ -575,17 +645,29 @@ void GrandiAtri::Compute(double v_new, double dt, double stim_current)
 
     double Incx_junc = Fjunc * IbarNCX * std::pow(Q10NCX, Qpow) * Ka_junc*(s1_junc-s2_junc) / s3_junc / (1.+ksat*std::exp((nu-1)*v_new*FoRT));
     double Incx_sl = Fsl * IbarNCX * std::pow(Q10NCX, Qpow) * Ka_sl * (s1_sl-s2_sl) / s3_sl / (1.+ksat*std::exp((nu-1)*v_new*FoRT));
-    this->cur_[Incx] = (1.0-this->block_coeff_[Incx]) * (Incx_junc + Incx_sl);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[Incx] = (1.0-this->block_coeff_[Incx]) * (Incx_junc + Incx_sl);
+    #else
+        this->cur_[Incx] = (Incx_junc + Incx_sl);
+    #endif
 
     // Compute the sarcolemmal calcium pump current.
     double Ipca_junc = Fjunc * std::pow(Q10SLCaP, Qpow) * IbarSLCaP * std::pow(this->prm_[Cajo], 1.6) / (std::pow(KmPCa, 1.6) + std::pow(this->prm_[Cajo], 1.6));
     double Ipca_sl = Fsl * std::pow(Q10SLCaP, Qpow) * IbarSLCaP * std::pow(this->prm_[Caslo], 1.6) / (std::pow(KmPCa, 1.6) + std::pow(this->prm_[Caslo], 1.6));
-    this->cur_[Ipca] = (1.0-this->block_coeff_[Ipca]) * (Ipca_junc + Ipca_sl);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[Ipca] = (1.0-this->block_coeff_[Ipca]) * (Ipca_junc + Ipca_sl);
+    #else
+        this->cur_[Ipca] = (Ipca_junc + Ipca_sl);
+    #endif
 
     // Compute calcium background current.
     double ICab_junc = Fjunc * GCaB * (v_new-eca_junc);
     double ICab_sl = Fsl * GCaB * (v_new-eca_sl);
-    this->cur_[ICab] = (1.0-this->block_coeff_[ICab]) * (ICab_junc + ICab_sl);
+    #ifdef BLOCK_CELL_CURRS
+        this->cur_[ICab] = (1.0-this->block_coeff_[ICab]) * (ICab_junc + ICab_sl);
+    #else
+        this->cur_[ICab] = (ICab_junc + ICab_sl);
+    #endif
 
     // Compute sarcomere fluxes: Calcium Release, SR Ca pump, SR Ca leak.
     double MaxSR = 15; 
@@ -841,38 +923,38 @@ std::string GrandiAtri::PrintCurrents() const
 
 }
 
+#ifdef BLOCK_CELL_CURRS
+    std::string GrandiAtri::PrintBlockCoeffs() const
+    {
+        using namespace GrdAtrCur;
 
-std::string GrandiAtri::PrintBlockCoeffs() const
-{
-    using namespace GrdAtrCur;
+        // Create output string stream to pass the currents and their values.
+        std::ostringstream oss;
+        oss.precision(15);
+        oss << "INa = " << this->block_coeff_[INa] << "\n";
+        oss << "INaL = " << this->block_coeff_[INaL] << "\n";
+        oss << "INab = " << this->block_coeff_[INab] << "\n";
+        oss << "INaK = " << this->block_coeff_[INaK] << "\n";
+        oss << "IKr = " << this->block_coeff_[IKr] << "\n";
+        oss << "IKs = " << this->block_coeff_[IKs] << "\n";
+        oss << "IKp = " << this->block_coeff_[IKp] << "\n";
+        oss << "IKach = " << this->block_coeff_[IKach] << "\n";
+        oss << "IKCa = " << this->block_coeff_[IKCa] << "\n";
+        oss << "Ito = " << this->block_coeff_[Ito] << "\n";
+        oss << "IKur = " << this->block_coeff_[IKur] << "\n";
+        oss << "IKi = " << this->block_coeff_[IKi] << "\n";
+        oss << "IClb = " << this->block_coeff_[IClb] << "\n";
+        oss << "ICa = " << this->block_coeff_[ICa] << "\n";
+        oss << "ICaK = " << this->block_coeff_[ICaK] << "\n";
+        oss << "ICaNa = " << this->block_coeff_[ICaNa] << "\n";
+        oss << "ICatot = " << this->block_coeff_[ICatot] << "\n";
+        oss << "Incx = " << this->block_coeff_[Incx] << "\n";
+        oss << "Ipca = " << this->block_coeff_[Ipca] << "\n";
+        oss << "ICab = " << this->block_coeff_[ICab];
+        return oss.str();
 
-    // Create output string stream to pass the currents and their values.
-    std::ostringstream oss;
-    oss.precision(15);
-    oss << "INa = " << this->block_coeff_[INa] << "\n";
-    oss << "INaL = " << this->block_coeff_[INaL] << "\n";
-    oss << "INab = " << this->block_coeff_[INab] << "\n";
-    oss << "INaK = " << this->block_coeff_[INaK] << "\n";
-    oss << "IKr = " << this->block_coeff_[IKr] << "\n";
-    oss << "IKs = " << this->block_coeff_[IKs] << "\n";
-    oss << "IKp = " << this->block_coeff_[IKp] << "\n";
-    oss << "IKach = " << this->block_coeff_[IKach] << "\n";
-    oss << "IKCa = " << this->block_coeff_[IKCa] << "\n";
-    oss << "Ito = " << this->block_coeff_[Ito] << "\n";
-    oss << "IKur = " << this->block_coeff_[IKur] << "\n";
-    oss << "IKi = " << this->block_coeff_[IKi] << "\n";
-    oss << "IClb = " << this->block_coeff_[IClb] << "\n";
-    oss << "ICa = " << this->block_coeff_[ICa] << "\n";
-    oss << "ICaK = " << this->block_coeff_[ICaK] << "\n";
-    oss << "ICaNa = " << this->block_coeff_[ICaNa] << "\n";
-    oss << "ICatot = " << this->block_coeff_[ICatot] << "\n";
-    oss << "Incx = " << this->block_coeff_[Incx] << "\n";
-    oss << "Ipca = " << this->block_coeff_[Ipca] << "\n";
-    oss << "ICab = " << this->block_coeff_[ICab];
-    return oss.str();
-
-}
-
+    }
+#endif
 
 
 } // End of namespace ELECTRA

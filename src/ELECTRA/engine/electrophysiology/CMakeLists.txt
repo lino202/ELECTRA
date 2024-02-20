@@ -43,6 +43,9 @@ set(HEADERS
 add_library(${LIB_NAME} "")
 target_sources(${LIB_NAME} PRIVATE ${SOURCES})
 target_link_libraries(${LIB_NAME} PRIVATE ${LC_PROJECT_NAME}Conditions)
+if(BLOCK_CELL_CURRS)
+    target_compile_options(${LIB_NAME} PRIVATE -DBLOCK_CELL_CURRS)
+endif()
 
 include(GenerateExportHeader)
 generate_export_header(${LIB_NAME}
