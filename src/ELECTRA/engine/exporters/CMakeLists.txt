@@ -4,19 +4,15 @@ set(LIB_FOLDER exporters)
 
 # Module source files.
 set(SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/ascii_exporter.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/binary_exporter.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cellstate_exporter.cpp
 )
 
 # Module header files.
 SET(HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/exporters.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/ascii_exporter.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/binary_exporter.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cellstate_exporter.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ensight_exporter.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ensight_exporter.tpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/paraview_exporter.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/paraview_exporter.tpp
 )
 
 #-------- Build library --------

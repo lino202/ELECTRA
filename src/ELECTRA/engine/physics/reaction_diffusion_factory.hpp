@@ -50,8 +50,12 @@ public:
 
         switch (rd_model_type) {
         case ReactionDiffusionType::bidomain :
-            rd_ptr = std::make_shared<Bidomain<DIM,CELL_NODES>>();
-            break;
+            //TODO Bidomain is deactivated as vout_ is deprecated now
+            // for reactivating it, save the solution with the ensight exporter under 
+            // Bidomain::Compute (similarly to how it is done for Monodomain::Compute) and test ulteriorly as this is a new feature
+            throw std::invalid_argument(ELECTRA::Logger::Error("Bidomain is not supported for now"));
+            // rd_ptr = std::make_shared<Bidomain<DIM,CELL_NODES>>();
+            // break;
         case ReactionDiffusionType::monodomain :
             rd_ptr = std::make_shared<Monodomain<DIM,CELL_NODES>>();
             break;

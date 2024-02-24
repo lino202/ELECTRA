@@ -35,7 +35,7 @@ target_sources(${LIB_NAME} PRIVATE ${HEADERS})
 
 target_link_libraries(${LIB_NAME} PUBLIC ${${LIB_NAME}_LIBS})
 target_link_libraries(${LIB_NAME} PUBLIC IMP::IMP CLOUDEA::CLOUDEA)
-target_link_libraries(${LIB_NAME} PUBLIC Eigen3::Eigen armadillo Boost::boost tinyxml2 CGAL::CGAL CGAL::CGAL_Core)
+target_link_libraries(${LIB_NAME} PUBLIC Eigen3::Eigen armadillo Boost::boost CGAL::CGAL CGAL::CGAL_Core)
 
 if(${ELECTRA_WITH_MPI})
     target_link_libraries(${LIB_NAME} PUBLIC MPI::MPI_CXX)

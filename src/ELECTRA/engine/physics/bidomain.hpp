@@ -65,14 +65,12 @@ class Bidomain : public ReactionDiffusion<DIM,CELL_NODES>
 
 private:
 
-    std::vector<Eigen::VectorXd> vout_;                                 /**< The nodal values of the potential at the selected output time instants */
-
     Eigen::SparseMatrix<double, Eigen::RowMajor> stiff_int_mat_;        /**< The internal stiffness matrix of the bidomain model's diffusion term */
 
     Eigen::SparseMatrix<double, Eigen::RowMajor> stiff_bulk_mat_;       /**< The bulk stiffness matrix of the bidomain model's diffusion term */
 
     Eigen::VectorXd mass_vec_;                                          /**< The lamped mass vector of the bidomain model's diffusion term */
-
+    
     CLOUDEA::ThreadLoopManager thread_loop_manager_;                    /**< The managing object for the multithreaded loop execution */
 
     std::size_t threads_number_;                                        /**< The number of threads for parallel execution of the bidomain model */
@@ -235,31 +233,6 @@ public:
      * \return [const Eigen::VectorXd&] The capacitance lumped vector of the bidomain model.
      */
     inline const Eigen::VectorXd & CapacitanceVec() const { return this->mass_vec_; }
-
-
-    /**
-     * \brief Get the stored potential values for all the recorded time steps.
-     * \return [const std::vector<Eigen::VectorXd>&] The stored potential values for all the recorded time steps.
-     */
-    inline const std::vector<Eigen::VectorXd> & Vout() const { return this->vout_; }
-
-
-    /**
-     * \brief Get the stored potential values at a given recorded time step.
-     * Fast access without range check.
-     * \param [in] step_id The index of the recorded time step to get the stored potential values.
-     * \return [const Eigen::VectorXd&] The stored potential values at a given recorded time step.
-     */
-    inline const Eigen::VectorXd & Vout(std::size_t i) const { return this->vout_[i]; }
-
-
-    /**
-     * \brief Get the stored potential values at a given recorded time step.
-     * Slower access with range check.
-     * \param [in] step_id The index of the recorded time step to get the stored potential values.
-     * \return [const Eigen::VectorXd&] The stored potential values at a given recorded time step.
-     */
-    inline const Eigen::VectorXd & VoutAt(std::size_t i) const { return this->vout_.at(i); }
 
 
     /**

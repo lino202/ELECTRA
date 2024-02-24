@@ -165,6 +165,19 @@ void ReactionDiffusion<DIM, CELL_NODES>::SetCellVarParamGroups(const std::vector
 
 }
 
+template<short DIM, short CELL_NODES>
+void ReactionDiffusion<DIM, CELL_NODES>::SaveDataDynamically(const Eigen::VectorXd &nodal_states, const std::string &state_number){
+
+    // Check that pointers are not null and save data 
+    if (this->ens_exporter_tissue_ptr) {
+        this->ens_exporter_tissue_ptr->SaveStates(nodal_states.head( (this->cells_.size() - this->ConductSystem().NodesNum()) ), state_number);
+    }
+    if (this->ens_exporter_cs_ptr) {
+        this->ens_exporter_cs_ptr->SaveStates(nodal_states.tail(this->ConductSystem().NodesNum()), state_number);
+    }
+}
+
+
 } // End of namespace ELECTRA
 
 

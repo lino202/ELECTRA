@@ -7,21 +7,21 @@
  */
 
 
-#include "ELECTRA/engine/exporters/binary_exporter.hpp"
+#include "ELECTRA/engine/exporters/cellstate_exporter.hpp"
 
 
 namespace ELECTRA
 {
 
-BinaryExporter::BinaryExporter()
+CellStateExporter::CellStateExporter()
 {}
 
 
-BinaryExporter::~BinaryExporter()
+CellStateExporter::~CellStateExporter()
 {}
 
 
-void BinaryExporter::WriteCellsState(const std::vector<std::unique_ptr<EpBasic>> &cells, const std::string &filename)
+void CellStateExporter::WriteCellsState(const std::vector<std::unique_ptr<EpBasic>> &cells, const std::string &filename)
 {
     namespace boost_fs = boost::filesystem;
 

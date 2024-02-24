@@ -51,51 +51,26 @@ class ConfigOutput {
 
 protected:
 
+
     /**
-     * @brief 
+     * @brief Save results to the Ensight gold format
      * 
-     * @param parser 
      * @param nodes 
      * @param cells 
-     * @param monodomain 
-     * @param stream 
+     * @param react_diff 
      */
-    void OutputToParaview(const Parser &parser, const std::vector<IMP::Vec<int(DIM), double>> &nodes, const std::vector<IMP::Cell<DIM, CELL_NODES>> &cells,
-            const std::shared_ptr<ReactionDiffusion<DIM, CELL_NODES>> &react_diff, std::ostream &stream) const;
+    void OutputToEnsight(const std::vector<IMP::Vec<int(DIM), double>> &nodes, const std::vector<IMP::Cell<DIM, CELL_NODES>> &cells,
+            const std::shared_ptr<ELECTRA::ReactionDiffusion<DIM,CELL_NODES>> &react_diff) const;
 
 
     /**
-     * @brief 
-     * 
-     * @param parser 
-     * @param nodes 
-     * @param cells 
-     * @param monodomain 
-     * @param post_process 
-     * @param stream 
-     */
-    void OutputToEnsight(const Parser &parser, const std::vector<IMP::Vec<int(DIM), double>> &nodes, const std::vector<IMP::Cell<DIM, CELL_NODES>> &cells,
-            const std::shared_ptr<ELECTRA::ReactionDiffusion<DIM,CELL_NODES>> &react_diff, const PostProcess &post_process, std::ostream &stream) const;
-
-
-    /**
-     * @brief 
-     * 
-     * @param parser 
-     * @param post_process 
-     * @param stream 
-     */
-    void OutputToAscii(const Parser &parser, const PostProcess &post_process, std::ostream &stream) const;
-
-
-    /**
-     * @brief 
+     * @brief Save final cell states for probably continuing the simulation
      * 
      * @param parser 
      * @param monodomain 
      * @param stream 
      */
-    void OutputToBinary(const Parser &parser, const std::shared_ptr<ELECTRA::ReactionDiffusion<DIM,CELL_NODES>> &react_diff,
+    void OutputToCellStates(const Parser &parser, const std::shared_ptr<ELECTRA::ReactionDiffusion<DIM,CELL_NODES>> &react_diff,
             std::ostream &stream) const;
 
 
@@ -135,8 +110,7 @@ public:
      * \return [void]
      */
     void OutputGeneration(const Parser &parser, const std::vector<IMP::Vec<DIM,double>> &nodes,
-            const std::vector<IMP::Cell<DIM,CELL_NODES>> &cells, const std::shared_ptr<ELECTRA::ReactionDiffusion<DIM,CELL_NODES>> &react_diff,
-            const PostProcess &post_process, std::ostream &stream) const;
+            const std::vector<IMP::Cell<DIM,CELL_NODES>> &cells, const std::shared_ptr<ELECTRA::ReactionDiffusion<DIM,CELL_NODES>> &react_diff, std::ostream &stream) const;
 
 
     /**

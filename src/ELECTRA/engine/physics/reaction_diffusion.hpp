@@ -21,6 +21,7 @@
 #include "ELECTRA/engine/conduction_system/conduction_system.hpp"
 #include "ELECTRA/engine/electrophysiology/ep_basic.hpp"
 #include "ELECTRA/engine/electrophysiology/ep_varying_params.hpp"
+#include "ELECTRA/engine/exporters/ensight_exporter.hpp"
 
 #include <CLOUDEA/CLOUDEA>
 #include <IMP/Tesselations>
@@ -115,8 +116,13 @@ private:
 
     bool adaptive_diffusion_;                                   /**< Boolean for the selection of adaptive explicit integration in time for the diffusion term */
 
-
 public:
+
+    int states_num = 0;                                                            /**< States_num counts the number of saved states/solutions */
+
+    ELECTRA::EnsightExporter<DIM, CELL_NODES>* ens_exporter_tissue_ptr = 0;        /**< Tissue ensight exporter pointer for agreggation to the react_diffusion object */
+
+    ELECTRA::EnsightExporter<DIM, 2>* ens_exporter_cs_ptr = 0;                     /**< CS ensight exporter pointer for agreggation to the react_diffusion object */
 
     /**
      * \brief The default constructor of the ReactionDiffusion class.
@@ -428,35 +434,28 @@ public:
 
 
     /**
-     * \brief Get the stored potential values for all the recorded time steps.
-     * \return [const std::vector<Eigen::VectorXd>&] The stored potential values for all the recorded time steps.
-     */
-    virtual const std::vector<Eigen::VectorXd> & Vout() const = 0;
-
-
-    /**
-     * \brief Get the stored potential values at a given recorded time step.
-     * Fast access without range check.
-     * \param [in] step_id The index of the recorded time step to get the stored potential values.
-     * \return [const Eigen::VectorXd&] The stored potential values at a given recorded time step.
-     */
-    virtual const Eigen::VectorXd & Vout(std::size_t i) const = 0;
-
-
-    /**
-     * \brief Get the stored potential values at a given recorded time step.
-     * Slower access with range check.
-     * \param [in] step_id The index of the recorded time step to get the stored potential values.
-     * \return [const Eigen::VectorXd&] The stored potential values at a given recorded time step.
-     */
-    virtual const Eigen::VectorXd & VoutAt(std::size_t i) const = 0;
-
-
-    /**
      * \brief Get the number of the used threads for the monodomain model solution.
      * \return [const std::size_t&] The number of the used threads for the monodomain model solution.
      */
     virtual const std::size_t & ThreadsNumber() const = 0;
+
+    /**
+     * \brief Set the pointer of the tissue ensight exporter
+     * \return [void]
+     */
+    inline void SetEnsightExporterTissue(ELECTRA::EnsightExporter<DIM, CELL_NODES> &ens_exporter_tissue) { this->ens_exporter_tissue_ptr = &ens_exporter_tissue; }
+
+    /**
+     * \brief Set the pointer of the cs ensight exporter
+     * \return [void]
+     */
+    inline void SetEnsightExporterCS(ELECTRA::EnsightExporter<DIM, 2> &ens_exporter_cs) { this->ens_exporter_cs_ptr = &ens_exporter_cs; }
+
+    /**
+     * \brief Save the data dynamically as it is computed in the compute member function
+     * \return [void]
+     */
+    void SaveDataDynamically(const Eigen::VectorXd &nodal_states, const std::string &state_number);
 
 };
 

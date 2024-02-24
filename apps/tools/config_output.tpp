@@ -26,28 +26,27 @@ ConfigOutput<DIM, CELL_NODES>::~ConfigOutput()
 
 template<short DIM, short CELL_NODES>
 void ConfigOutput<DIM, CELL_NODES>::OutputGeneration(const Parser &parser, const std::vector<IMP::Vec<DIM,double>> &nodes,
-        const std::vector<IMP::Cell<DIM,CELL_NODES>> &cells, const std::shared_ptr<ReactionDiffusion<DIM, CELL_NODES>> &react_diff,
-        const ELECTRA::PostProcess &post_process, std::ostream &stream) const
+        const std::vector<IMP::Cell<DIM,CELL_NODES>> &cells, const std::shared_ptr<ReactionDiffusion<DIM, CELL_NODES>> &react_diff, std::ostream &stream) const
 {
     // Output if paraview format was requested.
     if (parser.HasAttribute("output.paraview")) {
-        this->OutputToParaview(parser, nodes, cells, react_diff, stream);
+        throw std::invalid_argument(Logger::Error("Output as paraview has been deprecated, try ensight"));
     }
 
     // Output if ensight format was requested.
     if (parser.HasAttribute("output.ensight")) {
-        this->OutputToEnsight(parser, nodes, cells, react_diff, post_process, stream);
+        this->OutputToEnsight(nodes, cells, react_diff);
     }
 
     // Output if ascii format was requested.
     if (parser.HasAttribute("output.ascii")) {
-        this->OutputToAscii(parser, post_process, stream);
+        throw std::invalid_argument(Logger::Error("Output as ascii has been deprecated, try ensight"));
     }
 
 
-    // Output if binary format was requested.
-    if (parser.HasAttribute("output.binary")) {
-        this->OutputToBinary(parser, react_diff, stream);
+    // Output if cell state was requested.
+    if (parser.HasAttribute("output.cells state")) {
+        this->OutputToCellStates(parser, react_diff, stream);
     }
 }
 
@@ -248,259 +247,42 @@ void ConfigOutput<DIM, CELL_NODES>::OutputFibers(const Parser &parser, IMP::Mesh
 
 
 template<short DIM, short CELL_NODES>
-void ConfigOutput<DIM, CELL_NODES>::OutputToParaview(const Parser &parser, const std::vector<IMP::Vec<int(DIM), double>> &nodes,
-        const std::vector<IMP::Cell<DIM, CELL_NODES>> &cells, const std::shared_ptr<ELECTRA::ReactionDiffusion<DIM, CELL_NODES>> &react_diff, std::ostream &stream) const
+void ConfigOutput<DIM, CELL_NODES>::OutputToEnsight(const std::vector<IMP::Vec<int(DIM), double>> &nodes,
+        const std::vector<IMP::Cell<DIM, CELL_NODES>> &cells, const std::shared_ptr<ELECTRA::ReactionDiffusion<DIM, CELL_NODES>> &react_diff) const
 {
-    std::string states_file = parser.GetValue<std::string>("output.paraview.tissue.states");
-    std::filesystem::path states_path(states_file);
-    if (states_path.has_extension()) {
-        std::filesystem::path e = "";
-        states_path.replace_extension(e);
-        states_file = states_path.string();
+
+    if (react_diff->ens_exporter_tissue_ptr) {
+        // Save GEOMETRY to file
+        react_diff->ens_exporter_tissue_ptr->SaveGeo(nodes, cells);
+
+        // Save ANIMATION to file 
+        react_diff->ens_exporter_tissue_ptr->SaveAnimation(react_diff->states_num, react_diff->OutputSteps()*react_diff->Dt());
     }
 
-    // Initialize paraview exporte
-    ELECTRA::ParaviewExporter<DIM, CELL_NODES> para_export;
-    para_export.CreateVtu(nodes, cells);
-
-    // Export react_diff solution states.
-    for (std::size_t i = 0; i != react_diff->Vout().size(); ++i) {
-        para_export.AddScalarField(react_diff->Vout(i), "Potential");
-        para_export.Export(states_file+std::to_string(i)+".vtu");
-        para_export.ClearPointDataFields();
-    }
-
-    std::string anim_file = parser.GetValue<std::string>("output.paraview.tissue.animation");
-    std::string anim_ext = std::filesystem::path(anim_file).extension();
-    if (anim_ext != ".pvd")  anim_file += ".pvd";
-
-    // Get states file directory path.
-    std::string states_dir = states_path.parent_path().string();
-
-    // Look up for animation directory path.
-    std::filesystem::path anim_path(anim_file);
-    std::string anim_dir = anim_path.parent_path().string();
-    if (anim_dir.empty())  anim_file = states_dir + anim_file;
-
-    para_export.CreatePvdAnimation(states_path, react_diff->Vout().size(), anim_file, react_diff->OutputSteps()*react_diff->Dt());
-
-    stream << ELECTRA::Logger::Warning("Only potential states are stored. If you want to store more variables export in Ensight format\n");
-
-    stream << ELECTRA::Logger::Message("Saved Paraview solutions: "+states_file+".vtu\n");
-    stream << ELECTRA::Logger::Message("Saved Paraview animation: "+anim_file+"\n");
-
-}
+    // All the same as above but for the CS-------------------------------------------------------
+    if (react_diff->ens_exporter_cs_ptr) {
+        
+        // Save GEOMETRY to file.
+        react_diff->ens_exporter_cs_ptr->SaveGeo(react_diff->ConductSystem().Nodes(), react_diff->ConductSystem().Segments());
 
 
-template<short DIM, short CELL_NODES>
-void ConfigOutput<DIM, CELL_NODES>::OutputToEnsight(const Parser &parser, const std::vector<IMP::Vec<int(DIM), double>> &nodes,
-        const std::vector<IMP::Cell<DIM, CELL_NODES>> &cells, const std::shared_ptr<ELECTRA::ReactionDiffusion<DIM, CELL_NODES>> &react_diff, const ELECTRA::PostProcess &post_process, std::ostream &stream) const
-{
-    // Initialize ensight exporter.
-    ELECTRA::EnsightExporter<DIM, CELL_NODES> ens_export;
-
-    // Save geometry to file.
-    std::string geo_file = parser.GetValue<std::string>("output.ensight.tissue.geometry");
-    std::string geo_ext = std::filesystem::path(geo_file).extension();
-    if (geo_ext != ".geo")  geo_file += ".geo";
-    ens_export.SaveGeo(nodes, cells, geo_file);
-
-    // Get states file path and strip down the extension.
-    std::string states_file = parser.GetValue<std::string>("output.ensight.tissue.states");
-    std::filesystem::path states_path(states_file);
-    if (states_path.has_extension()) {
-        std::filesystem::path e = "";
-        states_path.replace_extension(e);
-        states_file = states_path.string();
-    }
-
-    // Number of solution states.
-    std::size_t states_num = react_diff->Vout().size();
-
-    // Create wildcard string.
-    std::size_t wildcard_size = std::to_string(states_num).size();
-    std::string wildcard(wildcard_size, '0');
-
-    // Export react_diff solution states.
-    std::string state_id = "";
-    std::size_t replace_start = 0;
-    for (std::size_t i = 0; i != states_num; ++i) {
-        state_id = std::to_string(i);
-        replace_start = wildcard_size - state_id.size();
-        wildcard.replace(replace_start,std::string::npos,state_id);
-        ens_export.SaveScalarField(react_diff->Vout(i).head(nodes.size()), states_file+wildcard+".ens");
-    }
-
-    // Additional scalar fields and their names.
-    std::vector<std::string> scalar_field_files, scalar_field_names;
-
-    // Local activation time scalar field.
-    if (parser.HasAttribute("output.ensight.tissue.lat")) {
-        std::string lat_file = parser.GetValue<std::string>("output.ensight.tissue.lat");
-        std::filesystem::path lat_path(lat_file);
-        if (lat_path.has_extension()) {
-            std::filesystem::path e = "";
-            lat_path.replace_extension(e);
-            lat_file = lat_path.string();
-        }
-        ens_export.SaveScalarField(post_process.LocalActivationTimes().head(nodes.size()), lat_file+".ens");
-        scalar_field_files.emplace_back(lat_file+".ens");
-        scalar_field_names.emplace_back("LAT");
-
-        stream << ELECTRA::Logger::Message("Saved local activation time: " + lat_file + ".ens\n");
-    }
-
-    // Action potential duration scalar field.
-    if (parser.HasAttribute("output.ensight.tissue.apd")) {
-        std::string apd_file = parser.GetValue<std::string>("output.ensight.tissue.apd");
-        std::filesystem::path apd_path(apd_file);
-        if (apd_path.has_extension()) {
-            std::filesystem::path e = "";
-            apd_path.replace_extension(e);
-            apd_file = apd_path.string();
-        }
-
-        for (const auto &apd : post_process.APDs()) {
-            ens_export.SaveScalarField(apd.second.head(nodes.size()), apd_file+std::to_string(apd.first)+".ens");
-            scalar_field_files.emplace_back(apd_file+std::to_string(apd.first)+".ens");
-            scalar_field_names.emplace_back("APD"+std::to_string(apd.first));
-        }
-
-        stream << ELECTRA::Logger::Message("Saved action potential duration: " + apd_file + ".ens\n");
-    }
-
-    std::string anim_file = parser.GetValue<std::string>("output.ensight.tissue.animation");
-    std::string anim_ext = std::filesystem::path(anim_file).extension();
-    if (anim_ext != ".case") { anim_file += ".case"; }
-
-    // Get states file directory path.
-    std::string states_dir = states_path.parent_path().string();
-
-    // Look up for animation file path.
-    std::filesystem::path anim_path(anim_file);
-    if (!anim_path.has_root_path())
-        anim_file = states_dir + anim_file;
-
-    ens_export.SaveAnimation(anim_file, geo_file, states_file, scalar_field_files, scalar_field_names, states_num, react_diff->OutputSteps()*react_diff->Dt());
-
-    stream << ELECTRA::Logger::Message("Saved Ensight geometry: " + geo_file + "\n");
-    stream << ELECTRA::Logger::Message("Saved Ensight solutions: " + states_file + ".ens\n");
-    stream << ELECTRA::Logger::Message("Saved Ensight animation: " + anim_file + "\n");
-
-    if (react_diff->ConductSystem().NodesNum() > 0) {
-        // Initialize ensight exporter for conduction systems.
-        ELECTRA::EnsightExporter<DIM, 2> cs_ens_export;
-
-        // Save geometry to file.
-        if (parser.HasAttribute("output.ensight.conduction system.geometry")) {
-            geo_file = parser.GetValue<std::string>("output.ensight.conduction system.geometry");
-            std::string geo_ext = std::filesystem::path(geo_file).extension();
-            if (geo_ext != ".geo")  geo_file += ".geo";
-            cs_ens_export.SaveGeo(react_diff->ConductSystem().Nodes(), react_diff->ConductSystem().Segments(), geo_file);
-        }
-
-        if (parser.HasAttribute("output.ensight.conduction system.states")) {
-            states_file = parser.GetValue<std::string>("output.ensight.conduction system.states");
-            std::filesystem::path states_path(states_file);
-            if (states_path.has_extension()) {
-                std::filesystem::path e = "";
-                states_path.replace_extension(e);
-                states_file = states_path.string();
-            }
-
-            // Empty wildcard string.
-            wildcard.clear(); wildcard.resize(wildcard_size, '0');
-
-            // Export react_diff solution states.
-            state_id = "";
-            replace_start = 0;
-            for (std::size_t i = 0; i != states_num; ++i) {
-                state_id = std::to_string(i);
-                replace_start = wildcard_size - state_id.size();
-                wildcard.replace(replace_start,std::string::npos,state_id);
-                cs_ens_export.SaveScalarField(react_diff->Vout(i).tail(react_diff->ConductSystem().NodesNum()), states_file+wildcard+".ens");
-            }
-        }
-
-        // Reset additional scalar fields and their names.
-        scalar_field_files.clear(); scalar_field_names.clear();
-
-        if (parser.HasAttribute("output.ensight.conduction system.lat")) {
-            std::string lat_file = parser.GetValue<std::string>("output.ensight.conduction system.lat");
-            std::filesystem::path lat_path(lat_file);
-            if (lat_path.has_extension()) {
-                std::filesystem::path e = "";
-                lat_path.replace_extension(e);
-                lat_file = lat_path.string();
-            }
-            cs_ens_export.SaveScalarField(post_process.LocalActivationTimes().tail(react_diff->ConductSystem().NodesNum()), lat_file+".ens");
-            scalar_field_files.emplace_back(lat_file+".ens");
-            scalar_field_names.emplace_back("LAT");
-        }
-
-        if (parser.HasAttribute("output.ensight.conduction system.apd")) {
-            std::string apd_file = parser.GetValue<std::string>("output.ensight.conduction system.apd");
-            std::filesystem::path apd_path(apd_file);
-            if (apd_path.has_extension()) {
-                std::filesystem::path e = "";
-                apd_path.replace_extension(e);
-                apd_file = apd_path.string();
-            }
-
-            for (const auto &apd : post_process.APDs()) {
-                cs_ens_export.SaveScalarField(apd.second.tail(react_diff->ConductSystem().NodesNum()), apd_file+std::to_string(apd.first)+".ens");
-                scalar_field_files.emplace_back(apd_file+std::to_string(apd.first)+".ens");
-                scalar_field_names.emplace_back("APD"+std::to_string(apd.first));
-            }
-        }
-
-        if (parser.HasAttribute("output.ensight.conduction system.animation")) {
-            anim_file = parser.GetValue<std::string>("output.ensight.conduction system.animation");
-            std::string anim_ext = std::filesystem::path(anim_file).extension();
-            if (anim_ext != ".case") { anim_file += ".case"; }
-
-            // Get states file directory path.
-            std::filesystem::path cs_states_path(states_file);
-            std::string states_dir = cs_states_path.parent_path().string();
-
-            // Look up for animation file path.
-            std::filesystem::path cs_anim_path(anim_file);
-            if (!cs_anim_path.has_root_path())
-                anim_file = states_dir + anim_file;
-
-            cs_ens_export.SaveAnimation(anim_file, geo_file, states_file, scalar_field_files, scalar_field_names, states_num, react_diff->OutputSteps()*react_diff->Dt());
-        }
+        // Save ANIMATION to file 
+        react_diff->ens_exporter_cs_ptr->SaveAnimation(react_diff->states_num, react_diff->OutputSteps()*react_diff->Dt());
+        
     }
 }
 
 
 template<short DIM, short CELL_NODES>
-void ConfigOutput<DIM, CELL_NODES>::OutputToAscii(const Parser &parser, const ELECTRA::PostProcess &post_process, std::ostream &stream) const
+void ConfigOutput<DIM, CELL_NODES>::OutputToCellStates(const Parser &parser, const std::shared_ptr<ELECTRA::ReactionDiffusion<DIM, CELL_NODES>> &react_diff, std::ostream &stream) const
 {
-    ELECTRA::AsciiExporter ascii_export;
-
-    if (parser.HasAttribute("output.ascii.action potential")) {
-        std::string ap_file = parser.GetValue<std::string>("output.ascii.action potential");
-        std::string ap_ext = std::filesystem::path(ap_file).extension();
-        if (ap_ext != ".txt") { ap_file += ".txt"; }
-
-        ascii_export.WriteActionPotentials(post_process.ActionPotentials(), ap_file);
-        stream << ELECTRA::Logger::Message("Saved action potential: "+ap_file+"\n");
-    }
-
-}
-
-
-template<short DIM, short CELL_NODES>
-void ConfigOutput<DIM, CELL_NODES>::OutputToBinary(const Parser &parser, const std::shared_ptr<ELECTRA::ReactionDiffusion<DIM, CELL_NODES>> &react_diff, std::ostream &stream) const
-{
-    ELECTRA::BinaryExporter bin_export;
-    if (parser.HasAttribute("output.binary.cells state")) {
-        std::string cell_state_file = parser.GetValue<std::string>("output.binary.cells state");
+    ELECTRA::CellStateExporter cellstate_export;
+    if (parser.HasAttribute("output.cells state")) {
+        std::string cell_state_file = parser.GetValue<std::string>("output.cells state");
         std::string cell_state_ext = std::filesystem::path(cell_state_file).extension();
         if (cell_state_ext != ".elc") { cell_state_file += ".elc"; }
 
-        bin_export.WriteCellsState(react_diff->Cells(), cell_state_file);
+        cellstate_export.WriteCellsState(react_diff->Cells(), cell_state_file);
         stream << ELECTRA::Logger::Message("Saved cells state: " + cell_state_file + "\n");
     }
 }

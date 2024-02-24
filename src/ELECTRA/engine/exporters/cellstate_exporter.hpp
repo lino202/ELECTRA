@@ -8,14 +8,14 @@
 
 
 /**
-   \file bin_exporter.hpp
-   \brief BinaryExporter class header file.
+   \file cellstate_exporter.hpp
+   \brief CellStateExporter class header file.
    \author Konstantinos A. Mountris
    \date 20/06/2020
 */
 
-#ifndef ELECTRA_EXPORTERS_BINARY_EXPORTER_HPP_
-#define ELECTRA_EXPORTERS_BINARY_EXPORTER_HPP_
+#ifndef ELECTRA_EXPORTERS_CELLSTATE_EXPORTER_HPP_
+#define ELECTRA_EXPORTERS_CELLSTATE_EXPORTER_HPP_
 
 #include "ELECTRA/engine/electrophysiology/ep_factory.hpp"
 #include "ELECTRA/engine/utilities/logger.hpp"
@@ -38,22 +38,22 @@ namespace ELECTRA {
 /** \addtogroup Exporters \{ */
 
 /**
- * \class BinaryExporter
- * \brief Class implemmenting output in binary format.
+ * \class CellStateExporter
+ * \brief Class that exports the cell states on binary format for probably continuing the simulation.
  */
-class BinaryExporter {
+class CellStateExporter {
 
 public:
     /**
-     * \brief BinaryExporter constructor.
+     * \brief CellStateExporter constructor.
      */
-    BinaryExporter();
+    CellStateExporter();
 
 
     /**
-     * \brief BinaryExporter destructor.
+     * \brief CellStateExporter destructor.
      */
-    virtual ~BinaryExporter();
+    virtual ~CellStateExporter();
 
 
     void WriteCellsState(const std::vector<std::unique_ptr<EpBasic>> &cells, const std::string &filename);
@@ -65,4 +65,4 @@ public:
 
 } // End of namespace ELECTRA.
 
-#endif  //ELECTRA_EXPORTERS_BINARY_EXPORTER_HPP_
+#endif  //ELECTRA_EXPORTERS_CELLSTATE_EXPORTER_HPP_

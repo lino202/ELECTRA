@@ -82,11 +82,21 @@ void ConfigSim<DIM, CELL_NODES>::Tissue(const Parser &parser, std::ostream &stre
     std::shared_ptr<ELECTRA::ReactionDiffusion<DIM,CELL_NODES>> react_diff(nullptr);
     config_physics.InitializeReactionDiffusion(parser, react_diff);
 
+    // Get Method 
+    // TODO and NOTE
+    // MCM uses the monodomain attribute vout_ which is deprecated now. 
+    // So for having MCM again we need to read ensight .ens binary data in the monodomain method FictitiousValuesToReal
+    // If we do this we can erase this 'if' and come back to having MCM as was before version 0.6.0
+    std::string method = parser.GetValue<std::string>("numerical approximation.method");
+    if (method=="mcm"){
+        throw std::invalid_argument(ELECTRA::Logger::Error("Invalid approximation method. MCM is temporarily deprecated. Expected: FEM | FPM "));
+    }
+
     // Print relevant information.
     stream << termcolor::green << termcolor::bold << "[*** SIMULATION SET UP ***]\n" << termcolor::reset;
     stream << ELECTRA::Logger::Message("Name:  " + parser.GetValue<std::string>("simulation.name") + "\n");
     stream << ELECTRA::Logger::Message("Scale: " + parser.GetValue<std::string>("simulation.scale") + "\n");
-    stream << ELECTRA::Logger::Message("Numerical method: " + parser.GetValue<std::string>("numerical approximation.method") + "\n");
+    stream << ELECTRA::Logger::Message("Numerical method: " + method + "\n");
 
     // Set up measure units.
     ELECTRA::MeasureUnits units;
@@ -205,7 +215,6 @@ void ConfigSim<DIM, CELL_NODES>::Tissue(const Parser &parser, std::ostream &stre
     CLOUDEA::Fpm<DIM> fpm_approx;
     std::unique_ptr<CLOUDEA::Mfree<DIM>> mcm_approx;
     IMP::NodeSet neumann_set;
-    std::string method = parser.GetValue<std::string>("numerical approximation.method");
     std::transform(std::begin(method), std::end(method), std::begin(method), ::tolower);
     if (method == "fem") {
         approx_type = CLOUDEA::ApproxType::fem;
@@ -252,30 +261,51 @@ void ConfigSim<DIM, CELL_NODES>::Tissue(const Parser &parser, std::ostream &stre
     stream << Logger::Message("Used time step: " + std::to_string(react_diff->Dt())) << " ms\n";
     stream << Logger::Message("Total time steps: ") << react_diff->SimulationSteps() << "\n";
 
-    // Solve reaction diffusion physics.
-    react_diff->Compute(tissue_mat, stimuli);
-    if (approx_type == CLOUDEA::ApproxType::mcm) {
-        react_diff->FictitiousValuesToReal(mcm_approx);
-        stream << ELECTRA::Logger::Message("Applied conversion of fictitious to real nodal values.\n");
+    // Aggregate exporters to the react_diff object as compute happens there and we dynamically save the results
+    ELECTRA::EnsightExporter<DIM, CELL_NODES> ens_exporter_tissue;
+    ens_exporter_tissue.SetFiles(parser.GetValue<std::string>("output.ensight.tissue.geometry"),
+                                parser.GetValue<std::string>("output.ensight.tissue.states"),
+                                parser.GetValue<std::string>("output.ensight.tissue.animation"));  
+    react_diff->SetEnsightExporterTissue(ens_exporter_tissue);
+    if (parser.HasAttribute("conduction system")) {
+        ELECTRA::EnsightExporter<DIM, 2> ens_exporter_cs;
+        ens_exporter_cs.SetFiles(parser.GetValue<std::string>("output.ensight.cs.geometry"),
+                                  parser.GetValue<std::string>("output.ensight.cs.states"),
+                                  parser.GetValue<std::string>("output.ensight.cs.animation"));
+        react_diff->SetEnsightExporterCS(ens_exporter_cs);
     }
+
+    // SOLVE reaction diffusion physics
+    react_diff->Compute(tissue_mat, stimuli);
+    // if (approx_type == CLOUDEA::ApproxType::mcm) {
+        // react_diff->FictitiousValuesToReal(mcm_approx);
+        // stream << ELECTRA::Logger::Message("Applied conversion of fictitious to real nodal values.\n");
+    // }
     stream << ELECTRA::Logger::Message("Elapsed time: ") << termcolor::cyan << termcolor::bold << timer.PrintElapsedTime() << termcolor::reset << "\n\n";
 
     // Set up post-process.
-    timer.Reset();
-    stream << termcolor::green << termcolor::bold << "[*** POST PROCESSING ***]\n" << termcolor::reset;
-    ELECTRA::PostProcess post_process;
-    ConfigPostProcess<DIM, CELL_NODES> config_post_process;
-    config_post_process.PerformPostProcess(parser, react_diff, tissue_node_sets, post_process, stream);
-    stream << ELECTRA::Logger::Message("Elapsed time: ") << termcolor::cyan << termcolor::bold << timer.PrintElapsedTime() << termcolor::reset << "\n\n";
+    // NOTE: The postprocessing is deactivated as it uses _vout which is deprecated since version 0.6.0. Also calculation of APD was not working.
+    // TODO: Possible solutions:
+    // 1- Make the user to set time start and end load a matrix Vout from binary saved states that can be use in postprocessing. 
+    // 2- Another solution which is better, is to leave ElectraSim app to calculate so being independent from post_processing. So implement this in ElectraPost 
+    // which is just a skeleton for now.
+    // This decision to not have _vout and then post_process here in ElectraSim generated substancial changes and simplification of Output generation 
+
+    // timer.Reset();
+    // stream << termcolor::green << termcolor::bold << "[*** POST PROCESSING ***]\n" << termcolor::reset;
+    // ELECTRA::PostProcess post_process;
+    // ConfigPostProcess<DIM, CELL_NODES> config_post_process;
+    // config_post_process.PerformPostProcess(parser, react_diff, tissue_node_sets, post_process, stream);
+    // stream << ELECTRA::Logger::Message("Elapsed time: ") << termcolor::cyan << termcolor::bold << timer.PrintElapsedTime() << termcolor::reset << "\n\n";
 
     // Set up output.
     timer.Reset();
     stream << termcolor::green << termcolor::bold << "[*** OUTPUT ***]\n" << termcolor::reset;
     ConfigOutput<DIM, CELL_NODES> config_output;
     if (approx_type == CLOUDEA::ApproxType::fem || approx_type == CLOUDEA::ApproxType::fpm) {
-        config_output.OutputGeneration(parser, mesh.Nodes(), mesh.Cells(), react_diff, post_process, stream);
+        config_output.OutputGeneration(parser, mesh.Nodes(), mesh.Cells(), react_diff, stream);
     } else {
-        config_output.OutputGeneration(parser, grid.Nodes(), grid.GhostCells(), react_diff, post_process, stream);
+        config_output.OutputGeneration(parser, grid.Nodes(), grid.GhostCells(), react_diff, stream);
     }
     stream << ELECTRA::Logger::Message("Elapsed time: ") << termcolor::cyan << termcolor::bold << timer.PrintElapsedTime() << termcolor::reset << "\n\n";
 

@@ -10,8 +10,8 @@
 /**
    \file monodomain.hpp
    \brief Monodomain class header file.
-   \author Konstantinos A. Mountris
-   \date 15/03/2019
+   \author Konstantinos A. Mountris and Ricardo M. Rosales
+   \date 24/02/2024
 */
 
 #ifndef ELECTRA_ENGINE_PHYSICS_MONODOMAIN_HPP_
@@ -63,8 +63,6 @@ class Monodomain : public ReactionDiffusion<DIM,CELL_NODES>
 {
 
 private:
-
-    std::vector<Eigen::VectorXd> vout_;                         /**< The nodal values of the potential at the selected output time instants */
 
     Eigen::SparseMatrix<double, Eigen::RowMajor> stiff_mat_;    /**< The stiffness matrix of the monodomain model's diffusion term */
 
@@ -246,36 +244,10 @@ public:
 
 
     /**
-     * \brief Get the stored potential values for all the recorded time steps.
-     * \return [const std::vector<Eigen::VectorXd>&] The stored potential values for all the recorded time steps. 
-     */
-    inline const std::vector<Eigen::VectorXd> & Vout() const { return this->vout_; }
-
-
-    /**
-     * \brief Get the stored potential values at a given recorded time step.
-     * Fast access without range check.
-     * \param [in] step_id The index of the recorded time step to get the stored potential values.  
-     * \return [const Eigen::VectorXd&] The stored potential values at a given recorded time step.
-     */
-    inline const Eigen::VectorXd & Vout(std::size_t i) const { return this->vout_[i]; }
-
-
-    /**
-     * \brief Get the stored potential values at a given recorded time step.
-     * Slower access with range check.
-     * \param [in] step_id The index of the recorded time step to get the stored potential values.  
-     * \return [const Eigen::VectorXd&] The stored potential values at a given recorded time step.
-     */
-    inline const Eigen::VectorXd & VoutAt(std::size_t i) const { return this->vout_.at(i); }
-
-
-    /**
      * \brief Get the number of the used threads for the monodomain model solution.
      * \return [const std::size_t&] The number of the used threads for the monodomain model solution.
      */
     inline const std::size_t & ThreadsNumber() const { return this->threads_number_; }
-
 
 };
 

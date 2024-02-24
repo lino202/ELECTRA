@@ -19,9 +19,7 @@
 
 // Collection of exporters' header files for various post-processors.
 
-#include "ELECTRA/engine/exporters/ascii_exporter.hpp"
-#include "ELECTRA/engine/exporters/binary_exporter.hpp"
+#include "ELECTRA/engine/exporters/cellstate_exporter.hpp"
 #include "ELECTRA/engine/exporters/ensight_exporter.hpp"
-#include "ELECTRA/engine/exporters/paraview_exporter.hpp"
 
 #endif //ELECTRA_EXPORTERS_

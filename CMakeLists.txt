@@ -67,10 +67,6 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 # Find Armadillo
 find_package(Armadillo REQUIRED NO_MODULE)
 
-# # Find TinyXML2
-# find_package(TinyXML2 REQUIRED)
-# include_directories(${TINYXML2_INCLUDE_DIRS})
-
 # Find CGAL.
 find_package(CGAL REQUIRED COMPONENTS Core)
 include_directories(${CGAL_INCLUDE_DIRS})

@@ -18,7 +18,7 @@ namespace ELECTRA {
 
 
 template<short DIM, short CELL_NODES>
-Bidomain<DIM, CELL_NODES>::Bidomain() : vout_(), stiff_int_mat_(), mass_vec_(),
+Bidomain<DIM, CELL_NODES>::Bidomain() : stiff_int_mat_(), mass_vec_(),
         thread_loop_manager_(), threads_number_(0.), thread_mutex_()
 {
     // Get the number of parallel threads.
@@ -935,8 +935,8 @@ void Bidomain<DIM, CELL_NODES>::Compute(const std::shared_ptr<ElectricBasic<DIM>
 
     // Initialize potential output container.
     std::size_t cells_num = this->Cells().size();
-    this->vout_.clear();
-    this->vout_.resize(std::ceil(this->SimulationSteps()/this->OutputSteps())+1, Eigen::VectorXd::Zero(cells_num));
+    // this->vout_.clear();
+    // this->vout_.resize(std::ceil(this->SimulationSteps()/this->OutputSteps())+1, Eigen::VectorXd::Zero(cells_num));
 
     // Construct lumped mass matrix.
     typedef Eigen::Triplet<double> T;
@@ -960,7 +960,7 @@ void Bidomain<DIM, CELL_NODES>::Compute(const std::shared_ptr<ElectricBasic<DIM>
     }
 
     // Store the initial nodal potential to the output container.
-    this->vout_[0] = sol.head(cells_num);
+    // this->vout_[0] = sol.head(cells_num);
 
     // Choose theta parameter
     auto theta = double{0.};
@@ -979,7 +979,7 @@ void Bidomain<DIM, CELL_NODES>::Compute(const std::shared_ptr<ElectricBasic<DIM>
         this->ComputeReaction(stimuli, step, this->Dt(), sol, this->EditCells());
         this->ComputeDiffusionTheta(mass_mat, theta, sol);
         if (step % this->OutputSteps() == 0) {
-            this->vout_[pos++] = sol.head(cells_num);
+            // this->vout_[pos++] = sol.head(cells_num);
             std::cout << Logger::Message("Completed simulation steps: ") << step << "/" << this->SimulationSteps() << "\r" << std::flush;
         }
         steps_counter++;
@@ -989,11 +989,11 @@ void Bidomain<DIM, CELL_NODES>::Compute(const std::shared_ptr<ElectricBasic<DIM>
     // Store final state of current potential if the last step was not saved in the loop.
     if (this->OutputSteps() != 0) {
         if (steps_counter % this->OutputSteps() != 0) {
-            this->vout_.emplace_back(sol.head(cells_num));
+            // this->vout_.emplace_back(sol.head(cells_num));
         }
     } else {
         // Store final state if output_steps_ is zero.
-        this->vout_.emplace_back(sol.head(cells_num));
+        // this->vout_.emplace_back(sol.head(cells_num));
     }
 
 }

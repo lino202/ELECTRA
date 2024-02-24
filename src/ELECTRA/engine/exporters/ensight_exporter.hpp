@@ -20,8 +20,8 @@
 /**
    \file ensight_exporter.hpp
    \brief EnsightExporter class header file.
-   \author Konstantinos A. Mountris
-   \date 25/09/2019
+   \author Konstantinos A. Mountris & Ricardo M. Rosales
+   \date 24/02/2024
 */
 
 #ifndef ELECTRA_EXPORTERS_ENSIGHT_EXPORTER_HPP_
@@ -61,54 +61,91 @@ namespace ELECTRA {
 template <short DIM, short CELL_NODES=1>
 class EnsightExporter {
 
-public:
-    /**
-     * \brief EnsightExporter constructor.
-     */
-    EnsightExporter();
-    
-    
-    /**
-     * \brief EnsightExporter destructor.
-     */
-    virtual ~EnsightExporter();
-    
-    
-    /**
-     * \brief  Save a Ensight geometry (.geo) file for the given model.
-     * \param [in] mesh The model's mesh.
-     * \return [void]
-     */
-    void SaveGeo(const std::vector<IMP::Vec<DIM, double>> &nodes, const std::vector<IMP::Cell<DIM, CELL_NODES>> &cells, const std::string &out_filename);
-    
-    
-    //void AddPointNormals();
+   public:
 
-    
-    /**
-     * \brief 
-     * \param scalar_field 
-     * \param scalar_field_name 
-     */
-    void SaveScalarField(const Eigen::VectorXd &scalar_field, const std::string &out_filename);
+      /**
+       * \brief EnsightExporter constructor.
+       */
+      EnsightExporter();
+      
+      
+      /**
+       * \brief EnsightExporter destructor.
+       */
+      virtual ~EnsightExporter();
 
 
-    /**
-     * \brief Create a ParaView animation (.pvd) xml file.
-     *
-     * If a non-existing path is given for the animation file it is generated automatically by the exporter.
-     * Similarly if the file's name has not .pvd extension it is added automatically.
-     *
-     * \param [in] vtu_files_dir The name of the directory where the vtu files to included in the animation are located.
-     * \param [in] files_number The number of .vtu files to be included in the animation's collection.
-     * \param [in] pvd_filename The filename of the ParaView animation (.pvd) xml file.
-     * \return [void]
-     */
-    void SaveAnimation(const std::string &out_filename, const std::string &geo_filename, const std::string &state_filename, 
-                       const std::vector<std::string> &scalar_field_files, const std::vector<std::string> &scalar_field_names, int steps_num, double time_inc);
+   private:
+
+      std::string  geom_file_;
+      std::string  states_file_;
+      std::string  anim_file_;
+
+   public:
+
+      /**
+       * \brief EnsightExporter set files.
+       */
+      void SetFiles(const std::string &geom_file, const std::string &states_file, const std::string &anim_file);
+      
+      /**
+       * \brief  Save a model as Ensight GEOMETRY File (.geo).
+       * \param [in] mesh The model's mesh.
+       * \return [void]
+       */
+      void SaveGeo(const std::vector<IMP::Vec<DIM, double>> &nodes, const std::vector<IMP::Cell<DIM, CELL_NODES>> &cells);
+      
+      /**
+       * \brief Save a Scalar Field as Ensight VARIABLE File 
+       * \param scalar_field 
+       * \param scalar_field_name 
+       */
+      void SaveStates(const Eigen::VectorXd &scalar_field, const std::string &state_number);
+
+      /**
+       * \brief Save Ensight ANIMATION File (.case) gold format.
+       * \param [in] steps_num 
+       * \param [in] time_inc 
+       * \return [void]
+       */
+      void SaveAnimation(int steps_num, double time_inc);
     
+   private:
+      /**
+       * \brief  Write chars in binary to the ensight files.
+       * \param [in] val The array of chars to be written in binary.
+       * \param [in] str The binary output stream to be written.
+       * \return [void]
+       */
+      void WriteString_(const char* val, std::ofstream& str)
+      {
+         const int lineLength = 80;
+         char buffer[lineLength] = {0};
+         strncpy(buffer, val, lineLength);
+         str.write(buffer, lineLength);
+      }
+      
+      /**
+       * \brief  Write ints in binary to the ensight files.
+       * \param [in] val The int to be written in binary.
+       * \param [in] str The binary output stream to be written.
+       * \return [void]
+       */
+      void WriteInt_(const int32_t val, std::ofstream& str)
+      {
+         str.write(reinterpret_cast<const char*>(&val), sizeof(int32_t));
+      }
 
-
+      /**
+       * \brief  Write floats in binary to the ensight files.
+       * \param [in] val The float to be written in binary.
+       * \param [in] str The binary output stream to be written.
+       * \return [void]
+       */
+      void WriteFloat_(const float val, std::ofstream& str)
+      {
+         str.write(reinterpret_cast<const char*>(&val), sizeof(float));
+      }
 };
 
 
@@ -116,6 +153,6 @@ public:
 
 } // End of namespace ELECTRA.
 
-#endif  //ELECTRA_PARAVIEW_EXPORTER_PARAVIEW_EXPORTER_HPP_
+#endif  //ELECTRA_ENSIGHT_EXPORTER_ENSIGHT_EXPORTER_HPP_
 
 #include "ELECTRA/engine/exporters/ensight_exporter.tpp"

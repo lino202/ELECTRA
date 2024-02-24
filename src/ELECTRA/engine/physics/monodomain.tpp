@@ -18,7 +18,7 @@ namespace ELECTRA {
 
 
 template<short DIM, short CELL_NODES>
-Monodomain<DIM, CELL_NODES>::Monodomain() : vout_(), stiff_mat_(), mass_vec_(), thread_loop_manager_(), threads_number_(0.), thread_mutex_()
+Monodomain<DIM, CELL_NODES>::Monodomain() : stiff_mat_(), mass_vec_(), thread_loop_manager_(), threads_number_(0.), thread_mutex_()
 {
     // Get the number of parallel threads.
     const std::size_t available_threads = std::thread::hardware_concurrency()-1;
@@ -1170,14 +1170,10 @@ void Monodomain<DIM, CELL_NODES>::Compute(const std::shared_ptr<ElectricBasic<DI
         }
     }
 
-    // Initialize potential output container.
-    this->vout_.clear();
-    this->vout_.resize(std::ceil(this->SimulationSteps()/this->OutputSteps())+1, Eigen::VectorXd::Zero(this->Cells().size()));
-
-    // Initialize nodal potential vector and cardiac cell potential vector.
+    // Initialize nodal potential vector
     Eigen::VectorXd v_nodal = Eigen::VectorXd::Zero(this->Cells().size());
 
-    // Initialize the potential of the nodal cells.
+    // Initialize the potential of the nodal cells
     for (auto &n_cell : this->Cells()) {
         auto id = &n_cell - &this->Cells()[0];
 
@@ -1185,15 +1181,20 @@ void Monodomain<DIM, CELL_NODES>::Compute(const std::shared_ptr<ElectricBasic<DI
         v_nodal.coeffRef(id) = n_cell->V();
     }
 
-    // Store the initial nodal potential to the output container.
-    this->vout_[0] = v_nodal;
+    // Get the wildcards for correct naming of .ens files and save the first state
+    int tot_states = std::floor(this->SimulationSteps() / this->OutputSteps()) + 1;
+    std::size_t wildcard_size = std::to_string(tot_states).size();
+    std::string wildcard(wildcard_size, '0');
+    this->SaveDataDynamically(v_nodal, wildcard);
+    this->states_num++;
 
     // Iterate over time.
-    int steps_counter = 0;
-    int pos = 1;
+    // int steps_counter = 0;
+    std::string state_id = "";
+    std::size_t replace_start = 0;
     for (int step = 1; step <= this->SimulationSteps(); ++step) {
         // Increase the steps counter.
-        steps_counter++;
+        // steps_counter++;
 
         // Compute Reaction diffusion with Strang Operator Splitting.
         this->ComputeDiffusionExplicit(this->stiff_mat_, this->mass_vec_, 0.5*this->Dt(), v_nodal);
@@ -1201,23 +1202,45 @@ void Monodomain<DIM, CELL_NODES>::Compute(const std::shared_ptr<ElectricBasic<DI
         this->ComputeDiffusionExplicit(this->stiff_mat_, this->mass_vec_, 0.5*this->Dt(), v_nodal);
 
         if (step % this->OutputSteps() == 0) {
-            // Store updated nodal potential to output container.
-            this->vout_[pos++] = v_nodal;
+            state_id = std::to_string(this->states_num++);
+            replace_start = wildcard_size - state_id.size();
+            wildcard.replace(replace_start,std::string::npos,state_id);
+            this->SaveDataDynamically(v_nodal, wildcard);
             std::cout << Logger::Message("Completed simulation steps: ") << step << "/" << this->SimulationSteps() << "\r" << std::flush;
         }
 
     } // End of Iterate over time.
     std::cout << "\n";
 
+    // NOTE: The following ifs are unneccesary:
+    // If we have 1000 steps (sim_time is 100 ms and dt is 0.1 ms) and output_steps of 10 we will save 101 states (1 the initial and 100 actual steps)
+    // But if we have 1005 steps (sim_time is 100.5 ms and dt is 0.1 ms) and output_steps of 10 we will until this line have 
+    // saved 101 states as well (1 the initial and 100 actual steps). 
+    // In that second case, if we use the ifs that follow we will save a final state (so 102 in total) for the potential at 100.5 ms
+    // BUT the first 101 states are correspondent to 1ms time steps and the last correspond to 0.5 ms time step which is inconsistent
+    // as many postprocessor codes developed for Electra assumes that its outputs are output_interval * dt, almost always to 1ms
+    // Moreover, the ensight animation file can save the value of the time step for each saved state but for now 
+    // the code has not implemented that yet as we suppose the time step is equal for all states!
+    // For this reason the following code and the correspondent step_counter are commented
+
+    // TODO:
+    // 1- If we want to acknowledge the user about this maybe make a warning, so he sets simulation_time, dt and output_interval in the way that
+    // no extra unused/unsaved v_nodal values are computed at the end of the simulation for cycle
+    // But, it seems better to not activate this following code again, as commenting it makes simpler the generation of wildcards for the 
+    // saved states -> we make use the floor(simulation_steps/output_steps) + 1
+    // 2- To reactivate this feature improvements can be done but now they seem laborious for such a poorly useful feature/situation.
+
     // Store final state of current potential if the last step was not saved in the loop.
-    if (this->OutputSteps() != 0) {
-        if (steps_counter % this->OutputSteps() != 0) {
-            this->vout_.emplace_back(v_nodal);
-        }
-    }
-    else {  // Store final state if output_steps_ is zero.
-        this->vout_.emplace_back(v_nodal);
-    }
+    // if (this->OutputSteps() != 0) {
+    //     if (steps_counter % this->OutputSteps() != 0) {
+    //         this->SaveDataDynamically(v_nodal, std::to_string(this->states_num++));
+    //     }
+    // }
+    // else {  
+    //     // Store final state if output_steps_ is zero.
+    //     // This might be never reach!
+    //     this->SaveDataDynamically(v_nodal, std::to_string(this->states_num++));
+    // }
 
 }
 
@@ -1225,35 +1248,35 @@ void Monodomain<DIM, CELL_NODES>::Compute(const std::shared_ptr<ElectricBasic<DI
 template<short DIM, short CELL_NODES>
 void Monodomain<DIM, CELL_NODES>::FictitiousValuesToReal(const std::unique_ptr<CLOUDEA::Mfree<DIM>> &mfree_approx)
 {
-    if ( mfree_approx->Phi().size() != static_cast<std::size_t>(this->vout_[0].rows() - this->ConductSystem().NodesNum()) ) {
-        std::string error_str = "Could not convert fictitious nodal values to real in monodomain model. Meshfree approximation is not available for all nodes.";
-        throw std::runtime_error(Logger::Error(error_str));
-    }
+    // if ( mfree_approx->Phi().size() != static_cast<std::size_t>(this->vout_[0].rows() - this->ConductSystem().NodesNum()) ) {
+    //     std::string error_str = "Could not convert fictitious nodal values to real in monodomain model. Meshfree approximation is not available for all nodes.";
+    //     throw std::runtime_error(Logger::Error(error_str));
+    // }
 
-    std::size_t nodes_num = mfree_approx->Phi().size();
+    // std::size_t nodes_num = mfree_approx->Phi().size();
 
-    // Iterate over potential values for each time step.
-    Eigen::VectorXd fict_vals;
-    double real_val = 0.;
-    for (auto &v : this->vout_) {
-        // Temporary copy of fictitious potential values.
-        fict_vals = v;
+    // // Iterate over potential values for each time step.
+    // Eigen::VectorXd fict_vals;
+    // double real_val = 0.;
+    // for (auto &v : this->vout_) {
+    //     // Temporary copy of fictitious potential values.
+    //     fict_vals = v;
 
-        // Iterate over potential nodal values.
-        for (std::size_t n_id = 0; n_id != nodes_num; ++n_id) {
+    //     // Iterate over potential nodal values.
+    //     for (std::size_t n_id = 0; n_id != nodes_num; ++n_id) {
 
-            // Get the fictitious values for the neighbor nodes.
-            for (const auto &neigh_id : mfree_approx->Support().InfluenceNodeIds(n_id)) {
-                auto i = &neigh_id - &mfree_approx->Support().InfluenceNodeIds(n_id)[0];
+    //         // Get the fictitious values for the neighbor nodes.
+    //         for (const auto &neigh_id : mfree_approx->Support().InfluenceNodeIds(n_id)) {
+    //             auto i = &neigh_id - &mfree_approx->Support().InfluenceNodeIds(n_id)[0];
 
-                real_val += mfree_approx->Phi(n_id)(i) * fict_vals.coeff(neigh_id);
-            }
+    //             real_val += mfree_approx->Phi(n_id)(i) * fict_vals.coeff(neigh_id);
+    //         }
 
-            v.coeffRef(n_id) = real_val;
-            real_val = 0.;
-        } // End of Iterate over potential nodal values.
+    //         v.coeffRef(n_id) = real_val;
+    //         real_val = 0.;
+    //     } // End of Iterate over potential nodal values.
 
-    } // End of Iterate over potential values for each time step.
+    // } // End of Iterate over potential values for each time step.
 
 }
 
