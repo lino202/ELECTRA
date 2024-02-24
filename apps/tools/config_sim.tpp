@@ -104,6 +104,22 @@ void ConfigSim<DIM, CELL_NODES>::Tissue(const Parser &parser, std::ostream &stre
     config_units.SetReferenceScale(parser, units, stream);
     std::cout << ELECTRA::Logger::Message("Elapsed time: ") << termcolor::cyan << termcolor::bold << timer.PrintElapsedTime() << termcolor::reset << "\n\n";
 
+    // Aggregate exporters to the react_diff object as compute happens there and we dynamically save the results
+    ELECTRA::EnsightExporter<DIM, CELL_NODES> ens_exporter_tissue;
+    ens_exporter_tissue.SetFiles(parser.GetValue<std::string>("output.ensight.tissue.geometry"),
+                                parser.GetValue<std::string>("output.ensight.tissue.states"),
+                                parser.GetValue<std::string>("output.ensight.tissue.animation"));  
+    react_diff->SetEnsightExporterTissue(ens_exporter_tissue);
+    // TODO ens_exporter_cs must be instantiated outside the if otherwise when passing it to react_diff->SetEnsightExporterCS
+    // its attributes change for some weird names that rarely change inside setFiles
+    ELECTRA::EnsightExporter<DIM, 2> ens_exporter_cs;
+    if (parser.HasAttribute("conduction system")) {
+        ens_exporter_cs.SetFiles(parser.GetValue<std::string>("output.ensight.conduction system.geometry"),
+                            parser.GetValue<std::string>("output.ensight.conduction system.states"),
+                            parser.GetValue<std::string>("output.ensight.conduction system.animation"));
+        react_diff->SetEnsightExporterCS(ens_exporter_cs);
+    }
+    
     // Set up model geometry.
     timer.Reset();
     stream << termcolor::green << termcolor::bold << "[*** GEOMETRY SET UP ***]\n" << termcolor::reset;
@@ -261,19 +277,6 @@ void ConfigSim<DIM, CELL_NODES>::Tissue(const Parser &parser, std::ostream &stre
     stream << Logger::Message("Used time step: " + std::to_string(react_diff->Dt())) << " ms\n";
     stream << Logger::Message("Total time steps: ") << react_diff->SimulationSteps() << "\n";
 
-    // Aggregate exporters to the react_diff object as compute happens there and we dynamically save the results
-    ELECTRA::EnsightExporter<DIM, CELL_NODES> ens_exporter_tissue;
-    ens_exporter_tissue.SetFiles(parser.GetValue<std::string>("output.ensight.tissue.geometry"),
-                                parser.GetValue<std::string>("output.ensight.tissue.states"),
-                                parser.GetValue<std::string>("output.ensight.tissue.animation"));  
-    react_diff->SetEnsightExporterTissue(ens_exporter_tissue);
-    if (parser.HasAttribute("conduction system")) {
-        ELECTRA::EnsightExporter<DIM, 2> ens_exporter_cs;
-        ens_exporter_cs.SetFiles(parser.GetValue<std::string>("output.ensight.cs.geometry"),
-                                  parser.GetValue<std::string>("output.ensight.cs.states"),
-                                  parser.GetValue<std::string>("output.ensight.cs.animation"));
-        react_diff->SetEnsightExporterCS(ens_exporter_cs);
-    }
 
     // SOLVE reaction diffusion physics
     react_diff->Compute(tissue_mat, stimuli);

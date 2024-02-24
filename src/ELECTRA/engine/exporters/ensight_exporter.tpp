@@ -63,13 +63,13 @@ void EnsightExporter<DIM, CELL_NODES>::SetFiles(const std::string &geom_file, co
     // We check all results path are the same and are absolute
     namespace boost_fs = boost::filesystem;
 
-    boost_fs::path path_geom(this->geom_file_);
+    boost_fs::path path_geom(geom_file);
     std::string parent_path_geom = path_geom.parent_path().string();
 
-    boost_fs::path path_states(this->states_file_);
+    boost_fs::path path_states(states_file);
     std::string parent_path_states = path_states.parent_path().string();
 
-    boost_fs::path path_anim(this->anim_file_);
+    boost_fs::path path_anim(anim_file);
     std::string parent_path_anim = path_anim.parent_path().string();
 
     if (! ( (parent_path_anim==parent_path_geom) && (parent_path_anim==parent_path_states) ) ){
