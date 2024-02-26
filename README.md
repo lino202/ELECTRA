@@ -11,7 +11,7 @@ ELECTRA is a command-line software and library for solving PDEs for cardiac elec
 - Non-distributed memory
 - Ensight binary results
 - Cardiac conduction system
-- Modomain solver
+- Monodomain solver
 
 # Installation 
 
@@ -28,7 +28,7 @@ After you have minimal dependencies, you need to download this repository and go
 Now, You need to build and install ELECTRA dependencies which are all under the deps folder (some are collect by cmake on the fly), so first make the bash-local environment variable
 
 ```
-export ELECTRA_DEPS_DIR=/home/maxi/Documents/PhD/Code/ELECTRA/deps/
+export ELECTRA_DEPS_DIR=[path-to-electra]/ELECTRA/deps/
 ```
 
 Then we can install dependencies as follow. First we locate us in the ELECTRA source code folder
@@ -127,7 +127,7 @@ cd /home/ELECTRA \
     && cd build && make -j4
 ```
 
-If you want to debug change in the about command RELEASE for DEBUG
+If you want to debug change in the above command RELEASE for DEBUG
 
 
 ### Docker image generation
@@ -142,8 +142,7 @@ cd [path-to-electra]/ELECTRA
 
 This sript dockerGenImage would ask you to input the version tag for your docker image which should be equal to the one in ./CMakeLists.txt VERSION field. Afterwards, the script execute the DockerFile instructions for creating the container, copying the folder files and building ELECTRA with its dependencies. If the script finish without errors, you should see a new folder images where your electra-docker_[version].tar.gz image should be.
 
-Now you can install and use your image as described in 
-
+Now you can install and use your image as described in [Docker section](#docker)
 
 # Usage
 
