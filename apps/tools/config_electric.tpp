@@ -241,8 +241,32 @@ void ConfigElectric<DIM, CELL_NODES>::AssignFibers(const Parser &parser, int val
         }
 
     } else {
-        std::string error_str = "Could not extract fibers direction correctly. Check the given format of the fibers.";
-        throw std::runtime_error(ELECTRA::Logger::Error(error_str));
+        //  As last option try as a separated .json file
+        try{
+            std::string fibers_filename = parser.GetValue<std::string>("tissue.material.electric.fibers");
+            Parser fibers_parser(fibers_filename);
+            auto object = fibers_parser.GetObject("fibers");
+
+            // TODO for now we repeat the code from MultiArray here as 'object' remains out of scope
+            fibers = Eigen::MatrixXd::Zero(values_num, DIM);
+            int i = 0; short d = 0;
+            for (const auto &dir : object) {
+                for (const auto &val : dir) fibers.coeffRef(i,d++) = val;
+                i++;
+                d = 0;
+            }
+
+            if (i != values_num) {
+                std::string error_str = "Could not extract fibers direction correctly. The provided fiber vectors are [" + std::to_string(i) +
+                                        "] while the model has [" + std::to_string(values_num) + "] nodes.";
+                throw std::runtime_error(ELECTRA::Logger::Error(error_str));
+            }
+
+        } catch (...){
+            std::string error_str = "Could not extract fibers direction correctly";
+            throw std::runtime_error(ELECTRA::Logger::Error(error_str));
+        }
+        
     }
 
 }

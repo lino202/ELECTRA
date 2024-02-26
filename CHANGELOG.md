@@ -10,6 +10,7 @@ ELECTRA uses a vMAJOR.MINOR.PATCH versioning scheme. The
 
 ## Version History
 ------------------
+* v0.6.0
 * v0.5.2
 * v0.5.1
 * v0.5.0
@@ -23,6 +24,31 @@ ELECTRA uses a vMAJOR.MINOR.PATCH versioning scheme. The
 * v0.3.0
 * v0.2.0
 * v0.1.0
+
+## 2024-02-26: v0.6.0
+---------------------
+### Notes
+* In general, ElectraSim now is more suitable in terms of memory for working with bigger meshes and longer periods of time. ElectraSim now saves states dynamically in binary ensight gold format. 
+* The code and code structure now is a little bit simpler and it has a more clear way of building and using it in release and debug modes.
+
+### Added
+* Read fibers as a separated .json file
+* Save ensight binary (saves dynamic (RAM) and storage (ROM) memory)
+* Dynamic saving during simulation computation of states (save dynamic memory)
+* BLOCK_CELL_CURRS for generating currents blocks or not. Now, current blocks are desativated as default (saves dynamic memory). Also majority of currents have a conductivity associated to them. Pay attention that in the tentusscher2006 and Stewart2009 models the current block can be set but it does not actually perform the block as it is not defined in the source code.
+
+### Fixed
+* Minor fixes in computation of CS diffusivities in the end branches
+* Setting a more clear instruction for building ElectraSim
+* TinyXML is not need in Electra anymore as the paraview exporter is deprecated but it is still in CLOUDEA. But we do not install tinyxml anymore we basically added its .c and .h files and complied CLOUDEA with it.
+
+### Deprecated/Desactivated
+* In general, several situations are now deprecated/desactivated majorly because we change the way we save the states for saving memory. 
+* Desactivate: The bidomain model as the Compute member function needs to implement the dynamic saving as for the monodomain setting. 
+* Desactivate: The MCM as the FictitiousValuesToReal function requires the transmembrane potential for all time steps and nodes. As we noe save dynamically this values has to be read again after simulating which is not implemented for now but it is not difficult to do.
+* Desactivate: ElectraPre was desactivated for simplifyng the building but it can be uncommented in the CMakeList.txt file under /apps. ElectraPost was desactivated as well as it is just as skeleton for now.
+* Deprecated: The postprocessing, as APD was not working, we need to read back all states and we wanted to isolate ElectraSim for only simulating. Postprocessing can be done (ans is majorly done) with thirdparty/in-house made code or by the app ElectraPro in the future.
+* Deprecated: the paraview and ascii exporters. There is no need to save the data in ascii. All is binary now.
 
 
 ## 2022-02-20: v0.5.2

@@ -110,8 +110,8 @@ void ConfigSim<DIM, CELL_NODES>::Tissue(const Parser &parser, std::ostream &stre
                                 parser.GetValue<std::string>("output.ensight.tissue.states"),
                                 parser.GetValue<std::string>("output.ensight.tissue.animation"));  
     react_diff->SetEnsightExporterTissue(ens_exporter_tissue);
-    // TODO ens_exporter_cs must be instantiated outside the if otherwise when passing it to react_diff->SetEnsightExporterCS
-    // its attributes change for some weird names that rarely change inside setFiles
+    // TODO! ens_exporter_cs must be instantiated outside the if otherwise when passing it to react_diff->SetEnsightExporterCS
+    // its attributes change for some weird names that rarely change inside setFiles. This for now is not a problem as we 
     ELECTRA::EnsightExporter<DIM, 2> ens_exporter_cs;
     if (parser.HasAttribute("conduction system")) {
         ens_exporter_cs.SetFiles(parser.GetValue<std::string>("output.ensight.conduction system.geometry"),
