@@ -93,17 +93,17 @@ You can download the latest docker image released from the release section [Last
 Once you have the image and Docker is installed in your machine you should:
 
 ```
-docker load -i [path-to-dokcer-image]/electra-docker_[version-tag].tar.gz
+docker load -i [path-to-docker-image]/electra-docker_[version-tag].tar.gz
 ```
 
 Then, create the container (without any mounted volumen) 
 ```
-docker run -it --name [desired-nname] electra-docker:[version-tag]
+docker run -it --name [desired-name] electra-docker:[version-tag]
 ```
 
 Or with a mounted container for sharing files and folders between the host and your container
 ```
-docker run -it --name [desired-nname] -v [host-folder-path]:[container-path] electra-docker:[version-tag]
+docker run -it --name [desired-name] -v [host-folder-path]:[container-path] electra-docker:[version-tag]
 ```
 
 Then you will be inside the container. Here you can see ElectraSim app under /home/ELECTRA/build/bin, the entire source code should be under /home/ELECTRA and you should be able to use the command ElectraSim to call the binary under /home/ELECTRA/build/bin.
@@ -150,6 +150,11 @@ The application of ElectraSim needs a .json as an input for setting up the simul
 
 An explanation and options of the .json files will be here anytime soon.
 
+
+Since version 0.6.1 you can use ElectraCell for simulating a sincle cell Vm and obtaining the manual init file for using with ElectraSim. You need to follow this format: ./ElectraCell /path/file_name ep_model cell_type sim_time stim_start stim_dur stim_cycle_length stim_amp. For example:
+```
+./ElectraCell /path/file_name gaur2021 ventricular 1000. 10. 0.5 1000. 80.
+```
 
 # Contributors
 

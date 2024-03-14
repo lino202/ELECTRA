@@ -39,20 +39,22 @@ target_include_directories(ElectraSim PUBLIC
 #     $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
 # )
 
-# # Build single cell dev app
-# add_executable(SingleCelldev  electra_cell_dev.cpp)
-# target_link_libraries(SingleCelldev PRIVATE ${PROJECT_NAME})
-# target_include_directories(SingleCelldev PUBLIC
-#     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/${INSTALL_INCLUDEDIR}>
-#     $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
-# )
+# Build ElectraCell app
+add_executable(ElectraCell  electra_cell.cpp)
+target_compile_definitions(ElectraCell PRIVATE ELECTRA_VERSION="${PROJECT_VERSION}")
+target_link_libraries(ElectraCell PRIVATE ${PROJECT_NAME} Tools nlohmann_json::nlohmann_json termcolor::termcolor)
+target_link_libraries(ElectraCell PRIVATE ${PROJECT_NAME})
+target_include_directories(ElectraCell PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/${INSTALL_INCLUDEDIR}>
+    $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
+)
 
 # Install apps in targets
 install(TARGETS
     ElectraSim
     # ElectraPre
     # ElectraPost
-    # SingleCelldev
+    ElectraCell
     RUNTIME
         DESTINATION ${INSTALL_BINDIR}
         COMPONENT ${PROJECT_NAME}_Runtime

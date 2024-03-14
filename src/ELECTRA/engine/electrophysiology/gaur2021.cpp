@@ -323,7 +323,7 @@ void Gaur2021::Initialize(CellType cell_type)
             this->prm_[INaL__GNaL] = 0.0075;
             this->prm_[INaL__tau_hl] = 600.0;
             this->prm_[INab__PNab] = 3.75e-10;
-            this->prm_[I_Na__GNa] = 14.838;
+            this->prm_[I_Na__GNa] = 29.676;     //for single cell model is 14.838;
             this->prm_[IpCa__GpCa] = 0.0575;
             this->prm_[SR_uptake__BSLmax] = 1.124;
             this->prm_[SR_uptake__BSRmax] = 0.047;

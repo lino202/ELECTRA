@@ -139,6 +139,15 @@ public:
             const std::string &body_type, int nodal_cells_num, std::vector<std::unique_ptr<ELECTRA::EpBasic>> &nodal_cells,
             std::vector<ELECTRA::EpVaryingParams> &cell_varying_param_groups, std::ostream &stream) const;
 
+    ELECTRA::EpModelType GetEpModelType(const std::string &ep_model_name){
+        return this->ep_model_map_.at(ep_model_name);
+    }
+
+    ELECTRA::CellType GetCellType(const std::string &cell_type_name){
+        return this->cell_type_map_.at(cell_type_name);
+    }
+
+
 };
 
 /** \} End of Doxygen Groups*/

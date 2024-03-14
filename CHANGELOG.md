@@ -10,6 +10,7 @@ ELECTRA uses a vMAJOR.MINOR.PATCH versioning scheme. The
 
 ## Version History
 ------------------
+* v0.6.1
 * v0.6.0
 * v0.5.2
 * v0.5.1
@@ -24,6 +25,16 @@ ELECTRA uses a vMAJOR.MINOR.PATCH versioning scheme. The
 * v0.3.0
 * v0.2.0
 * v0.1.0
+
+## 2024-03-14: v0.6.1
+---------------------
+
+### Added
+* SingleCellDev app now is called ElectraCell, and now is available again
+* ElectraCell now is an app that receives arguments as input for simulating single cells, the arguments format is 
+./ElectraCell /path/file_name ep_model cell_type sim_time stim_start stim_dur stim_cycle_length stim_amp
+* Now ElectraCell saves the manual init file for using with ElectraSim
+* The GNa in the Gaur2021 model has been double as Electra simulates mainly tissue
 
 ## 2024-02-26: v0.6.0
 ---------------------
