@@ -64,25 +64,24 @@
             "type" : "monodomain",
             "solver" : "daeti",
             "dt unit" : "ms",
-            "dt" : 0.1,
+            "dt" : 0.125,
             "dt min" : 0.01,
             "adaptive reaction" : "yes",
             "adaptive diffusion" : "yes",
             "simulation time" : 20,
             "simulation time unit" : "ms",
-            "output interval" : 10
+            "output interval" : 2
         }
     },
 
     "output" : {
-        "cells state" : "./results/cells_state.elc",               //Adjust this
 
-	"ensight" : {
-			"tissue" : {
-				"geometry"  : "./results/tissue_model.geo",        //Adjust this
-				"states"    : "./results/tissue_solution.ens",     //Adjust this
-				"animation" : "./results/tissue_animation.case"    //Adjust this
-			}
-		}
-    }
+        "ensight" : {
+                "tissue" : {
+                    "geometry"  : "./results/tissue_model.geo",        //Adjust this
+                    "states"    : "./results/tissue_solution.ens",     //Adjust this
+                    "animation" : "./results/tissue_animation.case"    //Adjust this
+                }
+            }
+        }
 }
