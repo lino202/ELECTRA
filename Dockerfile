@@ -92,7 +92,7 @@ RUN cd /home/ELECTRA \
 
 # Add shortcut to ELECTRA applications
 RUN echo "alias ElectraSim='/home/ELECTRA/build/bin/ElectraSim'" >> ~/.bashrc
-RUN echo "alias ElectraSim='/home/ELECTRA/build/bin/ElectraCell'" >> ~/.bashrc
+RUN echo "alias ElectraCell='/home/ELECTRA/build/bin/ElectraCell'" >> ~/.bashrc
 
 # Finished successfully
 # constructing ELECTRA image.
