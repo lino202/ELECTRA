@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 
         if (argc!=9){
             std::string err_message = "Give 8 arguments: output file, model name, cell type, total duration, and stimulus start, duration, cycle length and amplitude, for example: ";
-            err_message = err_message + "/path/file_name gaur2021 ventricular 1000. 10. 0.5 1000. 80.";
+            err_message = err_message + "/path/file_name gaur2021 endo 1000. 10. 0.5 1000. 80.";
             throw std::invalid_argument(Logger::Error(err_message));
         } 
 
