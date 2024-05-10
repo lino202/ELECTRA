@@ -59,10 +59,19 @@ protected:
 public:
 
     /**
-     * \brief Construct a new Parser object.
+     * \brief Construct a new Parser object, main Parser object called from ElectraSim
      * \param [in] json_filename The filename of the configuration file of the ELECTRA application including the path.
      */
     Parser(const std::string &json_filename);
+
+    /**
+     * \brief Construct a new Parser object, for being called from ElectraCell 
+     * TODO This extra construct makes possible to use config_electrophys.ManualCellInitialization
+     * cause this needs to have the parser as an argument. So, for not overloading the constructor I added app_name as parameter 
+     * which is certaintly silly, might be improved
+     * \param [in] json_filename The filename of the configuration file of the ELECTRA application including the path.
+     */
+    Parser(const std::string &manual_init_file, const std::string &app_name);
 
 
     /**

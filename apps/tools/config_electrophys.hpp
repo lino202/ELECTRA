@@ -125,7 +125,7 @@ public:
 
 
     /**
-     * @brief Set the Cell Electrophysiology object
+     * @brief Set the Cell Electrophysiology object, called from ElectraSim
      * 
      * @param parser 
      * @param node_sets 
@@ -139,6 +139,17 @@ public:
             const std::string &body_type, int nodal_cells_num, std::vector<std::unique_ptr<ELECTRA::EpBasic>> &nodal_cells,
             std::vector<ELECTRA::EpVaryingParams> &cell_varying_param_groups, std::ostream &stream) const;
 
+    /**
+     * @brief Manuallt init the cell states and params, called from ElectraCell
+     * 
+     * @param parser 
+     * @param manual_init_file
+     * @param cell
+     */
+    void ManualCellInitializationElectraCell(const Parser &parser, const std::string &manual_init_file, std::unique_ptr<ELECTRA::EpBasic> &cell){
+        this->ManualCellInitialization(parser, manual_init_file, cell);
+    }
+    
     ELECTRA::EpModelType GetEpModelType(const std::string &ep_model_name){
         return this->ep_model_map_.at(ep_model_name);
     }

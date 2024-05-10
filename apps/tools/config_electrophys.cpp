@@ -111,8 +111,10 @@ void ConfigElectrophys::SetCellModelsFromNodeSets(const Parser &parser, const st
 
         // Get manual cell initialization file if given.
         std::string manual_init_file = "";
-        if (parser.HasAttribute(ep_model_path+".manual init file"))
+        if (parser.HasAttribute(ep_model_path+".manual init file")){
             manual_init_file = parser.GetValue<std::string>(ep_model_path+".manual init file");
+            std::cout << ELECTRA::Logger::Message("Using manual init file: " + manual_init_file + "\n");
+        }
 
         // Set nodal cells of the specified node set.
         for (const auto &id : node_sets.at(nset_name).NodeIds()) {
@@ -163,6 +165,7 @@ void ConfigElectrophys::SetCellModelsIndividually(const Parser &parser, const st
     if (parser.HasAttribute(body_type+".electrophysiology.manual init file")) {
         manual_init_file = parser.GetValue<std::string>(body_type+".electrophysiology.manual init file");
         with_manual_init = true;
+        std::cout << ELECTRA::Logger::Message("Using manual init file: " + manual_init_file + "\n");
     }
 
     // Allow manual initialization only if ep model and cell type are in single value format.
@@ -285,7 +288,6 @@ void ConfigElectrophys::SetCellModelsIndividually(const Parser &parser, const st
 
 void ConfigElectrophys::ManualCellInitialization(const Parser &parser, const std::string &init_file, std::unique_ptr<ELECTRA::EpBasic> &cell) const
 {
-
     // Resolve manual initialization file path.
     std::string filename = parser.ResolvePath(init_file);
 

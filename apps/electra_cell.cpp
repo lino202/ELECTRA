@@ -26,6 +26,7 @@
 #include <stdlib.h>
 
 #include "tools/config_electrophys.hpp"
+#include "tools/parser.hpp"
 #include <termcolor/termcolor.hpp>
 
 using namespace ELECTRA;
@@ -34,11 +35,13 @@ using namespace APP_ELECTRA;
 int main(int argc, char *argv[]) {
     try {
 
-        std::cout << termcolor::green << "\nWelcome to ElectraCell" << termcolor::reset << "\n";
+        std::string app_name = "ElectraCell";
+        std::cout << termcolor::green << "\nWelcome to " + app_name << termcolor::reset << "\n";
+        std::cout << termcolor::bold << "Version:                " << termcolor::reset << ELECTRA_VERSION << "\n";
 
-        if (argc!=9){
-            std::string err_message = "Give 8 arguments: output file, model name, cell type, total duration, and stimulus start, duration, cycle length and amplitude, for example: ";
-            err_message = err_message + "/path/file_name gaur2021 endo 1000. 10. 0.5 1000. 80.";
+        if ((argc<9) | (argc>10)){
+            std::string err_message = "Give 8 or 9 arguments: output file, model name, cell type, total duration, and stimulus start, duration, cycle length and amplitude, for example: ";
+            err_message = err_message + "/path/file_name gaur2021 endo 1000. 10. 0.5 1000. 80. /path/manual_init_file.txt";
             throw std::invalid_argument(Logger::Error(err_message));
         } 
 
@@ -57,43 +60,28 @@ int main(int argc, char *argv[]) {
         // Set cell capacitance and time step
         double dt = 0.01*units["ms"];
 
-        // Create the cell model.
-        // Onput should be the correct name as input in opencarp but the cell should be instantiate with the name 
-        // of the class.
+        // Create the cell model calling config_electrophysiology.
+        // Input should be the correct name as input in ElectraSim but the cell should be instantiate with the name of the class.
         const std::string ep_model_name = argv[2];
         const std::string cell_type = argv[3];
+        std::cout << termcolor::bold << "model:                  " << termcolor::reset << ep_model_name << "\n";
+        std::cout << termcolor::bold << "cell type:              " << termcolor::reset << cell_type << "\n";
+
         ConfigElectrophys config_electrophys;
         std::unique_ptr<ELECTRA::EpBasic> cell = ELECTRA::EpFactory::Create(config_electrophys.GetEpModelType(ep_model_name));
         cell->Initialize(config_electrophys.GetCellType(cell_type));
+
+        if (argc==10){
+            std::string manual_init_file = argv[9];
+            Parser electra_cell_parser(manual_init_file, app_name);
+            std::cout << termcolor::bold << "Using manual init file: " << termcolor::reset << manual_init_file << "\n";
+            config_electrophys.ManualCellInitializationElectraCell(electra_cell_parser, manual_init_file, cell);
+        }
         
-
-
         // Simulation time and steps.
         int total_time = atoi(argv[4]);
         total_time = total_time*units["ms"];
         int steps = static_cast<int>(std::ceil(total_time/dt));
-
-        //OLD left for reference 
-        // std::vector<double> cycle_lengths({630*units["ms"], 630*units["ms"], 620*units["ms"], 620*units["ms"],
-        //                                    610*units["ms"], 610*units["ms"], 600*units["ms"], 600*units["ms"],
-        //                                    590*units["ms"], 590*units["ms"], 580*units["ms"], 580*units["ms"],
-        //                                    570*units["ms"], 570*units["ms"], 560*units["ms"], 560*units["ms"],
-        //                                    550*units["ms"], 550*units["ms"], 540*units["ms"], 540*units["ms"],
-        //                                    500*units["ms"], 500*units["ms"], 500*units["ms"], 500*units["ms"],
-        //                                    500*units["ms"], 500*units["ms"], 500*units["ms"], 500*units["ms"],
-        //                                    500*units["ms"], 500*units["ms"], 540*units["ms"], 540*units["ms"],
-        //                                    550*units["ms"], 550*units["ms"], 560*units["ms"], 560*units["ms"],
-        //                                    570*units["ms"], 570*units["ms"], 580*units["ms"], 580*units["ms"],
-        //                                    590*units["ms"], 590*units["ms"], 600*units["ms"], 600*units["ms"],
-        //                                    610*units["ms"], 610*units["ms"], 620*units["ms"], 620*units["ms"],
-        //                                    630*units["ms"], 630*units["ms"]});
-        // Stimulus stimulus;
-        // stimulus.SetStart(0.*units["ms"]);
-        // stimulus.SetDuration(0.5*units["ms"]);
-        // // stimulus.SetCycleLengths(cycle_lengths);
-        // stimulus.SetCycleLengths(1000.);
-        // stimulus.SetAmplitude(80);
-
 
         //  Set Stimulus
         double stim_start        = atof(argv[5]);
@@ -112,12 +100,9 @@ int main(int argc, char *argv[]) {
         const std::string out_manual_init_file_path = output_file+"_manual_init_file.txt";
         std::ofstream out_manual_init_file(out_manual_init_file_path, std::ofstream::out);
         
-        // Print some info
-        std::cout << termcolor::bold << "version:    " << termcolor::reset << ELECTRA_VERSION << "\n";
-        std::cout << termcolor::bold << "timestep:   " << termcolor::reset << std::to_string(dt) << " ms\n";
-        std::cout << termcolor::bold << "model:      " << termcolor::reset << ep_model_name << "\n";
-        std::cout << termcolor::bold << "cell type:  " << termcolor::reset << cell_type << "\n";
-        std::cout << termcolor::bold << "total time: " << termcolor::reset << std::to_string(total_time) << " ms\n";
+        // Print the remaining info
+        std::cout << termcolor::bold << "timestep:               " << termcolor::reset << std::to_string(dt) << " ms\n";
+        std::cout << termcolor::bold << "total time:             " << termcolor::reset << std::to_string(total_time) << " ms\n";
         
         std::cout << "\n";
         std::cout << termcolor::magenta << "Stimulus:" << termcolor::reset << "\n";
@@ -163,9 +148,7 @@ int main(int argc, char *argv[]) {
         out_manual_init_file << "\n";
         out_manual_init_file << cell->PrintParameters() << std::endl;
         out_manual_init_file << "\n";
-        // Currents are not neccesary for setting the manual initialization
-        // out_manual_init_file << "[Currents]" << std::endl;
-        // out_manual_init_file << cell->PrintCurrents() << std::endl;
+
         #ifdef BLOCK_CELL_CURRS
             out_manual_init_file << "[Current Blocks]" << std::endl;
             out_manual_init_file << cell->PrintBlockCoeffs() << std::endl;
@@ -181,12 +164,12 @@ int main(int argc, char *argv[]) {
         std::cout << "\n";
         std::cout << termcolor::magenta << "Saving:" << termcolor::reset << "\n";
         std::cout << termcolor::bold << "Elapsed time for cell compute: " << termcolor::reset << timer.PrintElapsedTime() << "\n";
-        std::cout << termcolor::bold << "Vm saved in: " << termcolor::reset <<  out_vm_file_path << "\n";
-        std::cout << termcolor::bold << "Manual_init_file saved in: " << termcolor::reset <<  out_manual_init_file_path << "\n";
+        std::cout << termcolor::bold << "Vm saved in:                   " << termcolor::reset <<  out_vm_file_path << "\n";
+        std::cout << termcolor::bold << "Manual_init_file saved in:     " << termcolor::reset <<  out_manual_init_file_path << "\n";
 
         std::cout << "\n";
         std::cout << termcolor::magenta << termcolor::bold;
-        std::cout << Logger::Message("The simulation finished successfully. Thank you for using the ElectraCell app.\n") << termcolor::reset;
+        std::cout << Logger::Message("The simulation finished successfully. Thank you for using the " + app_name + "app.\n") << termcolor::reset;
 
     }
     catch (const std::invalid_argument &e) {

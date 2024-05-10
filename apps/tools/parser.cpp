@@ -42,6 +42,21 @@ Parser::Parser(const std::string &json_filename) : json_(), parent_path_("")
 }
 
 
+Parser::Parser(const std::string &manual_init_file, const std::string &app_name) : parent_path_("")
+{
+    std::filesystem::path filepath(manual_init_file);
+
+    // Check manual_init_file for *.txt extension.
+    if (filepath.extension() != ".txt") {
+        throw std::invalid_argument(ELECTRA::Logger::Error("Could not load manual init file in " + app_name + ". Expected .txt"));
+    }
+
+    // Store parent path of *.txt file.
+    this->parent_path_ = filepath.parent_path();
+
+}
+
+
 Parser::~Parser()
 {}
 
