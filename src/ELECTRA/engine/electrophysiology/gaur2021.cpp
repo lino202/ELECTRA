@@ -126,9 +126,6 @@ void Gaur2021::SetDataMapping()
     this->mapped_data_["cell__pi"] = static_cast<std::size_t>(cell__pi);
     this->mapped_data_["cell__rad"] = static_cast<std::size_t>(cell__rad);
     this->mapped_data_["cell__vmyo1frac"] = static_cast<std::size_t>(cell__vmyo1frac);
-    this->mapped_data_["stimulus__duration"] = static_cast<std::size_t>(stimulus__duration);
-    this->mapped_data_["stimulus__offset"] = static_cast<std::size_t>(stimulus__offset);
-    this->mapped_data_["stimulus__period"] = static_cast<std::size_t>(stimulus__period);
     this->mapped_data_["CaMK__ECl"] = static_cast<std::size_t>(CaMK__ECl);
     this->mapped_data_["ICaL__PCaK"] = static_cast<std::size_t>(ICaL__PCaK);
     this->mapped_data_["ICaL__PCaNa"] = static_cast<std::size_t>(ICaL__PCaNa);
@@ -433,9 +430,6 @@ void Gaur2021::Initialize(CellType cell_type)
     this->prm_[cell__pi] = 3.14;
     this->prm_[cell__rad] = 0.0011;
     this->prm_[cell__vmyo1frac] = 0.4;
-    this->prm_[stimulus__duration] = 0.5;
-    this->prm_[stimulus__offset] = 20.0;
-    this->prm_[stimulus__period] = 500.0;
     this->prm_[CaMK__ECl] =  (( this->prm_[cell__R]*this->prm_[cell__T])/this->prm_[cell__F])*std::log(this->prm_[cell__cli]/this->prm_[cell__clo]);
     this->prm_[ICaL__PCaK] =  0.000357400*this->prm_[ICaL__PCa];
     this->prm_[ICaL__PCaNa] =  0.00125000*this->prm_[ICaL__PCa];
@@ -989,9 +983,6 @@ std::string Gaur2021::PrintParameters() const
     oss << "cell__pi = " << this->prm_[cell__pi] << "\n";
     oss << "cell__rad = " << this->prm_[cell__rad] << "\n";
     oss << "cell__vmyo1frac = " << this->prm_[cell__vmyo1frac] << "\n";
-    oss << "stimulus__duration = " << this->prm_[stimulus__duration] << "\n";
-    oss << "stimulus__offset = " << this->prm_[stimulus__offset] << "\n";
-    oss << "stimulus__period = " << this->prm_[stimulus__period] << "\n";
     oss << "CaMK__ECl = " << this->prm_[CaMK__ECl] << "\n";
     oss << "ICaL__PCaK = " << this->prm_[ICaL__PCaK] << "\n";
     oss << "ICaL__PCaNa = " << this->prm_[ICaL__PCaNa] << "\n";
