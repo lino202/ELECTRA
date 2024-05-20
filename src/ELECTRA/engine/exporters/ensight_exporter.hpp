@@ -138,7 +138,9 @@ class EnsightExporter {
 
       /**
        * \brief  Write floats in binary to the ensight files.
-       * \param [in] val The float to be written in binary.
+       * \param [in] val The float to be written in binary, computation is double precision but saving on ensight is single, 
+       *                 this is based on https://bitbucket.org/aneic/meshtool/src/master/utils/ensight_utils.h and 
+       *                 https://github.com/ITWM-TVFS/Ensight4Matlab/blob/master/ensight_lib/src/ensightbinarywriter.cpp#L57.
        * \param [in] str The binary output stream to be written.
        * \return [void]
        */
