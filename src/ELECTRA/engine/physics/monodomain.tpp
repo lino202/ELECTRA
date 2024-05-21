@@ -1117,6 +1117,7 @@ void Monodomain<DIM, CELL_NODES>::ComputeCriticalTimeStep()
 
     // Iterate over the rows of the stiffness matrix.
     double row_sum;
+    int node_critical = -1;
     for (int i = 0; i != this->stiff_mat_.outerSize(); ++i) {
         row_sum = 0.;
         for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(this->stiff_mat_, i); it; ++it) {
@@ -1128,7 +1129,10 @@ void Monodomain<DIM, CELL_NODES>::ComputeCriticalTimeStep()
         double crit_dt = this->mass_vec_.coeff(i) / (row_sum + this->stiff_mat_.coeff(i,i));
 
         // Update stable time step.
-        if (crit_dt < dt_critical) { dt_critical = crit_dt; }
+        if (crit_dt < dt_critical) { 
+            dt_critical = crit_dt;
+            node_critical = i; 
+        }
     }
 
     if (dt_critical < 0.) {
@@ -1138,6 +1142,7 @@ void Monodomain<DIM, CELL_NODES>::ComputeCriticalTimeStep()
     }
 
     // Reduce the stable time step by a 10% safety factor and store it.
+    std::cout << "node with critical dt is " + std::to_string(node_critical) + "...";
     this->SetDtCritical(0.9*dt_critical);
 }
 
