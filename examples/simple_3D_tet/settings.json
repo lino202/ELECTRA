@@ -50,12 +50,13 @@
             }
         },
  
+        // Model's name should be in lower case
         "electrophysiology" : {
             "models number" : 1,
-            "model-1" : { "model type" : "Ohara2011m", "cell type" : "epi",  "nodeset" : "all_nodes", "manual init file": "./ohara_epi_init.txt" }
+            "model-1" : { "model type" : "ohara2011_inatt", "cell type" : "endo",  "nodeset" : "all_nodes", "manual init file": "./ohara_epi_init.txt" }
         }
     
-		//"electrophysiology" : { "model type" : "Ohara2011m", "cell type" : "epi", "manual init file": "./ohara_epi_init.txt" }
+		//"electrophysiology" : { "model type" : "ohara2011", "cell type" : "epi", "manual init file": "./ohara_epi_init.txt" }
     },
  
 

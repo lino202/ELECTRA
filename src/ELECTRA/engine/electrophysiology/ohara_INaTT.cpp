@@ -1,138 +1,21 @@
 /*
  * ELECTRA. Electrophysiology Simulation Software.
- * Copyright (C) 2019  <Konstantinos A. Mountris> <konstantinos.mountris@gmail.com>
+ * Copyright (C) 2019 
  *
  * ALL RIGHTS RESERVED
  *
  */
 
-#include "ELECTRA/engine/electrophysiology/ohara.hpp"
-
+#include "ELECTRA/engine/electrophysiology/ohara_INaTT.hpp"
 
 namespace ELECTRA {
 
-void Ohara::SetDataMapping()
-{
-    using namespace OhrVar;
-    using namespace OhrPrm;
-    using namespace OhrCur;
-
-    // Set variables mapping.
-    this->mapped_data_["v"] = static_cast<std::size_t>(v);
-    this->mapped_data_["nai"] = static_cast<std::size_t>(nai);
-    this->mapped_data_["nass"] = static_cast<std::size_t>(nass);
-    this->mapped_data_["ki"] = static_cast<std::size_t>(ki);
-    this->mapped_data_["kss"] = static_cast<std::size_t>(kss);
-    this->mapped_data_["cai"] = static_cast<std::size_t>(cai);
-    this->mapped_data_["cass"] = static_cast<std::size_t>(cass);
-    this->mapped_data_["cansr"] = static_cast<std::size_t>(cansr);
-    this->mapped_data_["cajsr"] = static_cast<std::size_t>(cajsr);
-    this->mapped_data_["m"] = static_cast<std::size_t>(m);
-    this->mapped_data_["hf"] = static_cast<std::size_t>(hf);
-    this->mapped_data_["hs"] = static_cast<std::size_t>(hs);
-    this->mapped_data_["j"] = static_cast<std::size_t>(j);
-    this->mapped_data_["hsp"] = static_cast<std::size_t>(hsp);
-    this->mapped_data_["jp"] = static_cast<std::size_t>(jp);
-    this->mapped_data_["mL"] = static_cast<std::size_t>(mL);
-    this->mapped_data_["hL"] = static_cast<std::size_t>(hL);
-    this->mapped_data_["hLp"] = static_cast<std::size_t>(hLp);
-    this->mapped_data_["a"] = static_cast<std::size_t>(a);
-    this->mapped_data_["iF"] = static_cast<std::size_t>(iF);
-    this->mapped_data_["iS"] = static_cast<std::size_t>(iS);
-    this->mapped_data_["ap"] = static_cast<std::size_t>(ap);
-    this->mapped_data_["iFp"] = static_cast<std::size_t>(iFp);
-    this->mapped_data_["iSp"] = static_cast<std::size_t>(iSp);
-    this->mapped_data_["d"] = static_cast<std::size_t>(d);
-    this->mapped_data_["ff"] = static_cast<std::size_t>(ff);
-    this->mapped_data_["fs"] = static_cast<std::size_t>(fs);
-    this->mapped_data_["fcaf"] = static_cast<std::size_t>(fcaf);
-    this->mapped_data_["fcas"] = static_cast<std::size_t>(fcas);
-    this->mapped_data_["jca"] = static_cast<std::size_t>(jca);
-    this->mapped_data_["nca"] = static_cast<std::size_t>(nca);
-    this->mapped_data_["ffp"] = static_cast<std::size_t>(ffp);
-    this->mapped_data_["fcafp"] = static_cast<std::size_t>(fcafp);
-    this->mapped_data_["xrf"] = static_cast<std::size_t>(xrf);
-    this->mapped_data_["xrs"] = static_cast<std::size_t>(xrs);
-    this->mapped_data_["xs1"] = static_cast<std::size_t>(xs1);
-    this->mapped_data_["xs2"] = static_cast<std::size_t>(xs2);
-    this->mapped_data_["xk1"] = static_cast<std::size_t>(xk1);
-    this->mapped_data_["Jrelnp"] = static_cast<std::size_t>(Jrelnp);
-    this->mapped_data_["Jrelp"] = static_cast<std::size_t>(Jrelp);
-    this->mapped_data_["CaMKt"] = static_cast<std::size_t>(CaMKt);
-
-    // Set parameters mapping.
-    this->mapped_data_["gNaL"] = static_cast<std::size_t>(gNaL);
-    this->mapped_data_["delta_factor"] = static_cast<std::size_t>(delta_factor);
-    this->mapped_data_["gto"] = static_cast<std::size_t>(gto);
-    this->mapped_data_["pCa"] = static_cast<std::size_t>(pCa);
-    this->mapped_data_["gKr"] = static_cast<std::size_t>(gKr);
-    this->mapped_data_["gKs"] = static_cast<std::size_t>(gKs);
-    this->mapped_data_["gK1"] = static_cast<std::size_t>(gK1);
-    this->mapped_data_["gncx"] = static_cast<std::size_t>(gncx);
-    this->mapped_data_["pNaK"] = static_cast<std::size_t>(pNaK);
-    this->mapped_data_["Jrel_0"] = static_cast<std::size_t>(Jrel_0);
-    this->mapped_data_["Jrelp_0"] = static_cast<std::size_t>(Jrelp_0);
-    this->mapped_data_["Jupnp_0"] = static_cast<std::size_t>(Jupnp_0);
-    this->mapped_data_["Jupp_0"] = static_cast<std::size_t>(Jupp_0);
-    this->mapped_data_["Bcai_factor"] = static_cast<std::size_t>(Bcai_factor);
-    this->mapped_data_["nao"] = static_cast<std::size_t>(nao);
-    this->mapped_data_["cao"] = static_cast<std::size_t>(cao);
-    this->mapped_data_["ko"] = static_cast<std::size_t>(ko);
-    this->mapped_data_["R"] = static_cast<std::size_t>(R);
-    this->mapped_data_["T"] = static_cast<std::size_t>(T);
-    this->mapped_data_["Fdy"] = static_cast<std::size_t>(Fdy);
-    this->mapped_data_["l"] = static_cast<std::size_t>(l);
-    this->mapped_data_["rad"] = static_cast<std::size_t>(rad);
-    this->mapped_data_["vcell"] = static_cast<std::size_t>(vcell);
-    this->mapped_data_["ageo"] = static_cast<std::size_t>(ageo);
-    this->mapped_data_["acap"] = static_cast<std::size_t>(acap);
-    this->mapped_data_["vmyo"] = static_cast<std::size_t>(vmyo);
-    this->mapped_data_["vnsr"] = static_cast<std::size_t>(vnsr);
-    this->mapped_data_["vjsr"] = static_cast<std::size_t>(vjsr);
-    this->mapped_data_["vss"] = static_cast<std::size_t>(vss);
-    this->mapped_data_["KmCaMK"] = static_cast<std::size_t>(KmCaMK);
-    this->mapped_data_["aCaMK"] = static_cast<std::size_t>(aCaMK);
-    this->mapped_data_["bCaMK"] = static_cast<std::size_t>(bCaMK);
-    this->mapped_data_["CaMKo"] = static_cast<std::size_t>(CaMKo);
-    this->mapped_data_["KmCaM"] = static_cast<std::size_t>(KmCaM);
-    this->mapped_data_["BSRmax"] = static_cast<std::size_t>(BSRmax);
-    this->mapped_data_["KmBSR"] = static_cast<std::size_t>(KmBSR);
-    this->mapped_data_["BSLmax"] = static_cast<std::size_t>(BSLmax);
-    this->mapped_data_["KmBSL"] = static_cast<std::size_t>(KmBSL);
-    this->mapped_data_["cmdnmax"] = static_cast<std::size_t>(cmdnmax);
-    this->mapped_data_["Kmcmdn"] = static_cast<std::size_t>(Kmcmdn);
-    this->mapped_data_["trpnmax"] = static_cast<std::size_t>(trpnmax);
-    this->mapped_data_["Kmtrpn"] = static_cast<std::size_t>(Kmtrpn);
-    this->mapped_data_["Csqnmax"] = static_cast<std::size_t>(Csqnmax);
-    this->mapped_data_["kmcsqn"] = static_cast<std::size_t>(kmcsqn);
-    this->mapped_data_["gNa"] = static_cast<std::size_t>(gNa);
-
-    // Set currents mapping.
-    this->mapped_data_["INa"] = static_cast<std::size_t>(INa);
-    this->mapped_data_["INaL"] = static_cast<std::size_t>(INaL);
-    this->mapped_data_["Ito"] = static_cast<std::size_t>(Ito);
-    this->mapped_data_["ICaL"] = static_cast<std::size_t>(ICaL);
-    this->mapped_data_["ICaNa"] = static_cast<std::size_t>(ICaNa);
-    this->mapped_data_["ICaK"] = static_cast<std::size_t>(ICaK);
-    this->mapped_data_["IKr"] = static_cast<std::size_t>(IKr);
-    this->mapped_data_["IKs"] = static_cast<std::size_t>(IKs);
-    this->mapped_data_["IK1"] = static_cast<std::size_t>(IK1);
-    this->mapped_data_["INaCa_i"] = static_cast<std::size_t>(INaCa_i);
-    this->mapped_data_["INaCa_ss"] = static_cast<std::size_t>(INaCa_ss);
-    this->mapped_data_["INaCa"] = static_cast<std::size_t>(INaCa);
-    this->mapped_data_["INaK"] = static_cast<std::size_t>(INaK);
-    this->mapped_data_["IKb"] = static_cast<std::size_t>(IKb);
-    this->mapped_data_["INab"] = static_cast<std::size_t>(INab);
-    this->mapped_data_["ICab"] = static_cast<std::size_t>(ICab);
-    this->mapped_data_["IpCa"] = static_cast<std::size_t>(IpCa);
-
-}
 
 
-Ohara::Ohara()
+Ohara_INaTT::Ohara_INaTT()
 {
     //Initialize the model's data.
-    this->model_type_ = EpModelType::OHara;
+    this->model_type_ = EpModelType::OHara_INaTT;
     this->dt_stable_ = 0.02;
     this->var_.resize(42, 0.);
     this->prm_.resize(45, 0.);
@@ -147,11 +30,11 @@ Ohara::Ohara()
 }
 
 
-Ohara::~Ohara()
+Ohara_INaTT::~Ohara_INaTT()
 {}
 
 
-void Ohara::Initialize(CellType cell_type)
+void Ohara_INaTT::Initialize(CellType cell_type)
 {
     using namespace OhrVar;
     using namespace OhrPrm;
@@ -167,8 +50,7 @@ void Ohara::Initialize(CellType cell_type)
     // Set data according to the cell type.
     switch (cell_type)
     {
-        case CellType::endo :         
-            
+        case CellType::endo :      
             // Set the model parameters for endocardium cell type.
             this->prm_[gNaL] = 0.0075;
             this->prm_[delta_factor] = 0.;
@@ -228,7 +110,7 @@ void Ohara::Initialize(CellType cell_type)
             break;
     
         default:
-            throw std::invalid_argument(Logger::Error("Could not initialize Ohara ap model. Expected: CellType::endo | CellType::mid | CellType::epi"));
+            throw std::invalid_argument(Logger::Error("Could not initialize Ohara_INaTT ap model. Expected: CellType::endo | CellType::mid | CellType::epi"));
             break;
     }
 
@@ -274,7 +156,7 @@ void Ohara::Initialize(CellType cell_type)
     this->var_[xk1]    = 1.0;          
     this->var_[Jrelnp] = 0.0;
     this->var_[Jrelp]  = 0.0;
-    this->var_[CaMKt]  = 0.0;  
+    this->var_[CaMKt]  = 0.0;     
 
     // Set the cell model constants that are independent from the cell type.
     this->prm_[nao] = 140.;
@@ -307,12 +189,12 @@ void Ohara::Initialize(CellType cell_type)
     this->prm_[Kmtrpn] = 0.0005;
     this->prm_[Csqnmax] = 10.;
     this->prm_[kmcsqn] = 0.8;
-    this->prm_[gNa] = 75;
+    this->prm_[gNa] = 14.838;
 
 }
 
 
-void Ohara::Compute(double v_new, double dt, double stim_current)
+void Ohara_INaTT::Compute(double v_new, double dt, double stim_current)
 {
     using namespace OhrVar;
     using namespace OhrPrm;
@@ -334,42 +216,47 @@ void Ohara::Compute(double v_new, double dt, double stim_current)
     double vffrt = v_new * this->prm_[Fdy]*this->prm_[Fdy] / (this->prm_[R]*this->prm_[T]);
     double vfrt  = v_new * this->prm_[Fdy] / (this->prm_[R]*this->prm_[T]);
 
-    // Compute the INa current with the original formulation form OHara-Rudy.
-    double mss=1.0/(1.0+std::exp((-(v_new+39.57))/9.871));
-    double tm=1.0/(6.765*std::exp((v_new+11.64)/34.77)+8.552*exp(-(v_new+77.42)/5.955));
-    this->var_[m] = ALGORITHM::RushLarsen(mss, this->var_[m], dt, tm);
+    // Compute the m-gate with the TenTusscher 2006 model's formula.
+    double aa_mTT2 = 1. / (1. + std::exp((-60. - v_new) / 5.));
+    double bb_mTT2 = 0.1 / (1. + std::exp((v_new + 35.) / 5.)) + 0.1 / (1. + std::exp((v_new - 50.) / 200.));
+    double tau_mTT2 = aa_mTT2 * bb_mTT2;
+    double mTT2_inf = 1. / ((1. + std::exp((-56.86 - v_new) / 9.03))*(1. + std::exp((-56.86 - v_new) / 9.03)));
+    this->var_[m] = ALGORITHM::RushLarsen(mTT2_inf, this->var_[m], dt, tau_mTT2);
     
-    double hss=1.0/(1+std::exp((v_new+82.90)/6.086));
-    double thf=1.0/(1.432e-5*std::exp(-(v_new+1.196)/6.285)+6.149*std::exp((v_new+0.5096)/20.27));
-    double ths=1.0/(0.009794*std::exp(-(v_new+17.95)/28.05)+0.3343*std::exp((v_new+5.730)/56.66));
-    double Ahf=0.99;
-    double Ahs=1.0-Ahf;
-    this->var_[hf] = ALGORITHM::RushLarsen(hss, this->var_[hf], dt, thf);
-    this->var_[hs] = ALGORITHM::RushLarsen(hss, this->var_[hs], dt, ths);
-    double h=Ahf*this->var_[hf]+Ahs*this->var_[hs];
-    
-    double jss=hss;
-    double tj=2.038+1.0/(0.02136*std::exp(-(v_new+100.6)/8.281)+0.3052*std::exp((v_new+0.9941)/38.45));
-    this->var_[j] = ALGORITHM::RushLarsen(jss, this->var_[j], dt, tj);
-    
-    double hssp=1.0/(1+std::exp((v_new+89.1)/6.086));
-    double thsp=3.0*ths;
-    this->var_[hsp] = ALGORITHM::RushLarsen(hssp, this->var_[hsp], dt, thsp);
-    
-    double hp=Ahf*this->var_[hf]+Ahs*this->var_[hsp];
-    double tjp=1.46*tj;
-    this->var_[jp] = ALGORITHM::RushLarsen(jss, this->var_[jp], dt, tjp);
-    
-    double fINap=(1.0/(1.0+this->prm_[KmCaMK]/CaMKa));
+    // Compute the hs-gate with the TenTusscher 2006 model's formula. 
+    double aa_hTT2 = 0.057 * std::exp(-(v_new + 80.)/6.8);
+    double bb_hTT2 = 2.7*std::exp(0.079*v_new) + (3.1e5)*std::exp(0.3485*v_new);
+    if (v_new >= -40.) {
+        aa_hTT2 = 0.;
+        bb_hTT2 = 0.77 / (0.13*(1. + std::exp(-(v_new + 10.66) / 11.1)));
+    }
+    double tau_hTT2 = 1. / (aa_hTT2 + bb_hTT2);
+    double hTT2_inf = 1. / ((1. + std::exp((v_new + 71.55) / 7.43)) * (1. + std::exp((v_new + 71.55) / 7.43)));
+    this->var_[hs] = ALGORITHM::RushLarsen(hTT2_inf, this->var_[hs], dt, tau_hTT2);
+
+    // Compute the j-gate with the TenTusscher 2006 model's formula.
+    double aa_jTT2 = (-2.5428e4*std::exp(0.2444*v_new) - 6.948e-6*std::exp(-0.04391*v_new)) * 
+                        (v_new + 37.78) / (1. + std::exp(0.311*(v_new + 79.23)));
+    double bb_jTT2 = 0.02424*std::exp(-0.01052*v_new) / (1. + std::exp(-0.1378*(v_new + 40.14)));
+    if (v_new >= -40.) {
+        aa_jTT2 = 0.;
+        bb_jTT2 = 0.6*std::exp(0.057*v_new) / (1. + std::exp(-0.1*(v_new + 32.)));
+    }
+    double tau_jTT2 = 1. / (aa_jTT2 + bb_jTT2);
+    double jTT2_inf = hTT2_inf;
+    this->var_[j] = ALGORITHM::RushLarsen(jTT2_inf, this->var_[j], dt, tau_jTT2);
+
+    // Compute the INa current.
     #ifdef BLOCK_CELL_CURRS
-        this->cur_[INa] = (1.0-this->block_coeff_[INa]) * (this->prm_[gNa]*(v_new-ENa)*std::pow(this->var_[m],3.0)*((1.0-fINap)*h*this->var_[j]+fINap*hp*this->var_[jp]));
+        this->cur_[INa] = (1.0-this->block_coeff_[INa]) * (this->prm_[gNa] * (v_new - ENa) * this->var_[m]*this->var_[m]*this->var_[m] * this->var_[hs] * this->var_[j]);
     #else
-        this->cur_[INa] = this->prm_[gNa]*(v_new-ENa)*std::pow(this->var_[m],3.0)*((1.0-fINap)*h*this->var_[j]+fINap*hp*this->var_[jp]);
+        this->cur_[INa] = (this->prm_[gNa] * (v_new - ENa) * this->var_[m]*this->var_[m]*this->var_[m] * this->var_[hs] * this->var_[j]);
     #endif
-    
+   
+
     // Update the mL-gate using the Rush-Larsen method.
     double mLss = 1. / (1. + std::exp((-(v_new + 42.85)) / 5.264));
-    double tmL = tm;
+    double tmL = 1. / (6.765*std::exp((v_new + 11.64) / 34.77) + 8.552*std::exp(-(v_new + 77.42) / 5.955));
     this->var_[mL] = ALGORITHM::RushLarsen(mLss, this->var_[mL], dt, tmL);
 
     // Update the hL-gate with the Rush-Larsen method.
@@ -849,176 +736,6 @@ void Ohara::Compute(double v_new, double dt, double stim_current)
     
 }
 
-
-std::string Ohara::PrintVariables() const 
-{
-    using namespace OhrVar;
-
-    // Create output string stream to pass the variables and their values.
-    std::ostringstream oss;
-    oss.precision(15);
-    oss << "v = " << this->var_[v] << "\n";
-    oss << "dvdt = " << this->var_[dvdt] << "\n";
-    oss << "nai = " << this->var_[nai] << "\n";
-    oss << "nass = " << this->var_[nass] << "\n";
-    oss << "ki = " << this->var_[ki] << "\n";
-    oss << "kss = " << this->var_[kss] << "\n";
-    oss << "cai = " << this->var_[cai] << "\n";
-    oss << "cass = " << this->var_[cass] << "\n";
-    oss << "cansr = " << this->var_[cansr] << "\n";
-    oss << "cajsr = " << this->var_[cajsr] << "\n";
-    oss << "m = " << this->var_[m] << "\n";
-    oss << "hf = " << this->var_[hf] << "\n";
-    oss << "hs = " << this->var_[hs] << "\n";
-    oss << "j = " << this->var_[j] << "\n";
-    oss << "hsp = " << this->var_[hsp] << "\n";
-    oss << "jp = " << this->var_[jp] << "\n";
-    oss << "mL = " << this->var_[mL] << "\n";
-    oss << "hL = " << this->var_[hL] << "\n";
-    oss << "hLp = " << this->var_[hLp] << "\n";
-    oss << "a = " << this->var_[a] << "\n";
-    oss << "iF = " << this->var_[iF] << "\n";
-    oss << "iS = " << this->var_[iS] << "\n";
-    oss << "ap = " << this->var_[ap] << "\n";
-    oss << "iFp = " << this->var_[iFp] << "\n";
-    oss << "iSp = " << this->var_[iSp] << "\n";
-    oss << "d = " << this->var_[d] << "\n";
-    oss << "ff = " << this->var_[ff] << "\n";
-    oss << "fs = " << this->var_[fs] << "\n";
-    oss << "fcaf = " << this->var_[fcaf] << "\n";
-    oss << "fcas = " << this->var_[fcas] << "\n";
-    oss << "jca = " << this->var_[jca] << "\n";
-    oss << "nca = " << this->var_[nca] << "\n";
-    oss << "ffp = " << this->var_[ffp] << "\n";
-    oss << "fcafp = " << this->var_[fcafp] << "\n";
-    oss << "xrf = " << this->var_[xrf] << "\n";
-    oss << "xrs = " << this->var_[xrs] << "\n";
-    oss << "xs1 = " << this->var_[xs1] << "\n";
-    oss << "xs2 = " << this->var_[xs2] << "\n";
-    oss << "xk1 = " << this->var_[xk1] << "\n";
-    oss << "Jrelnp = " << this->var_[Jrelnp] << "\n";
-    oss << "Jrelp = " << this->var_[Jrelp] << "\n";
-    oss << "CaMKt = " << this->var_[CaMKt];
-    return oss.str();
-
-}
-
-
-std::string Ohara::PrintParameters() const 
-{
-    using namespace OhrPrm;
-
-    // Create output string stream to pass the parameters and their values.
-    std::ostringstream oss;
-    oss.precision(15);
-    oss << "gNaL = " << this->prm_[gNaL] << "\n";
-    oss << "delta_factor = " << this->prm_[delta_factor] << "\n";
-    oss << "gto = " << this->prm_[gto] << "\n";
-    oss << "pCa = " << this->prm_[pCa] << "\n";
-    oss << "gKr = " << this->prm_[gKr] << "\n";
-    oss << "gKs = " << this->prm_[gKs] << "\n";
-    oss << "gK1 = " << this->prm_[gK1] << "\n";
-    oss << "gncx = " << this->prm_[gncx] << "\n";
-    oss << "pNaK = " << this->prm_[pNaK] << "\n";
-    oss << "Jrel_0 = " << this->prm_[Jrel_0] << "\n";
-    oss << "Jrelp_0 = " << this->prm_[Jrelp_0] << "\n";
-    oss << "Jupnp_0 = " << this->prm_[Jupnp_0] << "\n";
-    oss << "Jupp_0 = " << this->prm_[Jupp_0] << "\n";
-    oss << "Bcai_factor = " << this->prm_[Bcai_factor] << "\n";
-    oss << "nao = " << this->prm_[nao] << "\n";
-    oss << "cao = " << this->prm_[cao] << "\n";
-    oss << "ko = " << this->prm_[ko] << "\n";
-    oss << "R = " << this->prm_[R] << "\n";
-    oss << "T = " << this->prm_[T] << "\n";
-    oss << "Fdy = " << this->prm_[Fdy] << "\n";
-    oss << "l = " << this->prm_[l] << "\n";
-    oss << "rad = " << this->prm_[rad] << "\n";
-    oss << "vcell = " << this->prm_[vcell] << "\n";
-    oss << "ageo = " << this->prm_[ageo] << "\n";
-    oss << "acap = " << this->prm_[acap] << "\n";
-    oss << "vmyo = " << this->prm_[vmyo] << "\n";
-    oss << "vnsr = " << this->prm_[vnsr] << "\n";
-    oss << "vjsr = " << this->prm_[vjsr] << "\n";
-    oss << "vss = " << this->prm_[vss] << "\n";
-    oss << "KmCaMK = " << this->prm_[KmCaMK] << "\n";
-    oss << "aCaMK = " << this->prm_[aCaMK] << "\n";
-    oss << "bCaMK = " << this->prm_[bCaMK] << "\n";
-    oss << "CaMKo = " << this->prm_[CaMKo] << "\n";
-    oss << "KmCaM = " << this->prm_[KmCaM] << "\n";
-    oss << "BSRmax = " << this->prm_[BSRmax] << "\n";
-    oss << "KmBSR = " << this->prm_[KmBSR] << "\n";
-    oss << "BSLmax = " << this->prm_[BSLmax] << "\n";
-    oss << "KmBSL = " << this->prm_[KmBSL] << "\n";
-    oss << "cmdnmax = " << this->prm_[cmdnmax] << "\n";
-    oss << "Kmcmdn = " << this->prm_[Kmcmdn] << "\n";
-    oss << "trpnmax = " << this->prm_[trpnmax] << "\n";
-    oss << "Kmtrpn = " << this->prm_[Kmtrpn] << "\n";
-    oss << "Csqnmax = " << this->prm_[Csqnmax] << "\n";
-    oss << "kmcsqn = " << this->prm_[kmcsqn] << "\n";
-    oss << "gNa = " << this->prm_[gNa];
-    return oss.str();
-
-}
-
-
-std::string Ohara::PrintCurrents() const
-{
-    using namespace OhrCur;
-
-    // Create output string stream to pass the currents and their values.
-    std::ostringstream oss;
-    oss.precision(15);
-    oss << "INa = " << this->cur_[INa] << "\n";
-    oss << "INaL = " << this->cur_[INaL] << "\n";
-    oss << "Ito = " << this->cur_[Ito] << "\n";
-    oss << "ICaL = " << this->cur_[ICaL] << "\n";
-    oss << "ICaNa = " << this->cur_[ICaNa] << "\n";
-    oss << "ICaK = " << this->cur_[ICaK] << "\n";
-    oss << "IKr = " << this->cur_[IKr] << "\n";
-    oss << "IKs = " << this->cur_[IKs] << "\n";
-    oss << "IK1 = " << this->cur_[IK1] << "\n";
-    oss << "INaCa_i = " << this->cur_[INaCa_i] << "\n";
-    oss << "INaCa_ss = " << this->cur_[INaCa_ss] << "\n";
-    oss << "INaCa = " << this->cur_[INaCa] << "\n";
-    oss << "INaK = " << this->cur_[INaK] << "\n";
-    oss << "IKb = " << this->cur_[IKb] << "\n";
-    oss << "INab = " << this->cur_[INab] << "\n";
-    oss << "ICab = " << this->cur_[ICab] << "\n";
-    oss << "IpCa = " << this->cur_[IpCa] << "\n";
-    oss << "Iion = " << this->cur_[OhrCur::Iion];
-    return oss.str();
-
-}
-
-#ifdef BLOCK_CELL_CURRS
-    std::string Ohara::PrintBlockCoeffs() const
-    {
-        using namespace OhrCur;
-
-        // Create output string stream to pass the currents and their values.
-        std::ostringstream oss;
-        oss.precision(15);
-        oss << "INa = " << this->block_coeff_[INa] << "\n";
-        oss << "INaL = " << this->block_coeff_[INaL] << "\n";
-        oss << "Ito = " << this->block_coeff_[Ito] << "\n";
-        oss << "ICaL = " << this->block_coeff_[ICaL] << "\n";
-        oss << "ICaNa = " << this->block_coeff_[ICaNa] << "\n";
-        oss << "ICaK = " << this->block_coeff_[ICaK] << "\n";
-        oss << "IKr = " << this->block_coeff_[IKr] << "\n";
-        oss << "IKs = " << this->block_coeff_[IKs] << "\n";
-        oss << "IK1 = " << this->block_coeff_[IK1] << "\n";
-        oss << "INaCa_i = " << this->block_coeff_[INaCa_i] << "\n";
-        oss << "INaCa_ss = " << this->block_coeff_[INaCa_ss] << "\n";
-        oss << "INaCa = " << this->block_coeff_[INaCa] << "\n";
-        oss << "INaK = " << this->block_coeff_[INaK] << "\n";
-        oss << "IKb = " << this->block_coeff_[IKb] << "\n";
-        oss << "INab = " << this->block_coeff_[INab] << "\n";
-        oss << "ICab = " << this->block_coeff_[ICab] << "\n";
-        oss << "IpCa = " << this->block_coeff_[IpCa];
-        return oss.str();
-
-    }
-#endif
 
 
 } // End of namespace ELECTRA

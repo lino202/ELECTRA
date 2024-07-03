@@ -7,6 +7,7 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/ep_basic.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/bueno.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ohara.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ohara_INaTT.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gaur2021.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gong2020.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gong2020m.cpp
@@ -27,6 +28,7 @@ set(HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/ep_varying_params.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/bueno.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ohara.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ohara_INaTT.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gaur2021.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gong2020.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gong2020m.hpp

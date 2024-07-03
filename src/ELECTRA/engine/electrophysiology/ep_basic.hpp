@@ -64,6 +64,7 @@ enum class EpModelType {
     MacCannell,        /**< MacCannell '07 fibroblast cell electrophysiology model */
     Bueno,             /**< Bueno-Orovio '07 human ventricular cell electrophysiology model */
     OHara,             /**< O'Hara Rudy '11 human ventricular cell electrophysiology model */
+    OHara_INaTT,       /**< O'Hara Rudy '11 human ventricular cell electrophysiology model with ten-tusscher INa modification for tissue simulation */
     Gaur2021,          /**< Gaur '21 porcine ventricular cell electrophysiology model */
     Gong2020,          /**< Gong et al 2020 human ventricular cell electrophysiology model */
     Gong2020m,         /**< Gong et al 2020 human ventricular cell electrophysiology model with modified INa gates from TenTusscher2006 */

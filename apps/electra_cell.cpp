@@ -126,14 +126,25 @@ int main(int argc, char *argv[]) {
             cell->Compute(cell->V(), dt, stim_current);
             cell->SetV(ALGORITHM::ForwardEuler(cell->V(), dt, cell->dVdt()));
 
-            // if (i==1) {
-            //     std::cout <<"step: " << i << "\n" << cell.dVdt() << "\n";
-            //     std::cout << cell.PrintCurrents() << "\n";
-            //     break;
-            // }
-
             // Store new state.
             out_vm_file << i*dt << " " << std::setprecision(15) << cell->V() << std::endl;
+
+
+            // Debugging
+            // if ((i % 100)==0){
+            //     // for (int j = 0; j < cell->CurrentNum(); ++j) {
+            //     //     out_currs_file << std::setprecision(15) << cell->Current(j) << " ";
+            //     //     if (j==cell->CurrentNum()-1){
+            //     //         out_currs_file<<std::endl;
+            //     //     }
+            //     // }
+
+            //     // std::cout <<"step: " << i << "\n" << cell->dVdt() << "\n";
+            //     // std::cout << cell->PrintCurrents() << "\n";
+            //     // std::cout << cell->PrintVariables() << "\n";
+            // }
+
+            
             // In case you want a specific current or other state variable you can use this
             // out_stim << i*dt << " " << std::setprecision(15) << cell.Current(1) << std::endl;
         }

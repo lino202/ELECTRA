@@ -16,9 +16,10 @@ namespace APP_ELECTRA
 
 ConfigElectrophys::ConfigElectrophys()
 {
-    // Set map of entries in configuration file to ap model types.
+    // Set map of entries in configuration file to ap model types. Names here should be without capital letters
     this->ep_model_map_["bueno2008"] = ELECTRA::EpModelType::Bueno;
-    this->ep_model_map_["ohara2011m"] = ELECTRA::EpModelType::OHara;
+    this->ep_model_map_["ohara2011"] = ELECTRA::EpModelType::OHara;
+    this->ep_model_map_["ohara2011_inatt"] = ELECTRA::EpModelType::OHara_INaTT; 
     this->ep_model_map_["gaur2021"] = ELECTRA::EpModelType::Gaur2021;
     this->ep_model_map_["gong2020"] = ELECTRA::EpModelType::Gong2020;
     this->ep_model_map_["gong2020m"] = ELECTRA::EpModelType::Gong2020m;

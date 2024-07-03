@@ -19,6 +19,7 @@
 #include "ELECTRA/engine/electrophysiology/ep_basic.hpp"
 #include "ELECTRA/engine/electrophysiology/bueno.hpp"
 #include "ELECTRA/engine/electrophysiology/ohara.hpp"
+#include "ELECTRA/engine/electrophysiology/ohara_INaTT.hpp"
 #include "ELECTRA/engine/electrophysiology/courtemanche.hpp"
 #include "ELECTRA/engine/electrophysiology/grandi_atri.hpp"
 #include "ELECTRA/engine/electrophysiology/gaur2021.hpp"
@@ -63,6 +64,9 @@ public:
             break;
         case EpModelType::OHara :
             ep_ptr = std::make_unique<Ohara>();
+            break;
+        case EpModelType::OHara_INaTT :
+            ep_ptr = std::make_unique<Ohara_INaTT>();
             break;
         case EpModelType::Gaur2021 :
             ep_ptr = std::make_unique<Gaur2021>();

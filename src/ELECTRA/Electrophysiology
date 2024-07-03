@@ -19,6 +19,7 @@
 #include "ELECTRA/engine/electrophysiology/ep_basic.hpp"
 #include "ELECTRA/engine/electrophysiology/bueno.hpp"
 #include "ELECTRA/engine/electrophysiology/ohara.hpp"
+#include "ELECTRA/engine/electrophysiology/ohara_INaTT.hpp"
 #include "ELECTRA/engine/electrophysiology/gaur2021.hpp"
 #include "ELECTRA/engine/electrophysiology/gong2020.hpp"
 #include "ELECTRA/engine/electrophysiology/gong2020m.hpp"
