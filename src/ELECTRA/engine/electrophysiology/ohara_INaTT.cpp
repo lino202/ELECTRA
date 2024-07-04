@@ -61,11 +61,12 @@ void Ohara_INaTT::Initialize(CellType cell_type)
             this->prm_[gK1] = 0.1908;
             this->prm_[gncx] = 0.0008;
             this->prm_[pNaK] = 30.;
+            this->prm_[gKb]  = 0.003;
             this->prm_[Jrel_0] = 1.;
             this->prm_[Jrelp_0] = 1.;
             this->prm_[Jupnp_0] = 0.004375;
             this->prm_[Jupp_0] = 0.01203125;
-            this->prm_[Bcai_factor] = 1.;
+            this->prm_[cmdnmax] = 0.05;
 
             break;
 
@@ -81,11 +82,12 @@ void Ohara_INaTT::Initialize(CellType cell_type)
             this->prm_[gK1] = 0.24804;
             this->prm_[gncx] = 0.00112;
             this->prm_[pNaK] = 21.;
+            this->prm_[gKb]  = 0.003;
             this->prm_[Jrel_0] = 1.7;
             this->prm_[Jrelp_0] = 1.7;
             this->prm_[Jupnp_0] = 0.004375;
             this->prm_[Jupp_0] = 0.01203125;
-            this->prm_[Bcai_factor] = 1.;
+            this->prm_[cmdnmax] = 0.05;
 
             break;
 
@@ -101,11 +103,12 @@ void Ohara_INaTT::Initialize(CellType cell_type)
             this->prm_[gK1] = 0.22896;
             this->prm_[gncx] = 0.00088;
             this->prm_[pNaK] = 27.;
+            this->prm_[gKb]  = 0.0018;
             this->prm_[Jrel_0] = 1.;
             this->prm_[Jrelp_0] = 1.;
             this->prm_[Jupnp_0] = 0.0056875;
             this->prm_[Jupp_0] =  0.015640625;
-            this->prm_[Bcai_factor] = 1.3;
+            this->prm_[cmdnmax] = 0.065;
 
             break;
     
@@ -183,7 +186,6 @@ void Ohara_INaTT::Initialize(CellType cell_type)
     this->prm_[KmBSR] = 0.00087;
     this->prm_[BSLmax] = 1.124;
     this->prm_[KmBSL] = 0.0087;
-    this->prm_[cmdnmax] = 0.05;
     this->prm_[Kmcmdn] = 0.00238;
     this->prm_[trpnmax] = 0.07;
     this->prm_[Kmtrpn] = 0.0005;
@@ -375,7 +377,7 @@ void Ohara_INaTT::Compute(double v_new, double dt, double stim_current)
     double k2n = 1000.;
     double km2n = this->var_[jca];
     double anca = 1. / (k2n/km2n + std::pow(1.+Kmn/this->var_[cass],4.));
-    this->var_[nca] = ALGORITHM::RushLarsen(anca*k2n/km2n, this->var_[nca], km2n*dt, 1.);
+    this->var_[nca] = ALGORITHM::ForwardEuler(this->var_[nca], dt, anca*k2n-this->var_[nca]*km2n);
 
     double PhiCaL  = 4.*vffrt * (this->var_[cass]*std::exp(2.*vfrt) - 0.341*this->prm_[cao]) / (std::exp(2.*vfrt) - 1.);
     double PhiCaNa = vffrt * (0.75*this->var_[nass]*std::exp(vfrt) - 0.75*this->prm_[nao]) / (std::exp(vfrt) - 1.);
@@ -603,11 +605,10 @@ void Ohara_INaTT::Compute(double v_new, double dt, double stim_current)
 
     // Compute the IKb current.
     double xkb = 1. / (1. + std::exp(-(v_new-14.48)/18.34));
-    double GKb = 0.003;
     #ifdef BLOCK_CELL_CURRS
-        this->cur_[IKb] = (1. -this->block_coeff_[IKb]) * (GKb * xkb * (v_new - EK));
+        this->cur_[IKb] = (1. -this->block_coeff_[IKb]) * (this->prm_[gKb] * xkb * (v_new - EK));
     #else
-        this->cur_[IKb] = (GKb * xkb * (v_new - EK));
+        this->cur_[IKb] = (this->prm_[gKb] * xkb * (v_new - EK));
     #endif
 
     // Compute the INab current.
@@ -654,20 +655,20 @@ void Ohara_INaTT::Compute(double v_new, double dt, double stim_current)
     // Compute the ryanodione receptor calcium induced calcium release from the jsr.
     double bt = 4.75;
     double a_rel = 0.5*bt;
-    double Jrel_inf = this->prm_[Jrel_0] * a_rel * (-this->cur_[ICaL]) / (1. + std::pow(1.5/this->var_[cajsr], 8.));
+    double Jrel_inf = this->prm_[Jrel_0] * (a_rel * (-this->cur_[ICaL]) / (1. + std::pow(1.5/this->var_[cajsr], 8.)));
 
     double tau_rel = bt / (1. + 0.0123/this->var_[cajsr]);
-    if (tau_rel < 0.005) { tau_rel = 0.005; }
+    if (tau_rel < 0.001) { tau_rel = 0.001; }
 
     // Update the Jrelnp with the Rush-Larsen method.
     this->var_[Jrelnp] = ALGORITHM::RushLarsen(Jrel_inf, this->var_[Jrelnp], dt, tau_rel);
 
     double btp = 1.25*bt;
     double a_relp = 0.5*btp;
-    double Jrel_infp = this->prm_[Jrelp_0] * a_relp * (-this->cur_[ICaL]) / (1. + std::pow(1.5/this->var_[cajsr], 8.));
+    double Jrel_infp = this->prm_[Jrelp_0] * (a_relp * (-this->cur_[ICaL]) / (1. + std::pow(1.5/this->var_[cajsr], 8.)));
 
     double tau_relp = btp / (1. + 0.0123/this->var_[cajsr]);
-    if (tau_relp < 0.005) { tau_relp = 0.005; }
+    if (tau_relp < 0.001) { tau_relp = 0.001; }
     
     // Update the Jrelp with the  Rush-Larsen method.
     this->var_[Jrelp] = ALGORITHM::RushLarsen(Jrel_infp, this->var_[Jrelp], dt, tau_relp);
@@ -708,7 +709,7 @@ void Ohara_INaTT::Compute(double v_new, double dt, double stim_current)
     this->var_[kss] = ALGORITHM::ForwardEuler(this->var_[kss], dt, dkss);
     
     // Update the Calcium intracellular concentration with Forward Euler.                       
-    double Bcai = 1. / (1. + this->prm_[Bcai_factor]*this->prm_[cmdnmax]*this->prm_[Kmcmdn]/std::pow(this->prm_[Kmcmdn] + this->var_[cai], 2.) +
+    double Bcai = 1. / (1. + this->prm_[cmdnmax]*this->prm_[Kmcmdn]/std::pow(this->prm_[Kmcmdn] + this->var_[cai], 2.) +
                         this->prm_[trpnmax]*this->prm_[Kmtrpn]/std::pow(this->prm_[Kmtrpn] + this->var_[cai], 2.));
 
     double dcai = Bcai * (-(this->cur_[IpCa] + this->cur_[ICab] - 2.*this->cur_[INaCa_i])*this->prm_[acap]/(2.*this->prm_[Fdy]*this->prm_[vmyo]) - 
