@@ -156,6 +156,12 @@ Since version 0.6.1 you can use ElectraCell for simulating a sincle cell Vm and 
 ./ElectraCell /path/file_name gaur2021 ventricular 1000. 10. 0.5 1000. 80.
 ```
 
+Also you can give a manual init file to estabilize a model with ElectraCell without compilation :D.
+
+```
+./ElectraCell /path/file_name gaur2021 ventricular 1000. 10. 0.5 1000. 80. /path/manual_init_file.txt
+```
+
 # Contributors
 
 This software was mainly developed by [@KMountris](https://github.com/KMountris)
