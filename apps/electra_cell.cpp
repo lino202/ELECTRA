@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 
         if ((argc<9) | (argc>10)){
             std::string err_message = "Give 8 or 9 arguments: output file, model name, cell type, total duration, and stimulus start, duration, cycle length and amplitude, for example: ";
-            err_message = err_message + "/path/file_name gaur2021 endo 1000. 10. 0.5 1000. 80. /path/manual_init_file.txt";
+            err_message = err_message + "/path/file_name gaur2021 ventricular 1000. 10. 0.5 1000. 80. /path/manual_init_file.txt";
             throw std::invalid_argument(Logger::Error(err_message));
         } 
 
@@ -131,7 +131,8 @@ int main(int argc, char *argv[]) {
 
 
             // Debugging
-            // if ((i % 100)==0){
+            // if ((i % 10)==0){
+            //     out_vm_file << i*dt << " " << std::setprecision(15) << cell->V() << std::endl;
             //     // for (int j = 0; j < cell->CurrentNum(); ++j) {
             //     //     out_currs_file << std::setprecision(15) << cell->Current(j) << " ";
             //     //     if (j==cell->CurrentNum()-1){

@@ -10,6 +10,7 @@ ELECTRA uses a vMAJOR.MINOR.PATCH versioning scheme. The
 
 ## Version History
 ------------------
+* v0.6.2
 * v0.6.1
 * v0.6.0
 * v0.5.2
@@ -25,6 +26,16 @@ ELECTRA uses a vMAJOR.MINOR.PATCH versioning scheme. The
 * v0.3.0
 * v0.2.0
 * v0.1.0
+
+## 2024-07-13: v0.6.2
+---------------------
+
+### Added
+* The Ohara model is fixed. Now it stabilizes in Electra as well, we fixed the sign of Istim in dki. Also we fixed the gKb for epi, the tau_rels and the nca integration method. Now Electra has the default Ohara cell model "ohara2011" and "ohara2011_inatt" which defines the INa as done by Ten-tusscher (recommended by Ohara in the notes of his paper).
+* The Stewart model was double checked and left as the default as state variables initial values were different and ordering of the calculations. We fixed the definitions of prm and var which saves memory specially in fine meshes.
+* The GNa in the Gaur2021 model has been left as default as the depolarization and propagation seem normal in tissue. We left the model as before,
+with only the ventricular default cell type, if you want to make changes you can use manual init file in ElectraCell and ElectraSim over the variables that are already define, you can obsiously change the model and compile the code but for now the default variables are these.
+* Other minimal fixes and additions, see commits.
 
 ## 2024-03-14: v0.6.1
 ---------------------

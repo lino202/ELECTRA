@@ -226,8 +226,8 @@ void Gaur2021::Initialize(CellType cell_type)
     // Set data according to the cell type.
     switch (cell_type)
     {
-        case CellType::endo :
-            // Set the model variables for endo cell type.
+        case CellType::ventricular :
+            // Set the model variables for ventricular cell type.
             this->var_[v]                           = -87.3;
             this->var_[dvdt]                        = 0.;
             this->var_[CICR__A]                     = 100.0;
@@ -259,215 +259,133 @@ void Gaur2021::Initialize(CellType cell_type)
             this->var_[I_Na__m]                     = 0.0022;
             this->var_[ionic_concentrations__cansr] = 1.37; 
 
-            // Set the model parameters for endocardium cell type.
+            // Set the model parameters.
+            this->prm_[cell__F] = 96485.0;    
+            this->prm_[CaMK__KmCaMK] = 0.065;
+            this->prm_[CICR__SOICR] = 10.0;   
+            this->prm_[CICR__grelbarjsrol] = 2.0;
+            this->prm_[CICR__tau_gap] = 3.0;
+            this->prm_[CICR__tauoff] = 5.0;
+            this->prm_[CICR__tauon] = 0.5;
+            this->prm_[CaMK__CaMKo] = 0.05;
+            this->prm_[CaMK__KmCaM] = 0.0015;
+            this->prm_[CaMK__PKNa] = 0.01833;
+            this->prm_[cell__R] = 8314.0;
+            this->prm_[cell__T] = 310.0;
+            this->prm_[CaMK__aCaMK] = 0.05;
+            this->prm_[CaMK__bCaMK] = 0.00068;
+            this->prm_[cell__cli] = 19.53;
+            this->prm_[cell__clo] = 100.0;
+            this->prm_[cell__ko] = 5.4;
+            this->prm_[cell__nao] = 140.0;
+            this->prm_[ICaL__PCa] = 0.0002;
+            this->prm_[ICaL__vhalf_d] = 3.4;
+            this->prm_[ICaL__zca] = 2.0;
+            this->prm_[IKb__GKb] = 0.003;
             this->prm_[IKs__GKs] = 0.021;
+            this->prm_[INaCa_i__KmCaAct] = 0.00015;
+            this->prm_[INaCa_i__kasymm] = 12.5;
+            this->prm_[INaCa_i__kcaoff] = 5000.0;
+            this->prm_[INaCa_i__kcaon] = 1500000.0;
+            this->prm_[INaCa_i__kna1] = 15.0;
+            this->prm_[INaCa_i__kna2] = 5.0;
+            this->prm_[INaCa_i__kna3] = 88.12;
+            this->prm_[INaCa_i__qca] = 0.167;
+            this->prm_[INaCa_i__qna] = 0.5224;
+            this->prm_[INaCa_i__wca] = 60000.0;
+            this->prm_[INaCa_i__wna] = 60000.0;
+            this->prm_[INaCa_i__wnaca] = 5000.0;
+            this->prm_[INaCa_i__zna] = 1.0;
+            this->prm_[INaK__H] = 1e-07;
+            this->prm_[INaK__Khp] = 1.698e-07;
+            this->prm_[INaK__Kki] = 0.5;
+            this->prm_[INaK__Kko] = 0.3582;
+            this->prm_[INaK__Kmgatp] = 1.698e-07;
+            this->prm_[INaK__Knai0] = 9.073;
+            this->prm_[INaK__Knao0] = 27.78;
+            this->prm_[INaK__Knap] = 224.0;
+            this->prm_[INaK__Kxkur] = 292.0;
+            this->prm_[INaK__MgADP] = 0.05;
+            this->prm_[INaK__MgATP] = 9.8;
+            this->prm_[INaK__eP] = 4.2;
+            this->prm_[INaK__k1m] = 182.4;
+            this->prm_[INaK__k1p] = 949.5;
+            this->prm_[INaK__k2m] = 39.4;
+            this->prm_[INaK__k2p] = 687.2;
+            this->prm_[INaK__k3m] = 79300.0;
+            this->prm_[INaK__k3p2] = 1899.0;
+            this->prm_[INaK__k4m] = 40.0;
+            this->prm_[INaK__k4p2] = 639.0;
+            this->prm_[INaK__zk] = 1.0;
+            this->prm_[INaL__GNaL] = 0.0075;
+            this->prm_[INaL__tau_hl] = 600.0;
+            this->prm_[INab__PNab] = 3.75e-10;
+            this->prm_[I_Na__GNa] = 14.838;
+            this->prm_[IpCa__GpCa] = 0.0575;
+            this->prm_[SR_uptake__BSLmax] = 1.124;
+            this->prm_[SR_uptake__BSRmax] = 0.047;
+            this->prm_[SR_uptake__KmBSL] = 0.0087;
+            this->prm_[SR_uptake__KmBSR] = 0.00087;
+            this->prm_[SR_uptake__cmdnmax] = 0.05;
+            this->prm_[SR_uptake__csqnmax] = 10.0;
+            this->prm_[SR_uptake__kmcmdn] = 0.00238;
+            this->prm_[SR_uptake__kmcsqn] = 0.8;
+            this->prm_[SR_uptake__kmtrpn] = 0.0005;
+            this->prm_[SR_uptake__trpnmax] = 0.07;
+            this->prm_[cell__L] = 0.017;
+            this->prm_[cell__pi] = 3.14;
+            this->prm_[cell__rad] = 0.0011;
+            this->prm_[cell__vmyo1frac] = 0.4;
+            this->prm_[CaMK__ECl] =  (( this->prm_[cell__R]*this->prm_[cell__T])/this->prm_[cell__F])*std::log(this->prm_[cell__cli]/this->prm_[cell__clo]);
+            this->prm_[ICaL__PCaK] =  0.000357400*this->prm_[ICaL__PCa];
+            this->prm_[ICaL__PCaNa] =  0.00125000*this->prm_[ICaL__PCa];
+            this->prm_[ICaL__vhalff] =  - 22.9000;
+            this->prm_[ICab__PCab] =  2.50000e-08;
             this->prm_[IK1__GK1] = 0.75*0.200000;
             this->prm_[IKr__GKr] = 0.5*0.0150000;
+            this->prm_[INaK__delta] =  - 0.155000;
+            this->prm_[INaCa_i__Gncx] =  0.000800000;
+            this->prm_[ITo__Gto] =  0.4*0.5;
+            this->prm_[stimulus__stimulus_amplitude] =  - 80.0000;
+            this->prm_[INaCa_i__h10] = (this->prm_[INaCa_i__kasymm]+1.00000)+ (this->prm_[cell__nao]/this->prm_[INaCa_i__kna1])*(1.00000+this->prm_[cell__nao]/this->prm_[INaCa_i__kna2]);
+            this->prm_[INaCa_i__h11] = ( this->prm_[cell__nao]*this->prm_[cell__nao])/( ( this->prm_[INaCa_i__h10]*this->prm_[INaCa_i__kna1])*this->prm_[INaCa_i__kna2]);
+            this->prm_[INaCa_i__h12] = 1/this->prm_[INaCa_i__h10];
+            this->prm_[INaCa_i__k2] = this->prm_[INaCa_i__kcaoff];
+            this->prm_[INaCa_i__k5] = this->prm_[INaCa_i__kcaoff];
+            this->prm_[INaCa_ss__h101] = (this->prm_[INaCa_i__kasymm]+1.00000)+ (this->prm_[cell__nao]/this->prm_[INaCa_i__kna1])*(1.00000+this->prm_[cell__nao]/this->prm_[INaCa_i__kna2]);
+            this->prm_[INaCa_ss__h1111] = ( this->prm_[cell__nao]*this->prm_[cell__nao])/( ( this->prm_[INaCa_ss__h101]*this->prm_[INaCa_i__kna1])*this->prm_[INaCa_i__kna2]);
+            this->prm_[INaCa_ss__h121] = 1./this->prm_[INaCa_ss__h101];
+            this->prm_[INaCa_ss__k21] = this->prm_[INaCa_i__kcaoff];
+            this->prm_[INaCa_ss__k51] = this->prm_[INaCa_i__kcaoff];
+            this->prm_[INaK__Pnak] =  30.0000;
+            this->prm_[INaK__a2] = this->prm_[INaK__k2p];
+            this->prm_[INaK__a4] = (( this->prm_[INaK__k4p2]*this->prm_[INaK__MgATP])/this->prm_[INaK__Kmgatp])/(1.00000+this->prm_[INaK__MgATP]/this->prm_[INaK__Kmgatp]);
+            this->prm_[INaK__b1] =  this->prm_[INaK__k1m]*this->prm_[INaK__MgADP];
+            this->prm_[cell__Ageo] =  ( ( 2*this->prm_[cell__pi])*this->prm_[cell__rad])*this->prm_[cell__rad] + ( ( 2*this->prm_[cell__pi])*this->prm_[cell__rad])*this->prm_[cell__L];
+            this->prm_[cell__Acap] =  2*this->prm_[cell__Ageo];
+            this->prm_[cell__cao] =  1.80000;
+            this->prm_[INaCa_i__k1] =  ( this->prm_[INaCa_i__h12]*this->prm_[cell__cao])*this->prm_[INaCa_i__kcaon];
+            this->prm_[INaCa_ss__k11] =  ( this->prm_[INaCa_ss__h121]*this->prm_[cell__cao])*this->prm_[INaCa_i__kcaon];
+            this->prm_[cell__vcell] =  ( ( ( 1000*this->prm_[cell__pi])*this->prm_[cell__rad])*this->prm_[cell__rad])*this->prm_[cell__L];
+            this->prm_[cell__vjsr] = ( 0.0048*this->prm_[cell__vcell])/2.00000;
+            this->prm_[cell__vcsr] = this->prm_[cell__vjsr];
+            this->prm_[cell__vmyo] =  0.68*this->prm_[cell__vcell];
+            this->prm_[cell__vmyo1] =  this->prm_[cell__vmyo]*this->prm_[cell__vmyo1frac];
+            this->prm_[cell__vmyo2] = this->prm_[cell__vmyo] - this->prm_[cell__vmyo1];
+            this->prm_[cell__vnsr] =  0.0552*this->prm_[cell__vcell];
+            this->prm_[cell__vnsr1] = this->prm_[cell__vnsr]/2.00000;
+            this->prm_[cell__vnsr2] = this->prm_[cell__vnsr]/2.00000;
+            this->prm_[cell__vss] = ( 0.02*this->prm_[cell__vcell])/2.00000;
 
             break;
 
-        case CellType::mid :
-            // Set the model variables for mid cell type. 
-            // Obtained from simulating the endo with the constants/params specific to the cell_type for 1000s
-            this->var_[v]                           = -87.5010429130134;
-            this->var_[dvdt]                        = -2.45657654220979e-05;
-            this->var_[CICR__A]                     = 1000100.00077938;
-            this->var_[CICR__Jrel1]                 = 1.30507117271801e-87;
-            this->var_[CICR__Jrel2]                 = 9.70982289096442e-10;
-            this->var_[ionic_concentrations__cacsr] = 2.08968565389727;
-            this->var_[ionic_concentrations__cai]   = 0.000102663147221014;
-            this->var_[ionic_concentrations__cai2]  = 0.000104607944470305;
-            this->var_[ionic_concentrations__cajsr] = 2.08635740189305;
-            this->var_[ionic_concentrations__cass]  = 0.000100037856546748;
-            this->var_[CICR__tjsrol]                = 1000100.00077938;
-            this->var_[CaMK__CaMKt]                 = 0.0115767095538003;
-            this->var_[ionic_concentrations__ki]    = 141.519902525638;
-            this->var_[ionic_concentrations__nai]   = 7.32116649231706;
-            this->var_[ICaL__d]                     = 4.29151222701894e-07;
-            this->var_[ICaL__fca]                   = 0.981855151474464;
-            this->var_[ICaL__ff]                    = 1.00046185749199;
-            this->var_[ICaL__fs]                    = 1.00045786877359;
-            this->var_[ionic_concentrations__kss]   = 141.51988827455;
-            this->var_[ionic_concentrations__nass]  = 7.32126248981261;
-            this->var_[IKr__xr]                     = 0.151270663595045;
-            this->var_[IKs__xs1]                    = 0.0512680023698335;
-            this->var_[IKs__xs2]                    = 0.0458675632737045;
-            this->var_[INaL__hl]                    = 0.319786689430875;
-            this->var_[INaL__ml]                    = 0.00101735499858794;
-            this->var_[ITo__aa]                     = 0.996047175340968;
-            this->var_[I_Na__h]                     = 0.801690087545138;
-            this->var_[I_Na__j]                     = 0.801609042771497;
-            this->var_[I_Na__m]                     = 0.00105671174371264;
-            this->var_[ionic_concentrations__cansr] = 2.11750636902378; 
-
-            // Set the model parameters for mid cell type.
-            this->prm_[IKs__GKs] = 0.021;
-            this->prm_[IK1__GK1] = 0.75*0.200000*1.3;
-            this->prm_[IKr__GKr] = 0.5*0.0150000*0.8;
-
-            break;
-
-
-        case CellType::epi :
-            // Set the model variables for epi cell type.
-            // Obtained from simulating the endo with the constants/params specific to the cell_type for 1000s
-            this->var_[v]                           = -87.5238667857463;
-            this->var_[dvdt]                        = -2.87392514012053e-05;
-            this->var_[CICR__A]                     = 1000100.00077938;
-            this->var_[CICR__Jrel1]                 = 1.07928580851492e-87;
-            this->var_[CICR__Jrel2]                 = 9.63269201672316e-10;
-            this->var_[ionic_concentrations__cacsr] = 2.02740718675608;
-            this->var_[ionic_concentrations__cai]   = 0.000100456196554699;
-            this->var_[ionic_concentrations__cai2]  = 0.000102347265618846;
-            this->var_[ionic_concentrations__cajsr] = 2.02336482881586;
-            this->var_[ionic_concentrations__cass]  = 9.79679646941137e-05;
-            this->var_[CICR__tjsrol]                = 1000100.00077938;
-            this->var_[CaMK__CaMKt]                 = 0.0112151380612269;
-            this->var_[ionic_concentrations__ki]    = 141.519699187666;
-            this->var_[ionic_concentrations__nai]   = 7.30324569109622;
-            this->var_[ICaL__d]                     = 4.27574485791113e-07;
-            this->var_[ICaL__fca]                   = 0.982211786647875;
-            this->var_[ICaL__ff]                    = 1.00046133873397;
-            this->var_[ICaL__fs]                    = 1.00045789072096;
-            this->var_[ionic_concentrations__kss]   = 141.519684986309;
-            this->var_[ionic_concentrations__nass]  = 7.30333815279537;
-            this->var_[IKr__xr]                     = 0.15110781358686;
-            this->var_[IKs__xs1]                    = 0.0509102774923157;
-            this->var_[IKs__xs2]                    = 0.0458407952859856;
-            this->var_[INaL__hl]                    = 0.321731089253419;
-            this->var_[INaL__ml]                    = 0.00101346684374681;
-            this->var_[ITo__aa]                     = 0.996057101024416;
-            this->var_[I_Na__h]                     = 0.802204335003563;
-            this->var_[I_Na__j]                     = 0.802116103661166;
-            this->var_[I_Na__m]                     = 0.00105155600020652;
-            this->var_[ionic_concentrations__cansr] = 2.05656282132306;   
-
-            // Set the model parameters for epi cell type.
-            this->prm_[IKs__GKs] = 0.021*1.4;
-            this->prm_[IK1__GK1] = 0.75*0.200000*1.2;
-            this->prm_[IKr__GKr] = 0.5*0.0150000*1.3;
-
-            break;
+       
     
         default:
             throw std::invalid_argument(Logger::Error("Could not initialize Gaur2021 ap model. Expected: CellType::ventricular"));
             break;
     }
 
-    // Set the cell model constants that are independent from the cell type.
-    this->prm_[cell__F] = 96485.0;    
-    this->prm_[CaMK__KmCaMK] = 0.065;
-    this->prm_[CICR__SOICR] = 10.0;   
-    this->prm_[CICR__grelbarjsrol] = 2.0;
-    this->prm_[CICR__tau_gap] = 3.0;
-    this->prm_[CICR__tauoff] = 5.0;
-    this->prm_[CICR__tauon] = 0.5;
-    this->prm_[CaMK__CaMKo] = 0.05;
-    this->prm_[CaMK__KmCaM] = 0.0015;
-    this->prm_[CaMK__PKNa] = 0.01833;
-    this->prm_[cell__R] = 8314.0;
-    this->prm_[cell__T] = 310.0;
-    this->prm_[CaMK__aCaMK] = 0.05;
-    this->prm_[CaMK__bCaMK] = 0.00068;
-    this->prm_[cell__cli] = 19.53;
-    this->prm_[cell__clo] = 100.0;
-    this->prm_[cell__ko] = 5.4;
-    this->prm_[cell__nao] = 140.0;
-    this->prm_[ICaL__PCa] = 0.0002;
-    this->prm_[ICaL__vhalf_d] = 3.4;
-    this->prm_[ICaL__zca] = 2.0;
-    this->prm_[IKb__GKb] = 0.003;
-    this->prm_[INaCa_i__KmCaAct] = 0.00015;
-    this->prm_[INaCa_i__kasymm] = 12.5;
-    this->prm_[INaCa_i__kcaoff] = 5000.0;
-    this->prm_[INaCa_i__kcaon] = 1500000.0;
-    this->prm_[INaCa_i__kna1] = 15.0;
-    this->prm_[INaCa_i__kna2] = 5.0;
-    this->prm_[INaCa_i__kna3] = 88.12;
-    this->prm_[INaCa_i__qca] = 0.167;
-    this->prm_[INaCa_i__qna] = 0.5224;
-    this->prm_[INaCa_i__wca] = 60000.0;
-    this->prm_[INaCa_i__wna] = 60000.0;
-    this->prm_[INaCa_i__wnaca] = 5000.0;
-    this->prm_[INaCa_i__zna] = 1.0;
-    this->prm_[INaK__H] = 1e-07;
-    this->prm_[INaK__Khp] = 1.698e-07;
-    this->prm_[INaK__Kki] = 0.5;
-    this->prm_[INaK__Kko] = 0.3582;
-    this->prm_[INaK__Kmgatp] = 1.698e-07;
-    this->prm_[INaK__Knai0] = 9.073;
-    this->prm_[INaK__Knao0] = 27.78;
-    this->prm_[INaK__Knap] = 224.0;
-    this->prm_[INaK__Kxkur] = 292.0;
-    this->prm_[INaK__MgADP] = 0.05;
-    this->prm_[INaK__MgATP] = 9.8;
-    this->prm_[INaK__eP] = 4.2;
-    this->prm_[INaK__k1m] = 182.4;
-    this->prm_[INaK__k1p] = 949.5;
-    this->prm_[INaK__k2m] = 39.4;
-    this->prm_[INaK__k2p] = 687.2;
-    this->prm_[INaK__k3m] = 79300.0;
-    this->prm_[INaK__k3p2] = 1899.0;
-    this->prm_[INaK__k4m] = 40.0;
-    this->prm_[INaK__k4p2] = 639.0;
-    this->prm_[INaK__zk] = 1.0;
-    this->prm_[INaL__GNaL] = 0.0075;
-    this->prm_[INaL__tau_hl] = 600.0;
-    this->prm_[INab__PNab] = 3.75e-10;
-    this->prm_[I_Na__GNa] = 14.838;
-    this->prm_[IpCa__GpCa] = 0.0575;
-    this->prm_[SR_uptake__BSLmax] = 1.124;
-    this->prm_[SR_uptake__BSRmax] = 0.047;
-    this->prm_[SR_uptake__KmBSL] = 0.0087;
-    this->prm_[SR_uptake__KmBSR] = 0.00087;
-    this->prm_[SR_uptake__cmdnmax] = 0.05;
-    this->prm_[SR_uptake__csqnmax] = 10.0;
-    this->prm_[SR_uptake__kmcmdn] = 0.00238;
-    this->prm_[SR_uptake__kmcsqn] = 0.8;
-    this->prm_[SR_uptake__kmtrpn] = 0.0005;
-    this->prm_[SR_uptake__trpnmax] = 0.07;
-    this->prm_[cell__L] = 0.017;
-    this->prm_[cell__pi] = 3.14;
-    this->prm_[cell__rad] = 0.0011;
-    this->prm_[cell__vmyo1frac] = 0.4;
-    this->prm_[CaMK__ECl] =  (( this->prm_[cell__R]*this->prm_[cell__T])/this->prm_[cell__F])*std::log(this->prm_[cell__cli]/this->prm_[cell__clo]);
-    this->prm_[ICaL__PCaK] =  0.000357400*this->prm_[ICaL__PCa];
-    this->prm_[ICaL__PCaNa] =  0.00125000*this->prm_[ICaL__PCa];
-    this->prm_[ICaL__vhalff] =  - 22.9000;
-    this->prm_[ICab__PCab] =  2.50000e-08;
-    this->prm_[INaK__delta] =  - 0.155000;
-    this->prm_[INaCa_i__Gncx] =  0.000800000;
-    this->prm_[ITo__Gto] =  0.4*0.5;
-    this->prm_[stimulus__stimulus_amplitude] =  - 80.0000;
-    this->prm_[INaCa_i__h10] = (this->prm_[INaCa_i__kasymm]+1.00000)+ (this->prm_[cell__nao]/this->prm_[INaCa_i__kna1])*(1.00000+this->prm_[cell__nao]/this->prm_[INaCa_i__kna2]);
-    this->prm_[INaCa_i__h11] = ( this->prm_[cell__nao]*this->prm_[cell__nao])/( ( this->prm_[INaCa_i__h10]*this->prm_[INaCa_i__kna1])*this->prm_[INaCa_i__kna2]);
-    this->prm_[INaCa_i__h12] = 1/this->prm_[INaCa_i__h10];
-    this->prm_[INaCa_i__k2] = this->prm_[INaCa_i__kcaoff];
-    this->prm_[INaCa_i__k5] = this->prm_[INaCa_i__kcaoff];
-    this->prm_[INaCa_ss__h101] = (this->prm_[INaCa_i__kasymm]+1.00000)+ (this->prm_[cell__nao]/this->prm_[INaCa_i__kna1])*(1.00000+this->prm_[cell__nao]/this->prm_[INaCa_i__kna2]);
-    this->prm_[INaCa_ss__h1111] = ( this->prm_[cell__nao]*this->prm_[cell__nao])/( ( this->prm_[INaCa_ss__h101]*this->prm_[INaCa_i__kna1])*this->prm_[INaCa_i__kna2]);
-    this->prm_[INaCa_ss__h121] = 1./this->prm_[INaCa_ss__h101];
-    this->prm_[INaCa_ss__k21] = this->prm_[INaCa_i__kcaoff];
-    this->prm_[INaCa_ss__k51] = this->prm_[INaCa_i__kcaoff];
-    this->prm_[INaK__Pnak] =  30.0000;
-    this->prm_[INaK__a2] = this->prm_[INaK__k2p];
-    this->prm_[INaK__a4] = (( this->prm_[INaK__k4p2]*this->prm_[INaK__MgATP])/this->prm_[INaK__Kmgatp])/(1.00000+this->prm_[INaK__MgATP]/this->prm_[INaK__Kmgatp]);
-    this->prm_[INaK__b1] =  this->prm_[INaK__k1m]*this->prm_[INaK__MgADP];
-    this->prm_[cell__Ageo] =  ( ( 2*this->prm_[cell__pi])*this->prm_[cell__rad])*this->prm_[cell__rad] + ( ( 2*this->prm_[cell__pi])*this->prm_[cell__rad])*this->prm_[cell__L];
-    this->prm_[cell__Acap] =  2*this->prm_[cell__Ageo];
-    this->prm_[cell__cao] =  1.80000;
-    this->prm_[INaCa_i__k1] =  ( this->prm_[INaCa_i__h12]*this->prm_[cell__cao])*this->prm_[INaCa_i__kcaon];
-    this->prm_[INaCa_ss__k11] =  ( this->prm_[INaCa_ss__h121]*this->prm_[cell__cao])*this->prm_[INaCa_i__kcaon];
-    this->prm_[cell__vcell] =  ( ( ( 1000*this->prm_[cell__pi])*this->prm_[cell__rad])*this->prm_[cell__rad])*this->prm_[cell__L];
-    this->prm_[cell__vjsr] = ( 0.0048*this->prm_[cell__vcell])/2.00000;
-    this->prm_[cell__vcsr] = this->prm_[cell__vjsr];
-    this->prm_[cell__vmyo] =  0.68*this->prm_[cell__vcell];
-    this->prm_[cell__vmyo1] =  this->prm_[cell__vmyo]*this->prm_[cell__vmyo1frac];
-    this->prm_[cell__vmyo2] = this->prm_[cell__vmyo] - this->prm_[cell__vmyo1];
-    this->prm_[cell__vnsr] =  0.0552*this->prm_[cell__vcell];
-    this->prm_[cell__vnsr1] = this->prm_[cell__vnsr]/2.00000;
-    this->prm_[cell__vnsr2] = this->prm_[cell__vnsr]/2.00000;
-    this->prm_[cell__vss] = ( 0.02*this->prm_[cell__vcell])/2.00000;
 }
 
 
