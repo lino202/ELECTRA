@@ -1,6 +1,6 @@
 /*
  * ELECTRA. Electrophysiology Simulation Software.
- * Copyright (C) 2019  <Konstantinos A. Mountris> <konstantinos.mountris@gmail.com>
+ * Copyright (C) 2019
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -257,24 +257,24 @@ void Stewart::Compute(double v_new, double dt, double stim_current)
     using namespace StrtPrm;
     using namespace StrtCur;
 
-    this->cur_[ICaL] = this->prm_[g_CaL]*this->var_[d]*this->var_[f]*this->var_[f2]*this->var_[fCass]*4.0*((v_new-15.0)*std::pow(this->prm_[F],2.0)/(this->prm_[R]*this->prm_[T]))*(0.25*this->var_[Ca_ss]*exp(2.0*(v_new-15.0)*this->prm_[F]/(this->prm_[R]*this->prm_[T]))-this->prm_[Ca_o])/(exp(2.0*(v_new-15.0)*this->prm_[F]/(this->prm_[R]*this->prm_[T]))-1.0);
+    this->cur_[ICaL] = this->prm_[g_CaL]*this->var_[d]*this->var_[f]*this->var_[f2]*this->var_[fCass]*4.0*((v_new-15.0)*std::pow(this->prm_[F],2.0)/(this->prm_[R]*this->prm_[T]))*(0.25*this->var_[Ca_ss]*std::exp(2.0*(v_new-15.0)*this->prm_[F]/(this->prm_[R]*this->prm_[T]))-this->prm_[Ca_o])/(std::exp(2.0*(v_new-15.0)*this->prm_[F]/(this->prm_[R]*this->prm_[T]))-1.0);
     
-	double d_inf = 1.0/(1.0+exp((-8.0-v_new)/7.5));
-    double alpha_d = 1.4/(1.0+exp((-35.0-v_new)/13.0))+0.25;
+	double d_inf = 1.0/(1.0+std::exp((-8.0-v_new)/7.5));
+    double alpha_d = 1.4/(1.0+std::exp((-35.0-v_new)/13.0))+0.25;
     
-	double beta_d = 1.4/(1.0+exp((v_new+5.0)/5.0));
+	double beta_d = 1.4/(1.0+std::exp((v_new+5.0)/5.0));
 
-    double gamma_d = 1.0/(1.0+exp((50.0-v_new)/20.0));
+    double gamma_d = 1.0/(1.0+std::exp((50.0-v_new)/20.0));
     double tau_d = 1.0*alpha_d*beta_d+gamma_d;
 	
-    double f2_inf = 0.67/(1.0+exp((v_new+35.0)/7.0))+0.33;
-    double tau_f2 = 562.0*exp(-std::pow(v_new+27.0,2.0)/240.0)+31.0/(1.0+exp((25.0-v_new)/10.0))+80.0/(1.0+exp((v_new+30.0)/10.0));
+    double f2_inf = 0.67/(1.0+std::exp((v_new+35.0)/7.0))+0.33;
+    double tau_f2 = 562.0*std::exp(-std::pow(v_new+27.0,2.0)/240.0)+31.0/(1.0+std::exp((25.0-v_new)/10.0))+80.0/(1.0+std::exp((v_new+30.0)/10.0));
 	
 	double fCass_inf = 0.6/(1.0+std::pow(this->var_[Ca_ss]/0.05,2.0))+0.4;
     double tau_fCass = 80.0/(1.0+std::pow(this->var_[Ca_ss]/0.05,2.0))+2.0;
     
-	double f_inf = 1.0/(1.0+exp((v_new+20.0)/7.0));
-    double tau_f = 1102.5*exp(-std::pow(v_new+27.0,2.0)/225.0)+200.0/(1.0+exp((13.0-v_new)/10.0))+180.0/(1.0+exp((v_new+30.0)/10.0))+20.0;
+	double f_inf = 1.0/(1.0+std::exp((v_new+20.0)/7.0));
+    double tau_f = 1102.5*std::exp(-std::pow(v_new+27.0,2.0)/225.0)+200.0/(1.0+std::exp((13.0-v_new)/10.0))+180.0/(1.0+std::exp((v_new+30.0)/10.0))+20.0;
     
     
 	double E_Ca = 0.5*this->prm_[R]*this->prm_[T]/this->prm_[F]*log(this->prm_[Ca_o]/this->var_[Ca_i]);
@@ -295,34 +295,34 @@ void Stewart::Compute(double v_new, double dt, double stim_current)
     double Ca_sr_bufsr = 1.0/(1.0+this->prm_[Buf_sr]*this->prm_[K_buf_sr]/std::pow(this->var_[Ca_SR]+this->prm_[K_buf_sr],2.0));
     double Ca_ss_bufss = 1.0/(1.0+this->prm_[Buf_ss]*this->prm_[K_buf_ss]/std::pow(this->var_[Ca_ss]+this->prm_[K_buf_ss],2.0));
     this->cur_[IpCa] = this->prm_[g_pCa]*this->var_[Ca_i]/(this->var_[Ca_i]+this->prm_[K_pCa]);
-    this->cur_[INaCa] = this->prm_[K_NaCa]*(exp(this->prm_[gamma]*v_new*this->prm_[F]/(this->prm_[R]*this->prm_[T]))*std::pow(this->var_[Na_i],3.0)*this->prm_[Ca_o]-exp((this->prm_[gamma]-1.0)*v_new*this->prm_[F]/(this->prm_[R]*this->prm_[T]))*std::pow(this->prm_[Na_o],3.0)*this->var_[Ca_i]*this->prm_[alpha])/((std::pow(this->prm_[Km_Nai],3.0)+std::pow(this->prm_[Na_o],3.0))*(this->prm_[Km_Ca]+this->prm_[Ca_o])*(1.0+this->prm_[K_sat]*exp((this->prm_[gamma]-1.0)*v_new*this->prm_[F]/(this->prm_[R]*this->prm_[T]))));
+    this->cur_[INaCa] = this->prm_[K_NaCa]*(std::exp(this->prm_[gamma]*v_new*this->prm_[F]/(this->prm_[R]*this->prm_[T]))*std::pow(this->var_[Na_i],3.0)*this->prm_[Ca_o]-std::exp((this->prm_[gamma]-1.0)*v_new*this->prm_[F]/(this->prm_[R]*this->prm_[T]))*std::pow(this->prm_[Na_o],3.0)*this->var_[Ca_i]*this->prm_[alpha])/((std::pow(this->prm_[Km_Nai],3.0)+std::pow(this->prm_[Na_o],3.0))*(this->prm_[Km_Ca]+this->prm_[Ca_o])*(1.0+this->prm_[K_sat]*std::exp((this->prm_[gamma]-1.0)*v_new*this->prm_[F]/(this->prm_[R]*this->prm_[T]))));
     
 	double E_Na = this->prm_[R]*this->prm_[T]/this->prm_[F]*std::log(this->prm_[Na_o]/this->var_[Na_i]);
     this->cur_[INa] = this->prm_[g_Na]*std::pow(this->var_[m],3.0)*this->var_[h]*this->var_[j]*(v_new-E_Na);
     
-	double h_inf = 1.0/std::pow((1.0+exp((v_new+71.55)/7.43)),2.0);
+	double h_inf = 1.0/std::pow((1.0+std::exp((v_new+71.55)/7.43)),2.0);
 	double alpha_h = 0.0;
-	double beta_h = 0.77/(0.13*(1.0+exp((v_new+10.66)/-11.1)));
+	double beta_h = 0.77/(0.13*(1.0+std::exp((v_new+10.66)/-11.1)));
     if (v_new < -40.0){
-       alpha_h = 0.057*exp(-(v_new+80.0)/6.8);
-	   beta_h = 2.7*exp(0.079*v_new)+310000.0*exp(0.3485*v_new);
+       alpha_h = 0.057*std::exp(-(v_new+80.0)/6.8);
+	   beta_h = 2.7*std::exp(0.079*v_new)+310000.0*std::exp(0.3485*v_new);
     }
     double tau_h = 1.0/(alpha_h+beta_h);
     
 	
-	double j_inf = 1.0/std::pow((1.0+exp((v_new+71.55)/7.43)),2.0);
+	double j_inf = 1.0/std::pow((1.0+std::exp((v_new+71.55)/7.43)),2.0);
 	double alpha_j = 0.0;
-	double beta_j = 0.6*exp(0.057*v_new)/(1.0+exp(-0.1*(v_new+32.0)));
+	double beta_j = 0.6*std::exp(0.057*v_new)/(1.0+std::exp(-0.1*(v_new+32.0)));
     if (v_new < -40.0){
-       alpha_j = (-25428.0*exp(0.2444*v_new)-6.948e-6*exp(-0.04391*v_new))*(v_new+37.78)/(1.0+exp(0.311*(v_new+79.23)));
-	   beta_j = 0.02424*exp(-0.01052*v_new)/(1.0+exp(-0.1378*(v_new+40.14)));
+       alpha_j = (-25428.0*std::exp(0.2444*v_new)-6.948e-6*std::exp(-0.04391*v_new))*(v_new+37.78)/(1.0+std::exp(0.311*(v_new+79.23)));
+	   beta_j = 0.02424*std::exp(-0.01052*v_new)/(1.0+std::exp(-0.1378*(v_new+40.14)));
 	}
     double tau_j = 1.0/(alpha_j+beta_j);
     
     
-	double m_inf = 1.0/std::pow((1.0+exp((-56.86-v_new)/9.03)),2.0);
-    double alpha_m = 1.0/(1.0+exp((-60.0-v_new)/5.0));
-    double beta_m = 0.1/(1.0+exp((v_new+35.0)/5.0))+0.1/(1.0+exp((v_new-50.0)/200.0));
+	double m_inf = 1.0/std::pow((1.0+std::exp((-56.86-v_new)/9.03)),2.0);
+    double alpha_m = 1.0/(1.0+std::exp((-60.0-v_new)/5.0));
+    double beta_m = 0.1/(1.0+std::exp((v_new+35.0)/5.0))+0.1/(1.0+std::exp((v_new-50.0)/200.0));
     double tau_m = 1.0*alpha_m*beta_m;
     this->cur_[IfNa] = this->var_[y]*this->prm_[g_f_Na]*(v_new-E_Na);
     
@@ -330,48 +330,48 @@ void Stewart::Compute(double v_new, double dt, double stim_current)
     this->cur_[IfK] = this->var_[y]*this->prm_[g_f_K]*(v_new-E_K);
     this->cur_[If] = this->cur_[IfNa]+this->cur_[IfK];
     
-	double y_inf = 1.0/(1.0+exp((v_new+80.6)/6.8));
-    double alpha_y = 1.0*exp(-2.9-0.04*v_new);
-    double beta_y = 1.0*exp(3.6+0.11*v_new);
+	double y_inf = 1.0/(1.0+std::exp((v_new+80.6)/6.8));
+    double alpha_y = 1.0*std::exp(-2.9-0.04*v_new);
+    double beta_y = 1.0*std::exp(3.6+0.11*v_new);
     double tau_y = 4000.0/(alpha_y+beta_y);
     
-	double xK1_inf = 1.0/(1.0+exp(0.1*(v_new+75.44)));
+	double xK1_inf = 1.0/(1.0+std::exp(0.1*(v_new+75.44)));
     this->cur_[IK1] = this->prm_[g_K1]*xK1_inf*(v_new-8.0-E_K);
     this->cur_[Ito] = this->prm_[g_to]*this->var_[r]*this->var_[s]*(v_new-E_K);
     
-	double a = 1.0/(1.0+exp((5.0-v_new)/17.0));
+	double a = 1.0/(1.0+std::exp((5.0-v_new)/17.0));
     this->cur_[Isus] = this->prm_[g_sus]*a*(v_new-E_K);
     this->cur_[IKr] = this->prm_[g_Kr]*std::pow(this->prm_[K_o]/5.4,0.5)*this->var_[Xr1]*this->var_[Xr2]*(v_new-E_K);
     
 	double E_Ks = this->prm_[R]*this->prm_[T]/this->prm_[F]*std::log((this->prm_[K_o]+this->prm_[P_kna]*this->prm_[Na_o])/(this->var_[K_i]+this->prm_[P_kna]*this->var_[Na_i]));
     this->cur_[IKs] = this->prm_[g_Ks]*std::pow(this->var_[Xs],2.0)*(v_new-E_Ks);
-    this->cur_[INaK] = this->prm_[P_NaK]*this->prm_[K_o]/(this->prm_[K_o]+this->prm_[K_mk])*this->var_[Na_i]/(this->var_[Na_i]+this->prm_[K_mNa])/(1.0+0.1245*exp(-0.1*v_new*this->prm_[F]/(this->prm_[R]*this->prm_[T]))+0.0353*exp(-v_new*this->prm_[F]/(this->prm_[R]*this->prm_[T])));
+    this->cur_[INaK] = this->prm_[P_NaK]*this->prm_[K_o]/(this->prm_[K_o]+this->prm_[K_mk])*this->var_[Na_i]/(this->var_[Na_i]+this->prm_[K_mNa])/(1.0+0.1245*std::exp(-0.1*v_new*this->prm_[F]/(this->prm_[R]*this->prm_[T]))+0.0353*std::exp(-v_new*this->prm_[F]/(this->prm_[R]*this->prm_[T])));
     this->cur_[IbNa] = this->prm_[g_bna]*(v_new-E_Na);
-    this->cur_[IpK] = this->prm_[g_pK]*(v_new-E_K)/(1.0+exp((25.0-v_new)/5.98));
+    this->cur_[IpK] = this->prm_[g_pK]*(v_new-E_K)/(1.0+std::exp((25.0-v_new)/5.98));
     
     this->cur_[StrtCur::Iion] = this->cur_[IK1]+this->cur_[Ito]+this->cur_[Isus]+this->cur_[IKr]+this->cur_[IKs]+this->cur_[ICaL]+this->cur_[INaK]+this->cur_[INa]+this->cur_[IbNa]+this->cur_[INaCa]+this->cur_[IbCa]+this->cur_[IpK]+this->cur_[IpCa]+this->cur_[If];
     this->var_[dvdt] =  - (this->cur_[StrtCur::Iion] - stim_current);
     
-    double xr1_inf = 1.0/(1.0+exp((-26.0-v_new)/7.0));
-    double alpha_xr1 = 450.0/(1.0+exp((-45.0-v_new)/10.0));
-    double beta_xr1 = 6.0/(1.0+exp((v_new+30.0)/11.5));
+    double xr1_inf = 1.0/(1.0+std::exp((-26.0-v_new)/7.0));
+    double alpha_xr1 = 450.0/(1.0+std::exp((-45.0-v_new)/10.0));
+    double beta_xr1 = 6.0/(1.0+std::exp((v_new+30.0)/11.5));
     double tau_xr1 = 1.0*alpha_xr1*beta_xr1;
     
-	double xr2_inf = 1.0/(1.0+exp((v_new+88.0)/24.0));
-    double alpha_xr2 = 3.0/(1.0+exp((-60.0-v_new)/20.0));
-    double beta_xr2 = 1.12/(1.0+exp((v_new-60.0)/20.0));
+	double xr2_inf = 1.0/(1.0+std::exp((v_new+88.0)/24.0));
+    double alpha_xr2 = 3.0/(1.0+std::exp((-60.0-v_new)/20.0));
+    double beta_xr2 = 1.12/(1.0+std::exp((v_new-60.0)/20.0));
     double tau_xr2 = 1.0*alpha_xr2*beta_xr2;
     
-	double xs_inf = 1.0/(1.0+exp((-5.0-v_new)/14.0));
-    double alpha_xs = 1400.0/std::pow((1.0+exp((5.0-v_new)/6.0)),0.5);
-    double beta_xs = 1.0/(1.0+exp((v_new-35.0)/15.0));
+	double xs_inf = 1.0/(1.0+std::exp((-5.0-v_new)/14.0));
+    double alpha_xs = 1400.0/std::pow((1.0+std::exp((5.0-v_new)/6.0)),0.5);
+    double beta_xs = 1.0/(1.0+std::exp((v_new-35.0)/15.0));
     double tau_xs = 1.0*alpha_xs*beta_xs+80.0;
     
-	double r_inf = 1.0/(1.0+exp((20.0-v_new)/13.0));
-    double tau_r = 10.45*exp(-std::pow(v_new+40.0,2.0)/1800.0)+7.3;
+	double r_inf = 1.0/(1.0+std::exp((20.0-v_new)/13.0));
+    double tau_r = 10.45*std::exp(-std::pow(v_new+40.0,2.0)/1800.0)+7.3;
     
-	double s_inf = 1.0/(1.0+exp((v_new+27.0)/13.0));
-    double tau_s = 85.0*exp(-std::pow(v_new+25.0,2.0)/320.0)+5.0/(1.0+exp((v_new-40.0)/5.0))+42.0;
+	double s_inf = 1.0/(1.0+std::exp((v_new+27.0)/13.0));
+    double tau_s = 85.0*std::exp(-std::pow(v_new+25.0,2.0)/320.0)+5.0/(1.0+std::exp((v_new-40.0)/5.0))+42.0;
     
 	
 	// Update gating variables 

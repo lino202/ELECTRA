@@ -1,8 +1,19 @@
 /*
  * ELECTRA. Electrophysiology Simulation Software.
- * Copyright (C) 2019  <Konstantinos A. Mountris> <konstantinos.mountris@gmail.com>
+ * Copyright (C) 2019
  *
- * ALL RIGHTS RESERVED
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -29,6 +40,7 @@
 #include "ELECTRA/engine/electrophysiology/maccannell.hpp"
 #include "ELECTRA/engine/electrophysiology/stewart.hpp"
 #include "ELECTRA/engine/electrophysiology/paci_ventri.hpp"
+#include "ELECTRA/engine/electrophysiology/paci2020.hpp"
 #include "ELECTRA/engine/electrophysiology/tentusscher2006.hpp"
 #include "ELECTRA/engine/utilities/logger.hpp"
 
@@ -79,6 +91,9 @@ public:
             break;
         case EpModelType::PaciVentri :
             ep_ptr = std::make_unique<PaciVentri>();
+            break;
+        case EpModelType::Paci2020 :
+            ep_ptr = std::make_unique<Paci2020>();
             break;
         case EpModelType::TenTusscher2006 :
             ep_ptr = std::make_unique<TenTusscher2006>();

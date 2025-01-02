@@ -1,0 +1,119 @@
+{ 
+    "application" : "ElectraSim v0.6.3",
+ 
+    "simulation" : { 
+        "name" : "example_lv", 
+        "scale" : "tissue"
+    },
+    
+    "reference units" : {
+        "time" : "ms",
+        "capacitance" : "pF",
+        "current" : "mA"
+    },
+ 
+    "tissue" : {
+        "geometry" : {
+            "unit" : "mm",
+            "dimensions" : 3,
+            "cell vertices" : 4,
+            "file" : "/home/maxi/Code/ELECTRA/examples/cs_lv/mesh.inp"                             //Adjust this
+        },
+
+        "material" : {
+            "electric" : {
+                "type" : "transversal",
+                "diffusivity unit" : "cm2/ms",
+                "transmembrane diffusivity" : 0.0013,
+                "transversal ratio" : 0.25,
+                "capacitance unit" : "pF",
+                "capacitance" : 1.0,
+				"fibers": "/home/maxi/Code/ELECTRA/examples/cs_lv/fibers.json"
+			}
+        },  
+ 
+        "electrophysiology" : {
+            "models number" : 3,
+            "model-1" : { "model type" : "ohara2011_inatt", "cell type" : "epi", "nodeset" : "epi_nodes" },
+            "model-2" : { "model type" : "ohara2011_inatt", "cell type" : "mid", "nodeset" : "mid_nodes" },
+            "model-3" : { "model type" : "ohara2011_inatt", "cell type" : "endo", "nodeset" : "endo_nodes"}
+        }
+    },
+ 
+	"conduction system" : {
+        "geometry" : {
+            "unit" : "mm",
+            "file" : "/home/maxi/Code/ELECTRA/examples/cs_lv/cs.inp",
+            "pmj radius" : 1
+        },
+        
+        "nodesets" : {
+            "av node" : "av_node",        
+            "terminal nodes" : "purk_endnodes"
+        },
+        
+        "diffusivity" : {
+            "unit" : "cm2/ms",
+            "tree diffusivity" : 0.013,
+            "pmj diffusivity" : 0.0013,
+            "sigmoid kappa" : -1
+        },
+        
+        "electrophysiology" : {
+            "model type" : "stewart2009",
+            "cell type" : "purkinje"
+        },
+        
+		"stimuli" : {
+            "stimuli number" : 1,
+            "stimulus-1" : {
+                "id" : 0,
+                "nodeset" : "av_node",
+                "start" : 10,
+                "duration" : 1,
+                "cycle length" : 1000,
+                "amplitude" : 80,
+                "time unit" : "ms",
+                "current unit" : "mA"
+            }
+        }
+
+    },
+    
+    "numerical approximation" : {
+        "method" : "fem"
+    },
+    
+    "physics" : {
+        "reaction-diffusion" : {
+            "type" : "monodomain",
+            "solver" : "daeti",
+            "dt unit" : "ms",
+            "dt" : 0.1,
+            "dt min" : 0.01,
+            "adaptive reaction" : "yes",
+            "adaptive diffusion" : "yes",
+            "simulation time" : 40,
+            "simulation time unit" : "ms",
+            "output interval" : 10
+        }
+    },
+
+    "output" : {
+        "ensight" : {
+            "tissue" : {
+                "geometry" :  "/home/maxi/Code/ELECTRA/examples/cs_lv/results/tissue/tissue_model.geo",             //Adjust this
+                "states" :    "/home/maxi/Code/ELECTRA/examples/cs_lv/results/tissue/tissue_solution.ens",          //Adjust this
+                "animation" : "/home/maxi/Code/ELECTRA/examples/cs_lv/results/tissue/tissue_animation.case"         //Adjust this
+            },
+            
+            "conduction system" : {
+                "geometry" :  "/home/maxi/Code/ELECTRA/examples/cs_lv/results/cs/cs_model.geo",                     //Adjust this
+                "states" :    "/home/maxi/Code/ELECTRA/examples/cs_lv/results/cs/cs_solution.ens",                  //Adjust this
+                "animation" : "/home/maxi/Code/ELECTRA/examples/cs_lv/results/cs/cs_animation.case"                 //Adjust this
+            }
+        },
+		
+		"cells state" : "/home/maxi/Code/ELECTRA/examples/cs_lv/results/cells_state.elc"
+    }
+}

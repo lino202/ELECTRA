@@ -151,16 +151,18 @@ The application of ElectraSim needs a .json as an input for setting up the simul
 An explanation and options of the .json files will be here anytime soon.
 
 
-Since version 0.6.1 you can use ElectraCell for simulating a sincle cell Vm and obtaining the manual init file for using with ElectraSim. You need to follow this format: ./ElectraCell /path/file_name ep_model cell_type sim_time stim_start stim_dur stim_cycle_length stim_amp. For example:
+Since version 0.6.1 you can use ElectraCell for simulating a sincle cell Vm and obtaining the manual init file for using with ElectraSim. You need to follow this format: ./ElectraCell /path/file_name ep_model cell_type sim_time stim_start stim_dur stim_cycle_length stim_amp dt. For example:
 ```
-./ElectraCell /path/file_name gaur2021 ventricular 1000. 10. 0.5 1000. 80.
+./ElectraCell /path/file_name gaur2021 ventricular 1000. 10. 0.5 1000. 80. 0.01
 ```
 
 Also you can give a manual init file to estabilize a model with ElectraCell without compilation :D.
 
 ```
-./ElectraCell /path/file_name gaur2021 ventricular 1000. 10. 0.5 1000. 80. /path/manual_init_file.txt
+./ElectraCell /path/file_name gaur2021 ventricular 1000. 10. 0.5 1000. 80. 0.01 /path/manual_init_file.txt
 ```
+At ElectraCell dt is fot the integration and the ouput dt is always 0.01 ms
+
 
 # Contributors
 

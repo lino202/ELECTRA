@@ -10,6 +10,7 @@ ELECTRA uses a vMAJOR.MINOR.PATCH versioning scheme. The
 
 ## Version History
 ------------------
+* v0.6.3
 * v0.6.2
 * v0.6.1
 * v0.6.0
@@ -26,6 +27,24 @@ ELECTRA uses a vMAJOR.MINOR.PATCH versioning scheme. The
 * v0.3.0
 * v0.2.0
 * v0.1.0
+
+## 2024-07-13: v0.6.3
+---------------------
+
+### Added
+* Now checkpointing (load and save states) is available, still this might not function when load_curve is used for dynamically modifying a parameter
+* We added the paci2020 cellular model (10.1016/j.bpj.2020.03.018), please pay attention to the model comments in paci2020.cpp and new comments in paci_ventri.cpp (corresponds to paci model 2013), specially regarding the stim amplitude and prepacing.
+* Now ElectraCell recieves the dt parameter which is the integration step. The output dt in ElectraCell is always 0.01 ms.
+* New examples for depicting new features and the use of purkinje.
+
+
+### Fixed
+* States and params as well as valuesin the cell models where checked for the expression with decimals (1 is 1.) so the calculations did not yield rounded int values (1/1000 = 0 but 1./1000. = 0.001)
+* Stewart model used the exp function from eigen with yielded equal results as std::exp, but now std::exp is used for consistency with other models.
+
+
+### Notes
+* For consistency new cell models should be added at the end of the enum list EpModelType (ep_basic.hpp) as checkpointing use this index, if a version of electra with a new cellular model (added in the middle of this list) is used for LOADING the states of a cellular model which was at the end of the list -> the index has changed and the wrong cellular model will be loaded which will yield errors and the necessity to change the model index in the .elc files for compability with the new electra
 
 ## 2024-07-13: v0.6.2
 ---------------------

@@ -1,8 +1,19 @@
 /*
  * ELECTRA. Electrophysiology Simulation Software.
- * Copyright (C) 2019  <Konstantinos A. Mountris> <konstantinos.mountris@gmail.com>
+ * Copyright (C) 2019
  *
- * ALL RIGHTS RESERVED
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -57,7 +68,7 @@ enum class CellType {
 /**
  * \enum EpModelType
  * \author Konstantinos A. Mountris
- * \brief Enumeration to declare the type of the electrophysiology model.
+ * \brief Enumeration to declare the type of the electrophysiology model. ATTENTION ADD NEW CELL MODEL AT THE END!
  */
 enum class EpModelType {
     unknown,
@@ -69,6 +80,7 @@ enum class EpModelType {
     Gong2020,          /**< Gong et al 2020 human ventricular cell electrophysiology model */
     Gong2020m,         /**< Gong et al 2020 human ventricular cell electrophysiology model with modified INa gates from TenTusscher2006 */
     PaciVentri,        /**< Paci '13 stem cell derived ventricular cell electrophysiology model */
+    Paci2020,          /**< Paci 2020 stem cell derived ventricular cell electrophysiology model */
     TenTusscher2006,   /**< TenTusscher et al 2006 human ventricular cell electrophysiology model */
     Courtemanche,      /**< Courtemanche '98 atrial cell electrophysiology model */
     GrandiAtri,        /**< Grandi '11 atrial cell electrophysiology model */

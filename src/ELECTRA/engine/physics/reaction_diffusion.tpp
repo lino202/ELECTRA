@@ -1,8 +1,19 @@
 /*
  * ELECTRA. Electrophysiology Simulation Software.
- * Copyright (C) 2019  <Konstantinos A. Mountris> <konstantinos.mountris@gmail.com>
+ * Copyright (C) 2019
  *
- * ALL RIGHTS RESERVED
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -91,6 +102,11 @@ void ReactionDiffusion<DIM, CELL_NODES>::SetupTimeStepping()
                     "The critical time step will be used instead. Consider enabling the adaptive diffusion mode.\n");
         }
     }
+
+    // This is not easy to implement due to floating point/decimal error, e.g. 40%0.1 is not zero as 0.1 representation is erroneous
+    // if (fmod(this->simulation_time_,this->dt_) != 0) {  //Simulation steps
+    //     throw std::runtime_error(Logger::Error("Wrong Time stepping definition. Simulation_time / dt should not be decimal"));
+    // }
 
     // Set number of total time steps.
     this->simulation_steps_ = static_cast<int>(std::ceil(this->simulation_time_ / this->dt_));

@@ -1,8 +1,19 @@
 /*
  * ELECTRA. Electrophysiology Simulation Software.
- * Copyright (C) 2019  <Konstantinos A. Mountris> <konstantinos.mountris@gmail.com>
+ * Copyright (C) 2019
  *
- * ALL RIGHTS RESERVED
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -28,14 +39,8 @@ template<short DIM, short CELL_NODES>
 void ConfigPre<DIM, CELL_NODES>::CheckValid(const Parser &parser)
 {
     std::string software = parser.GetValue<std::string>("application");
-    std::string author = parser.GetValue<std::string>("author");
-    std::string email = parser.GetValue<std::string>("email");
-    std::string licence = parser.GetValue<std::string>("license");
 
-    if (software.find("ElectraPre") == std::string::npos ||
-        author != "Konstantinos A. Mountris" ||
-        email != "konstantinos.mountris@gmail.com" ||
-        licence != "all rights reserved") {
+    if (software.find("ElectraPre") == std::string::npos) {
         throw std::invalid_argument(Logger::Error("Header info in configuration file is not consistent with ElectraPre."));
     }
 

@@ -1,8 +1,19 @@
 /*
  * ELECTRA. Electrophysiology Simulation Software.
- * Copyright (C) 2019  <Konstantinos A. Mountris> <konstantinos.mountris@gmail.com>
+ * Copyright (C) 2019
  *
- * ALL RIGHTS RESERVED
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -1175,6 +1186,10 @@ void Monodomain<DIM, CELL_NODES>::Compute(const std::shared_ptr<ElectricBasic<DI
         }
     }
 
+    if ((this->SimulationSteps() % this->OutputSteps()) != 0) {  //Simulation steps
+        throw std::runtime_error(Logger::Error("Could not compute solution in Monodomain solver. Simulation_steps / output_steps should not be decimal"));
+    }
+
     // Initialize nodal potential vector
     Eigen::VectorXd v_nodal = Eigen::VectorXd::Zero(this->Cells().size());
 
@@ -1217,6 +1232,14 @@ void Monodomain<DIM, CELL_NODES>::Compute(const std::shared_ptr<ElectricBasic<DI
     } // End of Iterate over time.
     std::cout << "\n";
 
+    // If we save the cells state, we save Vm from the cells vector -> vars. But this cells vector has been updated in the reaction term forgetting the second diffusion step.
+    // So v_nodal has changed but the cells vector has an old vars['v'] value which will we saved as final state leading to discrepancies between the Vm values in the final and initial states saved
+    // in ensight. Then, we should update the cells vector -> vars[v] with the last Vm values
+    for (auto &cell : this->Cells()) {
+        auto id = &cell - &this->Cells()[0];
+        this->Cells()[id]->SetV(v_nodal[id]);
+    }
+
     // NOTE: The following ifs are unneccesary:
     // If we have 1000 steps (sim_time is 100 ms and dt is 0.1 ms) and output_steps of 10 we will save 101 states (1 the initial and 100 actual steps)
     // But if we have 1005 steps (sim_time is 100.5 ms and dt is 0.1 ms) and output_steps of 10 we will until this line have 
@@ -1227,13 +1250,17 @@ void Monodomain<DIM, CELL_NODES>::Compute(const std::shared_ptr<ElectricBasic<DI
     // Moreover, the ensight animation file can save the value of the time step for each saved state but for now 
     // the code has not implemented that yet as we suppose the time step is equal for all states!
     // For this reason the following code and the correspondent step_counter are commented
-
-    // TODO:
-    // 1- If we want to acknowledge the user about this maybe make a warning, so he sets simulation_time, dt and output_interval in the way that
+    // ATTENTION: THIS IS ALSO IMPORTANTE FOR SAVE STATE!!
+    // if the output_steps 10, dt 0.1 ms and sim_time 100.5 ms the last ensight v_nodal saved is at 100.0 ms and the save cells state correspond to 100.5 ms. So it is important
+    // to set wisely these params in order to not obtain this discrepancy. 
+    // Solutions disregarded: 
+    // 1- Putting the cells[id]->SetV[v_nodal[id]] for in the ensight saving for would make computation slower
+    // 2- If we want to acknowledge the user about this maybe make a warning, so he sets simulation_time, dt and output_interval in the way that
     // no extra unused/unsaved v_nodal values are computed at the end of the simulation for cycle
     // But, it seems better to not activate this following code again, as commenting it makes simpler the generation of wildcards for the 
     // saved states -> we make use the floor(simulation_steps/output_steps) + 1
-    // 2- To reactivate this feature improvements can be done but now they seem laborious for such a poorly useful feature/situation.
+    // 3- To reactivate this feature improvements can be done but now they seem laborious for such a poorly useful feature/situation.
+    // SO OUR SOLUTION FOR NOW IS TO NOT ENABLE THIS CASE WHERE (dt*output_steps/sim_time % 1) != 0
 
     // Store final state of current potential if the last step was not saved in the loop.
     // if (this->OutputSteps() != 0) {

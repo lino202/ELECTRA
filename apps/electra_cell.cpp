@@ -1,6 +1,6 @@
 /*
  * ELECTRA. Electrophysiology Simulation Software.
- * Copyright (C) 2019  <Konstantinos A. Mountris> <konstantinos.mountris@gmail.com>
+ * Copyright (C) 2019
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,12 +53,14 @@ int main(int argc, char *argv[]) {
         // Set measure units.
         MeasureUnits units;
         units.SetRefTimeSIValue(1.e-3);          // time:        ms
-        units.SetRefLengthSIValue(1.e-2);        // length:      cm
+        units.SetRefLengthSIValue(1.e-3);        // length:      mm
         units.SetRefConductanceSIValue(1.e-3);   // conductance: mS
-        units.SetRefCapacitanceSIValue(1.e-9);  // capacitance: nF
+        units.SetRefCapacitanceSIValue(1.e-12);  // capacitance: pF
+        units.SetRefCurrentSIValue(1.e-3);       // current amplitude: mA
 
-        // Set cell capacitance and time step
-        double dt = 0.01*units["ms"];
+        // Set time step
+        double dt = atof(argv[9]);
+        dt = dt*units["ms"];
 
         // Create the cell model calling config_electrophysiology.
         // Input should be the correct name as input in ElectraSim but the cell should be instantiate with the name of the class.
@@ -71,8 +73,8 @@ int main(int argc, char *argv[]) {
         std::unique_ptr<ELECTRA::EpBasic> cell = ELECTRA::EpFactory::Create(config_electrophys.GetEpModelType(ep_model_name));
         cell->Initialize(config_electrophys.GetCellType(cell_type));
 
-        if (argc==10){
-            std::string manual_init_file = argv[9];
+        if (argc==11){
+            std::string manual_init_file = argv[10];
             Parser electra_cell_parser(manual_init_file, app_name);
             std::cout << termcolor::bold << "Using manual init file: " << termcolor::reset << manual_init_file << "\n";
             config_electrophys.ManualCellInitializationElectraCell(electra_cell_parser, manual_init_file, cell);
@@ -82,6 +84,7 @@ int main(int argc, char *argv[]) {
         int total_time = atoi(argv[4]);
         total_time = total_time*units["ms"];
         int steps = static_cast<int>(std::ceil(total_time/dt));
+        int steps_for_saving = static_cast <int>(round(0.01/dt));
 
         //  Set Stimulus
         double stim_start        = atof(argv[5]);
@@ -91,14 +94,16 @@ int main(int argc, char *argv[]) {
         Stimulus stimulus;
         stimulus.SetStart(stim_start*units["ms"]);
         stimulus.SetDuration(stim_dur*units["ms"]);
-        stimulus.SetCycleLengths(stim_cycle_length);
-        stimulus.SetAmplitude(stim_amp);
+        stimulus.SetCycleLengths(stim_cycle_length*units["ms"]);
+        stimulus.SetAmplitude(stim_amp*units["mA"]);
 
         // Set the output files
         const std::string out_vm_file_path = output_file+"_Vm.txt";
         std::ofstream out_vm_file(out_vm_file_path, std::ofstream::out);
         const std::string out_manual_init_file_path = output_file+"_manual_init_file.txt";
         std::ofstream out_manual_init_file(out_manual_init_file_path, std::ofstream::out);
+        // const std::string out_currs_file_path = output_file+"_currs.txt";
+        // std::ofstream out_currs_file(out_currs_file_path, std::ofstream::out);
         
         // Print the remaining info
         std::cout << termcolor::bold << "timestep:               " << termcolor::reset << std::to_string(dt) << " ms\n";
@@ -109,9 +114,7 @@ int main(int argc, char *argv[]) {
         std::cout << termcolor::bold << "start:        " << termcolor::reset << std::to_string(stim_start) << " ms\n";
         std::cout << termcolor::bold << "duration:     " << termcolor::reset << std::to_string(stim_dur) << " ms\n";
         std::cout << termcolor::bold << "cycle length: " << termcolor::reset << std::to_string(stim_cycle_length) << " ms\n";
-        std::cout << termcolor::bold << "amplitude:    " << termcolor::reset << std::to_string(stim_amp) << " [unit]\n";  //unit depends on the model, commonly is mA
-
-
+        std::cout << termcolor::bold << "amplitude:    " << termcolor::reset << std::to_string(stim_amp) << " mA\n";
 
         timer.Reset();
         double stim_current = 0.;
@@ -127,22 +130,21 @@ int main(int argc, char *argv[]) {
             cell->SetV(ALGORITHM::ForwardEuler(cell->V(), dt, cell->dVdt()));
 
             // Store new state.
-            out_vm_file << i*dt << " " << std::setprecision(15) << cell->V() << std::endl;
+            if ((i % steps_for_saving)==0){
+                out_vm_file << i*dt << " " << std::setprecision(15) << cell->V() << std::endl;
+                // for (int j = 0; j < cell->CurrentNum(); ++j) {
+                //     out_currs_file << std::setprecision(15) << cell->Current(j) << " ";
+                //     if (j==cell->CurrentNum()-1){
+                //         out_currs_file<<std::endl;
+                //     }
+            }
 
-
-            // Debugging
-            // if ((i % 10)==0){
-            //     out_vm_file << i*dt << " " << std::setprecision(15) << cell->V() << std::endl;
-            //     // for (int j = 0; j < cell->CurrentNum(); ++j) {
-            //     //     out_currs_file << std::setprecision(15) << cell->Current(j) << " ";
-            //     //     if (j==cell->CurrentNum()-1){
-            //     //         out_currs_file<<std::endl;
-            //     //     }
-            //     // }
-
-            //     // std::cout <<"step: " << i << "\n" << cell->dVdt() << "\n";
-            //     // std::cout << cell->PrintCurrents() << "\n";
-            //     // std::cout << cell->PrintVariables() << "\n";
+            // if (i >= 79670){
+            //     std::cout << cell->PrintCurrents() << "\n\n";
+            // }
+            // std::cout <<"step: " << i << "\n" << cell->dVdt() << "\n";
+            // std::cout << cell->PrintCurrents() << "\n";
+            // std::cout << cell->PrintVariables() << "\n";
             // }
 
             

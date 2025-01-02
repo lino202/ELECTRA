@@ -1,8 +1,19 @@
 /*
  * ELECTRA. Electrophysiology Simulation Software.
- * Copyright (C) 2019  <Konstantinos A. Mountris> <konstantinos.mountris@gmail.com>
+ * Copyright (C) 2019
  *
- * ALL RIGHTS RESERVED
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -38,9 +49,6 @@ int main(int argc, char *argv[]) {
         std::cout << "\n" << termcolor::reset;
         std::cout << termcolor::bold << "version: " << termcolor::reset << ELECTRA_VERSION << "\n";
         std::cout << termcolor::bold << "licence: " << termcolor::reset << "To be defined\n";
-        std::cout << termcolor::bold << "author: " << termcolor::reset << "Konstantinos A. Mountris\n";
-        std::cout << termcolor::bold << "email: " << termcolor::reset << "konstantinos.mountris@gmail.com\n";
-        std::cout << termcolor::bold << "web: " << termcolor::reset << "https://www.mountris.org\n";
         std::cout << "\n";
 
         // Get electra configuration file.

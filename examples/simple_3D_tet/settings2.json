@@ -1,0 +1,76 @@
+{ 
+    "application" : "ElectraSim v0.6.3", 
+ 
+    "simulation" : { 
+        "name" : "simple_3D_tet",
+        "load cells state" : "/home/maxi/Code/ELECTRA/examples/simple_3D_tet/results/cells_state.elc",  
+        "scale" : "tissue"
+    },
+    
+    "reference units" : {
+        "time" : "ms",
+        "capacitance" : "pF",
+        "current" : "mA"
+    },
+ 
+    "tissue" : {
+        "geometry" : {
+            "unit" : "mm",
+            "dimensions" : 3,
+            "cell vertices" : 4,
+            "file" : "/home/maxi/Code/ELECTRA/examples/simple_3D_tet/mesh.inp"                          
+        },
+
+        "material" : {
+            "electric" : {
+                "type" : "transversal",
+                "diffusivity unit" : "cm2/ms",
+                "transmembrane diffusivity" :  0.0013,
+                "transversal ratio" : 0.25,
+                "capacitance unit" : "pF",
+                "capacitance" : 1.0,
+				"fibers" : [0.0,1.0,0.0]
+			}
+        },  
+ 
+        // Model's name should be in lower case
+        "electrophysiology" : {
+            "models number" : 1,
+            "model-1" : { "model type" : "ohara2011_inatt", "cell type" : "endo",  "nodeset" : "all_nodes", "manual init file": "/home/maxi/Code/ELECTRA/examples/simple_3D_tet/ohara_endo_init.txt" } 
+        }
+    
+		//"electrophysiology" : { "model type" : "ohara2011", "cell type" : "epi", "manual init file": "/home/maxi/Code/ELECTRA/examples/simple_3D_tet/ohara_epi_init.txt" }
+    },
+
+    
+    "numerical approximation" : {
+        "method" : "fem"
+    },
+    
+    "physics" : {
+        "reaction-diffusion" : {
+            "type" : "monodomain",
+            "solver" : "daeti",
+            "dt unit" : "ms",
+            "dt" : 0.125,
+            "dt min" : 0.01,
+            "adaptive reaction" : "yes",
+            "adaptive diffusion" : "yes",
+            "simulation time" : 20,
+            "simulation time unit" : "ms",
+            "output interval" : 2
+        }
+    },
+
+    "output" : {
+
+        "ensight" : {
+            "tissue" : {
+                "geometry"  : "/home/maxi/Code/ELECTRA/examples/simple_3D_tet/results2/tissue_model.geo",      
+                "states"    : "/home/maxi/Code/ELECTRA/examples/simple_3D_tet/results2/tissue_solution.ens",   
+                "animation" : "/home/maxi/Code/ELECTRA/examples/simple_3D_tet/results2/tissue_animation.case"  
+            }
+        }
+
+    }
+}

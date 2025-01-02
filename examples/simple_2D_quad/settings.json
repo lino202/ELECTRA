@@ -1,0 +1,83 @@
+{
+    "application" : "ElectraSim v0.6.3",
+
+    "simulation" : {
+        "name" : "simple_2D_quad",
+		"scale" : "tissue"
+    },
+
+    "reference units" : {
+        "time" : "ms",
+        "capacitance" : "pF",
+        "current" : "mA"
+    },
+
+    "tissue" : {
+        "geometry" : {
+            "unit" : "mm",
+            "dimensions" : 2,
+            "cell vertices" : 4,
+            "file" : "/home/maxi/Code/ELECTRA/examples/simple_2D_quad/mesh.inp"
+        },
+
+        "material" : {
+            "electric" : {
+                "type" : "transversal",
+                "diffusivity unit" : "cm2/ms",
+                "transmembrane diffusivity" : 0.00013,
+                "transversal ratio" : 0.25,
+                "capacitance unit" : "pF",
+                "capacitance" : 1.0,
+				"fibers" : "/home/maxi/Code/ELECTRA/examples/simple_2D_quad/fibers.json"
+			}
+        },
+
+
+
+		"stimuli" : {
+			"stimuli number" : 1,
+			"stimulus-1" : {
+				"id" : 0,
+				"nodeset" : "stim_nodes",
+				"start" : 0,
+				"duration" : 5,
+				"cycle length" : 1000,
+				"amplitude" : 5.5e-7,
+				"time unit" : "ms",
+				"current unit" : "mA"
+			}
+		},
+
+		"electrophysiology" : { "model type" : "paci2020v", "cell type" : "ventricular", "manual init file": "/home/maxi/Code/ELECTRA/examples/simple_2D_quad/paci2020_stim_800s_dt0001_manual_init_file.txt" }
+    },
+
+
+    "numerical approximation" : {
+        "method" : "fem"
+    },
+
+    "physics" : {
+        "reaction-diffusion" : {
+            "type" : "monodomain",
+            "solver" : "daeti",
+            "dt unit" : "ms",
+            "dt" : 0.1,
+            "dt min" : 0.01,
+            "adaptive reaction" : "yes",
+            "adaptive diffusion" : "yes",
+            "simulation time" : 40,
+            "simulation time unit" : "ms",
+            "output interval" : 10
+        }
+    },
+
+    "output" : {
+        "ensight" : {
+			"tissue" : {
+				"geometry" :  "/home/maxi/Code/ELECTRA/examples/simple_2D_quad/results/tissue_model.geo",
+				"states" :    "/home/maxi/Code/ELECTRA/examples/simple_2D_quad/results/tissue_solution.ens",
+				"animation" : "/home/maxi/Code/ELECTRA/examples/simple_2D_quad/results/tissue_animation.case"
+			}
+        }
+    }
+}

@@ -1,8 +1,19 @@
 /*
  * ELECTRA. Electrophysiology Simulation Software.
- * Copyright (C) 2019  <Konstantinos A. Mountris> <konstantinos.mountris@gmail.com>
+ * Copyright (C) 2019
  *
- * ALL RIGHTS RESERVED
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -47,15 +58,8 @@ void ConfigSim<DIM, CELL_NODES>::CheckValid(const Parser &parser)
     std::string app_name = application.substr(0, application.find_first_of(" "));
     std::string app_version = application.substr(application.find("v")+1);
 
-    std::string author = parser.GetValue<std::string>("author");
-    std::string email = parser.GetValue<std::string>("email");
-    std::string licence = parser.GetValue<std::string>("license");
-
     // Check header validity.
-    if (app_name != "ElectraSim" ||
-        author != "Konstantinos A. Mountris" ||
-        email != "konstantinos.mountris@gmail.com" ||
-        licence != "all rights reserved") {
+    if (app_name != "ElectraSim") {
         throw std::invalid_argument(ELECTRA::Logger::Error("Header info in configuration file is not consistent with ElectraSim."));
     }
 
@@ -198,6 +202,17 @@ void ConfigSim<DIM, CELL_NODES>::Tissue(const Parser &parser, std::ostream &stre
     if (conduct_sys_nodes_num != 0) {
         nodal_cells.insert(nodal_cells.end(), std::make_move_iterator(cs_nodal_cells.begin()), std::make_move_iterator(cs_nodal_cells.end()));
         nodal_cell_varying_params.insert(nodal_cell_varying_params.end(), std::make_move_iterator(cs_cell_varying_params.begin()), std::make_move_iterator(cs_cell_varying_params.end()));
+    }
+
+    // After all nodal_cells are set up we add the load cell states if we need to start from a previous checkpoint
+    if (parser.HasAttribute("simulation.load cells state")) {
+        std::string cell_state_file = parser.GetValue<std::string>("simulation.load cells state");
+        std::string cell_state_ext = std::filesystem::path(cell_state_file).extension();
+        if (cell_state_ext != ".elc") { cell_state_file += ".elc"; }
+
+        ELECTRA::CellStateExporter cellstate_export;
+        cellstate_export.ReadCellsState(nodal_cells, cell_state_file);
+        stream << ELECTRA::Logger::Message("Loaded cells state: " + cell_state_file + "\n");
     }
 
     // Set up stimuli.

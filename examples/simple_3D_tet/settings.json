@@ -1,11 +1,8 @@
 { 
-    "application" : "ElectraSim v0.6.2",
-    "author" : "Konstantinos A. Mountris", 
-    "email" : "konstantinos.mountris@gmail.com", 
-    "license" : "all rights reserved", 
+    "application" : "ElectraSim v0.6.3",
  
     "simulation" : { 
-        "name" : "example",
+        "name" : "simple_3D_tet",
         "scale" : "tissue"
     },
     
@@ -20,7 +17,7 @@
             "unit" : "mm",
             "dimensions" : 3,
             "cell vertices" : 4,
-            "file" : "./mesh.inp"                             //Adjust this
+            "file" : "/home/maxi/Code/ELECTRA/examples/simple_3D_tet/mesh.inp"                             //Adjust this
         },
 
         "material" : {
@@ -53,10 +50,10 @@
         // Model's name should be in lower case
         "electrophysiology" : {
             "models number" : 1,
-            "model-1" : { "model type" : "ohara2011_inatt", "cell type" : "endo",  "nodeset" : "all_nodes", "manual init file": "./ohara_endo_init.txt" }
+            "model-1" : { "model type" : "ohara2011_inatt", "cell type" : "endo",  "nodeset" : "all_nodes", "manual init file": "/home/maxi/Code/ELECTRA/examples/simple_3D_tet/ohara_endo_init.txt" }
         }
     
-		//"electrophysiology" : { "model type" : "ohara2011", "cell type" : "epi", "manual init file": "./ohara_epi_init.txt" }
+		//"electrophysiology" : { "model type" : "ohara2011", "cell type" : "epi", "manual init file": "/home/maxi/Code/ELECTRA/examples/simple_3D_tet/ohara_epi_init.txt" }
     },
  
 
@@ -83,11 +80,14 @@
     "output" : {
 
         "ensight" : {
-                "tissue" : {
-                    "geometry"  : "./results/tissue_model.geo",        //Adjust this
-                    "states"    : "./results/tissue_solution.ens",     //Adjust this
-                    "animation" : "./results/tissue_animation.case"    //Adjust this
-                }
+            "tissue" : {
+                "geometry"  : "/home/maxi/Code/ELECTRA/examples/simple_3D_tet/results/tissue_model.geo",        //Adjust this
+                "states"    : "/home/maxi/Code/ELECTRA/examples/simple_3D_tet/results/tissue_solution.ens",     //Adjust this
+                "animation" : "/home/maxi/Code/ELECTRA/examples/simple_3D_tet/results/tissue_animation.case"    //Adjust this
             }
-        }
+        },
+
+        "cells state" : "/home/maxi/Code/ELECTRA/examples/simple_3D_tet/results/cells_state.elc"
+
+    }
 }

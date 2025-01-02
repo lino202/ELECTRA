@@ -1,8 +1,19 @@
 /*
  * ELECTRA. Electrophysiology Simulation Software.
- * Copyright (C) 2019  <Konstantinos A. Mountris> <konstantinos.mountris@gmail.com>
+ * Copyright (C) 2019
  *
- * ALL RIGHTS RESERVED
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -349,7 +360,7 @@ void Gaur2021::Initialize(CellType cell_type)
             this->prm_[stimulus__stimulus_amplitude] =  - 80.0000;
             this->prm_[INaCa_i__h10] = (this->prm_[INaCa_i__kasymm]+1.00000)+ (this->prm_[cell__nao]/this->prm_[INaCa_i__kna1])*(1.00000+this->prm_[cell__nao]/this->prm_[INaCa_i__kna2]);
             this->prm_[INaCa_i__h11] = ( this->prm_[cell__nao]*this->prm_[cell__nao])/( ( this->prm_[INaCa_i__h10]*this->prm_[INaCa_i__kna1])*this->prm_[INaCa_i__kna2]);
-            this->prm_[INaCa_i__h12] = 1/this->prm_[INaCa_i__h10];
+            this->prm_[INaCa_i__h12] = 1./this->prm_[INaCa_i__h10];
             this->prm_[INaCa_i__k2] = this->prm_[INaCa_i__kcaoff];
             this->prm_[INaCa_i__k5] = this->prm_[INaCa_i__kcaoff];
             this->prm_[INaCa_ss__h101] = (this->prm_[INaCa_i__kasymm]+1.00000)+ (this->prm_[cell__nao]/this->prm_[INaCa_i__kna1])*(1.00000+this->prm_[cell__nao]/this->prm_[INaCa_i__kna2]);
@@ -361,12 +372,12 @@ void Gaur2021::Initialize(CellType cell_type)
             this->prm_[INaK__a2] = this->prm_[INaK__k2p];
             this->prm_[INaK__a4] = (( this->prm_[INaK__k4p2]*this->prm_[INaK__MgATP])/this->prm_[INaK__Kmgatp])/(1.00000+this->prm_[INaK__MgATP]/this->prm_[INaK__Kmgatp]);
             this->prm_[INaK__b1] =  this->prm_[INaK__k1m]*this->prm_[INaK__MgADP];
-            this->prm_[cell__Ageo] =  ( ( 2*this->prm_[cell__pi])*this->prm_[cell__rad])*this->prm_[cell__rad] + ( ( 2*this->prm_[cell__pi])*this->prm_[cell__rad])*this->prm_[cell__L];
-            this->prm_[cell__Acap] =  2*this->prm_[cell__Ageo];
+            this->prm_[cell__Ageo] =  ( ( 2.*this->prm_[cell__pi])*this->prm_[cell__rad])*this->prm_[cell__rad] + ( ( 2.*this->prm_[cell__pi])*this->prm_[cell__rad])*this->prm_[cell__L];
+            this->prm_[cell__Acap] =  2.*this->prm_[cell__Ageo];
             this->prm_[cell__cao] =  1.80000;
             this->prm_[INaCa_i__k1] =  ( this->prm_[INaCa_i__h12]*this->prm_[cell__cao])*this->prm_[INaCa_i__kcaon];
             this->prm_[INaCa_ss__k11] =  ( this->prm_[INaCa_ss__h121]*this->prm_[cell__cao])*this->prm_[INaCa_i__kcaon];
-            this->prm_[cell__vcell] =  ( ( ( 1000*this->prm_[cell__pi])*this->prm_[cell__rad])*this->prm_[cell__rad])*this->prm_[cell__L];
+            this->prm_[cell__vcell] =  ( ( ( 1000.*this->prm_[cell__pi])*this->prm_[cell__rad])*this->prm_[cell__rad])*this->prm_[cell__L];
             this->prm_[cell__vjsr] = ( 0.0048*this->prm_[cell__vcell])/2.00000;
             this->prm_[cell__vcsr] = this->prm_[cell__vjsr];
             this->prm_[cell__vmyo] =  0.68*this->prm_[cell__vcell];
@@ -454,7 +465,7 @@ void Gaur2021::Compute(double v_new, double dt, double stim_current)
         I_Na__aa_h = 0.00000;
     }
     
-    double I_Na__bb_h = 2.70000*std::exp( 0.0790000*v_new)+ 310000*std::exp( 0.348500*v_new);
+    double I_Na__bb_h = 2.70000*std::exp( 0.0790000*v_new)+ 310000.*std::exp( 0.348500*v_new);
     if (v_new>= - 40.0000) {
         I_Na__bb_h = 0.770000/( 0.130000*(1.00000+std::exp( - (v_new+10.6600)/11.1000)));
     }
@@ -462,7 +473,7 @@ void Gaur2021::Compute(double v_new, double dt, double stim_current)
     double I_Na__tau_h = 1.00000/(I_Na__aa_h+I_Na__bb_h);    
     double I_Na__j_inf = I_Na__h_inf;
 
-    double I_Na__aa_j = ((- 25428*std::exp( 0.2444*v_new) -  6.94800e-06*std::exp(- 0.0439100*v_new))*(v_new+37.7800))/(1.00000+std::exp(0.311*(v_new+79.2300)));
+    double I_Na__aa_j = ((- 25428.*std::exp( 0.2444*v_new) -  6.94800e-06*std::exp(- 0.0439100*v_new))*(v_new+37.7800))/(1.00000+std::exp(0.311*(v_new+79.2300)));
     if (v_new >= - 40.0000) {
         I_Na__aa_j = 0.;
     }

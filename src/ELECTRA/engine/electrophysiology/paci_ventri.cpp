@@ -1,8 +1,19 @@
 /*
  * ELECTRA. Electrophysiology Simulation Software.
- * Copyright (C) 2019  <Konstantinos A. Mountris> <konstantinos.mountris@gmail.com>
+ * Copyright (C) 2019
  *
- * ALL RIGHTS RESERVED
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -341,10 +352,13 @@ void PaciVentri::Compute(double v_new, double dt, double stim_current)
     using namespace PciVtrPrm;
     using namespace PciVtrCur;
 
-    // Convert to SI.
-    dt *= 1.e-3;
-    v_new *= 1.e-3;
-    stim_current *= 1.e-9;
+    //IMPORTANT 
+    // In the original model the stim is 5.5e-10 A (ampere) and 5 ms pulse amplitude and duration, respectively, for a single cell stim, 
+    // This is valid when "reference units" field in the input json (or in electra_cell.cpp) are mA for current and ms for time and stim amp 5.5e-7 mA    
+    // Convert to SI, Paci uses SI so V is in volts, Time is in seconds and Currents in Amperes
+    dt           *= 1.e-3; // changed to seconds
+    v_new        *= 1.e-3; // changed to volts
+    stim_current *= 1.e-3; // changed to ampere
 
     this->prm_[f2_inf] = 0.33 + 0.67/(1. + std::exp((1000.*v_new+35.) / 4.));
     this->prm_[tau_f2] = ((600.*std::exp(-std::pow(1000.*v_new+25., 2.)/170.) + (31./(1. + std::exp((25.-1000.*v_new)/10.)) + 16./(1. + std::exp((30.+1000.*v_new)/10.)))) * this->prm_[constf2]) / 1000.;

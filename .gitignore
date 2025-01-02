@@ -1050,5 +1050,5 @@ deps/*/build/
 deps/*/install/
 build/
 images/
-examples/*/results
+examples/*/results*
 .vscode/

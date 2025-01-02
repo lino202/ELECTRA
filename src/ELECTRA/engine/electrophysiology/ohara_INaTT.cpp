@@ -2,7 +2,7 @@
  * ELECTRA. Electrophysiology Simulation Software.
  * Copyright (C) 2019 
  *
- * ALL RIGHTS RESERVED
+ * 
  *
  */
 

@@ -1,8 +1,19 @@
 /*
  * ELECTRA. Electrophysiology Simulation Software.
- * Copyright (C) 2019  <Konstantinos A. Mountris> <konstantinos.mountris@gmail.com>
+ * Copyright (C) 2019
  *
- * ALL RIGHTS RESERVED
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -24,6 +35,7 @@ ConfigElectrophys::ConfigElectrophys()
     this->ep_model_map_["gong2020"] = ELECTRA::EpModelType::Gong2020;
     this->ep_model_map_["gong2020m"] = ELECTRA::EpModelType::Gong2020m;
     this->ep_model_map_["paci2013v"] = ELECTRA::EpModelType::PaciVentri;
+    this->ep_model_map_["paci2020v"] = ELECTRA::EpModelType::Paci2020;
     this->ep_model_map_["tentusscher2006"] = ELECTRA::EpModelType::TenTusscher2006;
     this->ep_model_map_["courtemanche1998"] = ELECTRA::EpModelType::Courtemanche;
     this->ep_model_map_["grandi2011a"] = ELECTRA::EpModelType::GrandiAtri;
@@ -257,6 +269,7 @@ void ConfigElectrophys::SetCellModelsIndividually(const Parser &parser, const st
     }
 
     // Get file for nodal cell varying parameters if available.
+    // TODO this should be check if using with load cell states
     std::string var_params_file = "";
     bool with_var_params = false;
     if (parser.HasAttribute(body_type+".electrophysiology.load curve file")) {
