@@ -161,7 +161,7 @@ Also you can give a manual init file to estabilize a model with ElectraCell with
 ```
 ./ElectraCell /path/file_name gaur2021 ventricular 1000. 10. 0.5 1000. 80. 0.01 /path/manual_init_file.txt
 ```
-At ElectraCell dt is fot the integration and the ouput dt is always 0.01 ms
+In ElectraCell dt is for the integration and the ouput dt is always 0.01 ms
 
 
 # Contributors

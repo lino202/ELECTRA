@@ -20,6 +20,7 @@ echo
 echo "Generating Docker image: electra-docker:${version} ..."
 
 # Create docker image
+mkdir images
 docker image build -t electra-docker:$version .
 docker save electra-docker:$version | gzip > ./images/electra-docker_$version.tar.gz
 
