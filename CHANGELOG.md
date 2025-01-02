@@ -28,7 +28,7 @@ ELECTRA uses a vMAJOR.MINOR.PATCH versioning scheme. The
 * v0.2.0
 * v0.1.0
 
-## 2024-07-13: v0.6.3
+## 2025-01-02: v0.6.3
 ---------------------
 
 ### Added
