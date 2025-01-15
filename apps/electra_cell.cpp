@@ -39,9 +39,9 @@ int main(int argc, char *argv[]) {
         std::cout << termcolor::green << "\nWelcome to " + app_name << termcolor::reset << "\n";
         std::cout << termcolor::bold << "Version:                " << termcolor::reset << ELECTRA_VERSION << "\n";
 
-        if ((argc<9) | (argc>10)){
-            std::string err_message = "Give 8 or 9 arguments: output file, model name, cell type, total duration, and stimulus start, duration, cycle length and amplitude, for example: ";
-            err_message = err_message + "/path/file_name gaur2021 ventricular 1000. 10. 0.5 1000. 80. /path/manual_init_file.txt";
+        if ((argc<10) | (argc>11)){
+            std::string err_message = "Give 9 or 10 arguments: output file, model name, cell type, total duration, and stimulus start, duration, cycle length, amplitude and integration dt, for example: ";
+            err_message = err_message + "/path/file_name gaur2021 ventricular 1000. 10. 0.5 1000. 80. 0.01 /path/manual_init_file.txt";
             throw std::invalid_argument(Logger::Error(err_message));
         } 
 
