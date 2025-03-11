@@ -136,7 +136,7 @@ Paci2020::Paci2020()
 {
     //Initialize the model's data.
     this->model_type_ = EpModelType::Paci2020;
-    this->dt_stable_ = 0.02;
+    this->dt_stable_ = 0.002;
     this->var_.resize(23, 0.);
     this->prm_.resize(56, 0.);
     this->cur_.resize(17, 0.);
@@ -353,7 +353,8 @@ void Paci2020::Compute(double v_new, double dt, double stim_current)
 
     double Xf_infinity = 1.0/(1.0 + std::exp((v_new*1000.0 + 69.0)/8.0));
     double tau_Xf      = 5600.0 / (1.0 + std::exp((v_new*1000.0 + 65.0)/7.0) + std::exp(-(v_new*1000.0 + 65.0)/19.0));
-    this->var_[Xf] = ALGORITHM::ForwardEuler(this->var_[Xf], dt, 1000.0*(Xf_infinity-this->var_[Xf])/tau_Xf);  //This is not rushlarsen
+    this->var_[Xf] = ALGORITHM::ForwardEuler(this->var_[Xf], dt, 1000.0*(Xf_infinity-this->var_[Xf])/tau_Xf);
+    // this->var_[Xf] = ALGORITHM::RushLarsen(1000. * Xf_infinity, this->var_[Xf], dt, tau_Xf);  //This is not rushlarsen
 
     // ICaL
     #ifdef BLOCK_CELL_CURRS
@@ -388,12 +389,12 @@ void Paci2020::Compute(double v_new, double dt, double stim_current)
     double gamma_fCa   = 0.3/(1.0+std::exp((this->var_[Cai]-0.00075)/0.0008));
     double fCa_inf     = (alpha_fCa+beta_fCa+gamma_fCa)/1.3156;
     
-    double constfCa    = 1.0;
+    // double constfCa    = 1.0;
     if ((v_new > -0.06) && (fCa_inf > this->var_[fCa])){
-        constfCa = 0.0;
+        // constfCa = 0.0;    // If this condition happens fCa should remain with the same value, so we do nothing
+    }else{
+        this->var_[fCa] = ALGORITHM::RushLarsen(fCa_inf, this->var_[fCa], dt, this->prm_[tau_fCa]);
     }
-
-    this->var_[fCa] = ALGORITHM::ForwardEuler(this->var_[fCa], dt, constfCa*(fCa_inf-this->var_[fCa])/this->prm_[tau_fCa]); // This is no rushlarsen otherwise ICaL is zero for constfCa = 0
 
     // Ito
     #ifdef BLOCK_CELL_CURRS
@@ -536,29 +537,29 @@ std::string Paci2020::PrintVariables() const
     // Create output string stream to pass the variables and their values.
     std::ostringstream oss;
     oss.precision(15);
-    oss << " v     = " << this->var_[v] << "\n";
-    oss << " dvdt  = " << this->var_[dvdt] << "\n";
-    oss << " Nai   = " << this->var_[Nai] << "\n";
-    oss << " Cai   = " << this->var_[Cai] << "\n";
-    oss << " m     = " << this->var_[m] << "\n";
-    oss << " h     = " << this->var_[h] << "\n";
-    oss << " j     = " << this->var_[j] << "\n";
-    oss << " d     = " << this->var_[d] << "\n";
-    oss << " f1    = " << this->var_[f1] << "\n";
-    oss << " f2    = " << this->var_[f2] << "\n";
-    oss << " fCa   = " << this->var_[fCa] << "\n";
-    oss << " Xr1   = " << this->var_[Xr1] << "\n";
-    oss << " Xr2   = " << this->var_[Xr2] << "\n";
-    oss << " Xs    = " << this->var_[Xs] << "\n";
-    oss << " Xf    = " << this->var_[Xf] << "\n";
-    oss << " q     = " << this->var_[q] << "\n";
-    oss << " r     = " << this->var_[r] << "\n";
-    oss << " Ca_SR = " << this->var_[Ca_SR] << "\n";
-    oss << " m_L   = " << this->var_[m_L] << "\n";
-    oss << " h_L   = " << this->var_[h_L] << "\n";
-    oss << " RyRa  = " << this->var_[RyRa] << "\n";
-    oss << " RyRo  = " << this->var_[RyRo] << "\n";
-    oss << " RyRc  = " << this->var_[RyRc];
+    oss << "v     = " << this->var_[v] << "\n";
+    oss << "dvdt  = " << this->var_[dvdt] << "\n";
+    oss << "Nai   = " << this->var_[Nai] << "\n";
+    oss << "Cai   = " << this->var_[Cai] << "\n";
+    oss << "m     = " << this->var_[m] << "\n";
+    oss << "h     = " << this->var_[h] << "\n";
+    oss << "j     = " << this->var_[j] << "\n";
+    oss << "d     = " << this->var_[d] << "\n";
+    oss << "f1    = " << this->var_[f1] << "\n";
+    oss << "f2    = " << this->var_[f2] << "\n";
+    oss << "fCa   = " << this->var_[fCa] << "\n";
+    oss << "Xr1   = " << this->var_[Xr1] << "\n";
+    oss << "Xr2   = " << this->var_[Xr2] << "\n";
+    oss << "Xs    = " << this->var_[Xs] << "\n";
+    oss << "Xf    = " << this->var_[Xf] << "\n";
+    oss << "q     = " << this->var_[q] << "\n";
+    oss << "r     = " << this->var_[r] << "\n";
+    oss << "Ca_SR = " << this->var_[Ca_SR] << "\n";
+    oss << "m_L   = " << this->var_[m_L] << "\n";
+    oss << "h_L   = " << this->var_[h_L] << "\n";
+    oss << "RyRa  = " << this->var_[RyRa] << "\n";
+    oss << "RyRo  = " << this->var_[RyRo] << "\n";
+    oss << "RyRc  = " << this->var_[RyRc];
     return oss.str();
 
 }
