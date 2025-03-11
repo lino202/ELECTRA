@@ -136,7 +136,7 @@ Paci2020::Paci2020()
 {
     //Initialize the model's data.
     this->model_type_ = EpModelType::Paci2020;
-    this->dt_stable_ = 0.002;
+    this->dt_stable_ = 0.02;
     this->var_.resize(23, 0.);
     this->prm_.resize(56, 0.);
     this->cur_.resize(17, 0.);
