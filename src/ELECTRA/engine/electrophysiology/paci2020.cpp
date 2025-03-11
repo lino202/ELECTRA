@@ -353,8 +353,8 @@ void Paci2020::Compute(double v_new, double dt, double stim_current)
 
     double Xf_infinity = 1.0/(1.0 + std::exp((v_new*1000.0 + 69.0)/8.0));
     double tau_Xf      = 5600.0 / (1.0 + std::exp((v_new*1000.0 + 65.0)/7.0) + std::exp(-(v_new*1000.0 + 65.0)/19.0));
-    this->var_[Xf] = ALGORITHM::ForwardEuler(this->var_[Xf], dt, 1000.0*(Xf_infinity-this->var_[Xf])/tau_Xf);
-    // this->var_[Xf] = ALGORITHM::RushLarsen(1000. * Xf_infinity, this->var_[Xf], dt, tau_Xf);  //This is not rushlarsen
+    // this->var_[Xf] = ALGORITHM::ForwardEuler(this->var_[Xf], dt, 1000.0*(Xf_infinity-this->var_[Xf])/tau_Xf);
+    this->var_[Xf] = ALGORITHM::RushLarsen(Xf_infinity, this->var_[Xf], 1000.0*dt, tau_Xf);
 
     // ICaL
     #ifdef BLOCK_CELL_CURRS

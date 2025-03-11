@@ -366,14 +366,15 @@ void PaciVentri::Compute(double v_new, double dt, double stim_current)
     
     this->prm_[Xf_infinity] = 1. / (1. + std::exp((1000.*v_new+77.85)/5.));
     this->prm_[tau_Xf] = (1900. / (1. + std::exp((1000.*v_new+15.)/10.))) / 1000.;
-    this->var_[Xf] = this->var_[Xf] + dt*(this->prm_[Xf_infinity] - this->var_[Xf]) / this->prm_[tau_Xf];
+    // this->var_[Xf] = this->var_[Xf] + dt*(this->prm_[Xf_infinity] - this->var_[Xf]) / this->prm_[tau_Xf];
+    this->var_[Xf] = ALGORITHM::RushLarsen(this->prm_[Xf_infinity], this->var_[Xf], dt, this->prm_[tau_Xf]);
     
     this->prm_[q_inf] = 1. / (1. + std::exp((1000.*v_new+53.) / 13.));
     this->prm_[tau_q] = (6.06 + 39.102/(0.57*exp(-0.08*(1000.*v_new+44.)) + 0.065*std::exp(0.1*(1000.*v_new+45.93)))) / 1000.;
     this->var_[q] = this->prm_[q_inf] - (this->prm_[q_inf] - this->var_[q]) * std::exp(-dt/this->prm_[tau_q]);
     
     this->prm_[r_inf] = 1. / (1. + std::exp(-(1000.*v_new - 22.3) / 18.75));
-    this->prm_[tau_r] = (2.75352 + 14.4052/(1.037*std::exp(0.09*(1000.*v_new+30.61)) + 0.369*std::exp(-0.12*(1000.*v_new+23.84))))/1000.;
+    this->prm_[tau_r] = (2.75352 + 14.40516/(1.037*std::exp(0.09*(1000.*v_new+30.61)) + 0.369*std::exp(-0.12*(1000.*v_new+23.84))))/1000.;
     this->var_[r] = this->prm_[r_inf] - (this->prm_[r_inf]-this->var_[r])*std::exp(-dt/this->prm_[tau_r]);
     
     if (this->var_[Cai] <= 0.00035) {
@@ -383,11 +384,11 @@ void PaciVentri::Compute(double v_new, double dt, double stim_current)
     }
         
     if (this->prm_[g_inf] > this->var_[g] && v_new > -0.06) {
-        this->prm_[const2] = 0.;
+        // As for fCa we do nothing if the derivative must be zero!
     } else {
-        this->prm_[const2] = 1.;
+        // this->var_[g] = this->var_[g] + dt*(this->prm_[g_inf] - this->var_[g]) / this->prm_[tau_g];
+        this->var_[g] = ALGORITHM::RushLarsen(this->prm_[g_inf], this->var_[g], dt, this->prm_[tau_g]);
     }
-    this->var_[g] = this->var_[g] + dt*(this->prm_[const2]*(this->prm_[g_inf] - this->var_[g])) / this->prm_[tau_g];
     
     this->prm_[f1_inf] = 1. / (1. + std::exp((1000.*v_new+26.)/3.));
     
@@ -448,8 +449,8 @@ void PaciVentri::Compute(double v_new, double dt, double stim_current)
     
     this->prm_[d_inf] = 1. / (1. + std::exp(-(1000.*v_new + 9.1) / 7.));
     this->prm_[alpha_d] = 0.25 + 1.4/(1+std::exp((-1000.*v_new - 35.) / 13.));
-    this->prm_[beta_d] = 1.4 / (1+std::exp((1000.*v_new + 5.) / 5.));
-    this->prm_[gamma_d] = 1. / (1+std::exp((-1000*v_new + 50.) / 20.));
+    this->prm_[beta_d] = 1.4 / (1.+std::exp((1000.*v_new + 5.) / 5.));
+    this->prm_[gamma_d] = 1. / (1.+std::exp((-1000.*v_new + 50.) / 20.));
     this->prm_[tau_d] = (this->prm_[alpha_d]*this->prm_[beta_d]+this->prm_[gamma_d]) / 1000.;
     this->var_[d] = this->prm_[d_inf] - (this->prm_[d_inf]-this->var_[d])*std::exp(-dt/this->prm_[tau_d]);
     
@@ -458,12 +459,11 @@ void PaciVentri::Compute(double v_new, double dt, double stim_current)
     this->prm_[gamma_fCa] = 0.3 / (1. + std::exp((this->var_[Cai] - 0.00075) / 0.0008));
     this->prm_[fCa_inf] = (this->prm_[alpha_fCa] + (this->prm_[beta_fCa]+this->prm_[gamma_fCa])) / 1.3156;
     if (v_new > - 0.06 && this->prm_[fCa_inf] > this->var_[fCa]) {
-        this->prm_[constfCa] = 0.;
+        // this->prm_[constfCa] = 0.; //If we are here the derivative of fCa is null so fCa does not change value so we do nothing.
     } else {
-        this->prm_[constfCa] = 1.;
+        this->var_[fCa] = this->prm_[fCa_inf] - (this->prm_[fCa_inf]-this->var_[fCa])*std::exp(-dt/this->prm_[tau_fCa]);
     }
-    this->var_[fCa] = this->prm_[fCa_inf] - (this->prm_[fCa_inf]-this->var_[fCa])*std::exp(-dt/this->prm_[tau_fCa]);
-    
+
     this->prm_[E_Na] = ((this->prm_[R]*this->prm_[T])/this->prm_[F]) * std::log(this->prm_[Nao]/this->var_[Nai]);
     
     #ifdef BLOCK_CELL_CURRS
