@@ -41,6 +41,7 @@
 #include "ELECTRA/engine/electrophysiology/stewart.hpp"
 #include "ELECTRA/engine/electrophysiology/paci_ventri.hpp"
 #include "ELECTRA/engine/electrophysiology/paci2020.hpp"
+#include "ELECTRA/engine/electrophysiology/passive.hpp"
 #include "ELECTRA/engine/electrophysiology/tentusscher2006.hpp"
 #include "ELECTRA/engine/utilities/logger.hpp"
 
@@ -112,6 +113,9 @@ public:
             break;
         case EpModelType::Stewart :
             ep_ptr = std::make_unique<Stewart>();
+            break;
+        case EpModelType::Passive :
+            ep_ptr = std::make_unique<Passive>();
             break;
         default:
             std::string error_str = Logger::Error("Could not create electrophysiology model. Not supported type.");

@@ -19,6 +19,7 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/paci_ventri.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/paci2020.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tentusscher2006.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/passive.cpp
 )
 
 # Module header files.
@@ -41,6 +42,7 @@ set(HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/paci_ventri.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/paci2020.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tentusscher2006.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/passive.hpp
 )
 
 #-------- Build library --------

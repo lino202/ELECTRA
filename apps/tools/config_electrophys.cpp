@@ -42,6 +42,7 @@ ConfigElectrophys::ConfigElectrophys()
     this->ep_model_map_["maleckar2009"] = ELECTRA::EpModelType::Maleckar2009;
     this->ep_model_map_["maccannell2007"] = ELECTRA::EpModelType::MacCannell;
     this->ep_model_map_["stewart2009"] = ELECTRA::EpModelType::Stewart;
+    this->ep_model_map_["passive"] = ELECTRA::EpModelType::Passive;
 
     // Set map of entries in configuration file to cell types.
     this->cell_type_map_["ventricular"] = ELECTRA::CellType::ventricular;
@@ -53,6 +54,7 @@ ConfigElectrophys::ConfigElectrophys()
     this->cell_type_map_["left atrial"] = ELECTRA::CellType::left_atrial;
     this->cell_type_map_["right atrial"] = ELECTRA::CellType::right_atrial;
     this->cell_type_map_["purkinje"] = ELECTRA::CellType::purkinje;
+    this->cell_type_map_["passive"] = ELECTRA::CellType::passive;
 }
 
 

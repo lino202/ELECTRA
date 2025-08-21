@@ -61,7 +61,8 @@ enum class CellType {
     atrial,       /**< Generic atrial cell type */
     left_atrial,  /**< Left atrial cell type */
     right_atrial, /**< Right atrial cell type */
-    purkinje      /**< Purkinje cell type */
+    purkinje,      /**< Purkinje cell type */
+    passive     /**< Passive cell type */
 };
 
 
@@ -85,7 +86,8 @@ enum class EpModelType {
     Courtemanche,      /**< Courtemanche '98 atrial cell electrophysiology model */
     GrandiAtri,        /**< Grandi '11 atrial cell electrophysiology model */
     Maleckar2009,      /**< Maleckar et al 2009 atrial cell electrophysiology model */
-    Stewart            /**< Stewart '09 purkinje cell electrophysiology model */
+    Stewart,            /**< Stewart '09 purkinje cell electrophysiology model */
+    Passive          /**< Passive fibroblast cell electrophysiology model */
 };
 
 

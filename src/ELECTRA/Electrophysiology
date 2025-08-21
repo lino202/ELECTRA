@@ -41,6 +41,7 @@
 #include "ELECTRA/engine/electrophysiology/stewart.hpp"
 #include "ELECTRA/engine/electrophysiology/paci_ventri.hpp"
 #include "ELECTRA/engine/electrophysiology/paci2020.hpp"
+#include "ELECTRA/engine/electrophysiology/passive.hpp"
 #include "ELECTRA/engine/electrophysiology/tentusscher2006.hpp"
 #include "ELECTRA/engine/electrophysiology/ep_factory.hpp"
 #include "ELECTRA/engine/electrophysiology/ep_varying_params.hpp"
