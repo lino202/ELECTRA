@@ -63,7 +63,7 @@ Install IMP
 ```
 cd ${ELECTRA_DEPS_DIR}/IMP \
     && cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_APPS=OFF -DBUILD_DOC=OFF -DBUILD_TESTS=OFF \
-    -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="${ELECTRA_DEPS_DIR}/IMP/install" \
+    -DBUILD_SHARED_LIBS=OFF -DCLOUDEA_ENABLE_NATIVE_ARCH=OFF -DCMAKE_INSTALL_PREFIX="${ELECTRA_DEPS_DIR}/IMP/install" \
     && cd build && make -j4 && make install
 ```
 
@@ -71,7 +71,7 @@ Install CLOUDEA
 ```
 cd ${ELECTRA_DEPS_DIR}/CLOUDEA \
     && cmake -S. -Bbuild -DCMAKE_INSTALL_PREFIX="${ELECTRA_DEPS_DIR}/CLOUDEA/install" \
-    -DCMAKE_BUILD_TYPE=RELEASE -DCLOUDEA_USE_CGAL=ON -DBUILD_APPS=OFF -DBUILD_DOC=OFF -DBUILD_SHARED_LIBS=OFF \
+    -DCMAKE_BUILD_TYPE=RELEASE -DCLOUDEA_USE_CGAL=ON -DBUILD_APPS=OFF -DBUILD_DOC=OFF -DBUILD_SHARED_LIBS=OFF -DCLOUDEA_ENABLE_NATIVE_ARCH=OFF \
     -DCMAKE_PREFIX_PATH="${ELECTRA_DEPS_DIR}/IMP/install;${ELECTRA_DEPS_DIR}/armadillo/install;${ELECTRA_DEPS_DIR}/cgal/install" \
     && cd build && make -j4 && make install
 ```
@@ -80,12 +80,20 @@ Then you need to build ELECTRA
 ```
 cd /home/ELECTRA \
     && cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=RELEASE \
-    -DBUILD_DOC=OFF -DELECTRA_WITH_CUDA=OFF -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_DOC=OFF -DELECTRA_WITH_CUDA=OFF -DBUILD_SHARED_LIBS=OFF -DELECTRA_ENABLE_NATIVE_ARCH=OFF \
     -DCMAKE_PREFIX_PATH="$ELECTRA_DEPS_DIR/IMP/install;$ELECTRA_DEPS_DIR/CLOUDEA/install;$ELECTRA_DEPS_DIR/armadillo/install;$ELECTRA_DEPS_DIR/cgal/install" \
     && cd build && make -j4 && cd ../
 ```
 
-Under [/any/path]/ELECTRA/build/bin you can find the ElectraSim application
+Under [/any/path]/ELECTRA/build/bin you can find the ElectraSim and ElectraCell applications.
+ 
+In case you are running the applications in the same CPU architecture that you used for building the project (e.g. running only on local machine) you might activate -march=native when building ELECTRA, CLOUDEA and IMP for some speed-up in computing. This can be achieved by turning on the following flags in the previous steps:
+
+```
+-DELECTRA_ENABLE_NATIVE_ARCH=ON
+-DCLOUDEA_ENABLE_NATIVE_ARCH=ON
+-DIMP_ENABLE_NATIVE_ARCH=ON
+```
 
 ## Docker 
 
