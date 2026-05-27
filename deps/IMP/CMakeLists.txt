@@ -13,6 +13,7 @@ option(BUILD_SHARED_LIBS "Build ${PROJECT_NAME} as shared library" ON)
 option(BUILD_APPS "Build ${PROJECT_NAME} applications" ON)
 option(BUILD_DOC "Build ${PROJECT_NAME} documentation" ON)
 option(BUILD_TESTS "Build all ${PROJECT_NAME} tests" OFF)
+option(${PROJECT_NAME}_ENABLE_NATIVE_ARCH "Enable -march=native (faster, but may crash with Illegal instruction on heterogeneous clusters)" OFF)
 
 # General set up.
 set(CMAKE_CXX_STANDARD 17)
@@ -94,14 +95,23 @@ else()
 endif()
 
 # Set compile options for supported compilers
+set(${PROJECT_NAME}_ARCH_FLAGS)
+if(${PROJECT_NAME}_ENABLE_NATIVE_ARCH)
+  list(APPEND ${PROJECT_NAME}_ARCH_FLAGS "-march=native")
+  message(STATUS "${PROJECT_NAME}: enabling native CPU tuning (-march=native)")
+else()
+  message(STATUS "${PROJECT_NAME}: using portable CPU flags (no -march=native)")
+endif()
+
 if(MSVC)
     set(${PROJECT_NAME}_COMPILE_OPTIONS "/W4" "$<$<CONFIG:RELEASE>:/O2>")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(${PROJECT_NAME}_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wdouble-promotion" "-ansi" "-pedantic" "-Weffc++"
-    "-march=native" "-frounding-math" "-fsignaling-nans" "-fPIC" "-stdlib=libc++" "$<$<CONFIG:RELEASE>:-O3>")
+    "-frounding-math" "-fsignaling-nans" "-fPIC" "-stdlib=libc++" "$<$<CONFIG:RELEASE>:-O3>" ${${PROJECT_NAME}_ARCH_FLAGS})
 else()
     set(${PROJECT_NAME}_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wdouble-promotion" "-ansi" "-pedantic" "-Weffc++"
-    "-march=native" "-frounding-math" "-fsignaling-nans" "-fPIC" "$<$<CONFIG:RELEASE>:-O3>")
+    "-frounding-math" "-fsignaling-nans" "-fPIC" "$<$<CONFIG:RELEASE>:-O3>")
+    list(APPEND ${PROJECT_NAME}_COMPILE_OPTIONS ${${PROJECT_NAME}_ARCH_FLAGS})
 endif()
 add_compile_options(${${PROJECT_NAME}_COMPILE_OPTIONS})
 

@@ -20,6 +20,7 @@ option(BUILD_TESTS "Build all ${PROJECT_NAME} tests" OFF)
 option(BUILD_DOC "Build ${PROJECT_NAME} documentation" OFF)
 option(${PROJECT_NAME}_WITH_MPI "Build ${PROJECT_NAME} with MPI parallelization backend" OFF)
 option(${PROJECT_NAME}_WITH_CUDA "Build ${PROJECT_NAME} with CUDA GPU parallelization backend" OFF)
+option(${PROJECT_NAME}_ENABLE_NATIVE_ARCH "Enable -march=native (faster, but may crash with Illegal instruction on heterogeneous clusters)" OFF)
 
 message(STATUS "BLOCK_CELL_CURRS set to ${BLOCK_CELL_CURRS}")
 #-----------------------------------#
@@ -150,16 +151,25 @@ else()
 endif()
 
 # Set compile options for supported compilers
+set(ELECTRA_ARCH_FLAGS)
+if(${PROJECT_NAME}_ENABLE_NATIVE_ARCH)
+  list(APPEND ELECTRA_ARCH_FLAGS "-march=native")
+  message(STATUS "${PROJECT_NAME}: enabling native CPU tuning (-march=native)")
+else()
+  message(STATUS "${PROJECT_NAME}: using portable CPU flags (no -march=native)")
+endif()
+
 if(MSVC)
     set(ELECTRA_COMPILE_OPTIONS "/W4" "$<$<CONFIG:RELEASE>:/O2>" "-msse2")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(ELECTRA_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wdouble-promotion" "-ansi" "-pedantic" "-fexceptions"
-                            "-fsignaling-nans" "-fPIC" "-stdlib=libc++" "$<$<CONFIG:RELEASE>:-O2>" "-ftree-vectorize" "-msse2" "-frounding-math" "-ftrapping-math" "-ffast-math")
+                            "-fsignaling-nans" "-fPIC" "-stdlib=libc++" "$<$<CONFIG:RELEASE>:-O2>" "-ftree-vectorize" "-msse2" "-frounding-math" "-ftrapping-math" "-ffast-math" ${ELECTRA_ARCH_FLAGS})
 else()
     set(ELECTRA_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wdouble-promotion" "-Wc++14-compat" "-Werror=format-security"
                                 "-pedantic" "-fsignaling-nans" "-m64" "-funroll-loops"
-                                "-march=native" "-mfpmath=sse" "-mieee-fp"
+                                "-mfpmath=sse" "-mieee-fp"
                                 "-fexceptions" "-fPIC" "-shared" "$<$<CONFIG:RELEASE>:-O2>" "-ftree-vectorize" "-msse2" "-frounding-math" "-ftrapping-math" "-ffast-math" "-pthread")
+    list(APPEND ELECTRA_COMPILE_OPTIONS ${ELECTRA_ARCH_FLAGS})
 endif()
 
 add_compile_options(${ELECTRA_COMPILE_OPTIONS})
